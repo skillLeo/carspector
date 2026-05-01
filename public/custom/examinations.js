@@ -1,0 +1,234 @@
+"use strict";
+var KTUsersList = function () {
+    var e, t, n, r, o = document.getElementById("kt_table_users"), c = () => {
+        o.querySelectorAll('[data-kt-users-table-filter="delete_row"]').forEach((t => {
+            t.addEventListener("click", (function (t) {
+                t.preventDefault();
+                const n = t.target.closest("tr"), r = n.querySelectorAll("td")[1].querySelectorAll("a")[1].innerText;
+                Swal.fire({
+                    text: "Are you sure you want to delete " + r + "?",
+                    icon: "warning",
+                    showCancelButton: !0,
+                    buttonsStyling: !1,
+                    confirmButtonText: "Yes, delete!",
+                    cancelButtonText: "No, cancel",
+                    customClass: {
+                        confirmButton: "btn fw-bold btn-danger",
+                        cancelButton: "btn fw-bold btn-active-light-primary"
+                    }
+                }).then((function (t) {
+                    t.value ? Swal.fire({
+                        text: "You have deleted " + r + "!.",
+                        icon: "success",
+                        buttonsStyling: !1,
+                        confirmButtonText: "Ok, got it!",
+                        customClass: {confirmButton: "btn fw-bold btn-primary"}
+                    }).then((function () {
+                        e.row($(n)).remove().draw()
+                    })).then((function () {
+                        a()
+                    })) : "cancel" === t.dismiss && Swal.fire({
+                        text: customerName + " was not deleted.",
+                        icon: "error",
+                        buttonsStyling: !1,
+                        confirmButtonText: "Ok, got it!",
+                        customClass: {confirmButton: "btn fw-bold btn-primary"}
+                    })
+                }))
+            }))
+        }))
+    }, l = () => {
+        const c = o.querySelectorAll('[type="checkbox"]');
+        t = document.querySelector('[data-kt-user-table-toolbar="base"]'), n = document.querySelector('[data-kt-user-table-toolbar="selected"]'), r = document.querySelector('[data-kt-user-table-select="selected_count"]');
+        const s = document.querySelector('[data-kt-user-table-select="delete_selected"]');
+        c.forEach((e => {
+            e.addEventListener("click", (function () {
+                setTimeout((function () {
+                    a()
+                }), 50)
+            }))
+        })), s.addEventListener("click", (function () {
+            Swal.fire({
+                text: "Are you sure you want to delete selected customers?",
+                icon: "warning",
+                showCancelButton: !0,
+                buttonsStyling: !1,
+                confirmButtonText: "Yes, delete!",
+                cancelButtonText: "No, cancel",
+                customClass: {
+                    confirmButton: "btn fw-bold btn-danger",
+                    cancelButton: "btn fw-bold btn-active-light-primary"
+                }
+            }).then((function (t) {
+                t.value ? Swal.fire({
+                    text: "You have deleted all selected customers!.",
+                    icon: "success",
+                    buttonsStyling: !1,
+                    confirmButtonText: "Ok, got it!",
+                    customClass: {confirmButton: "btn fw-bold btn-primary"}
+                }).then((function () {
+                    var ids=[];
+                    c.forEach((t => {
+                        // console.log($(this));
+                        // console.log(t.value);
+                        if (t.checked){
+                            ids.push(t.value);
+                        }
+
+                        t.checked && e.row($(t.closest("tbody tr"))).remove().draw()
+                    }));
+                    console.log(ids);
+                    $.ajax({
+                        url:hostUrl+'admin/delete-users',
+                        data:{ids:ids},
+                        success:function(data){
+                            console.log(data);
+                            toastr.success(data.message);
+                        },
+                        error:function(error){
+                            toastr.error(error.responseJSON.message);
+                        }
+                    })
+
+                    o.querySelectorAll('[type="checkbox"]')[0].checked = !1
+                })).then((function () {
+                    a(), l()
+                })) : "cancel" === t.dismiss && Swal.fire({
+                    text: "Selected customers was not deleted.",
+                    icon: "error",
+                    buttonsStyling: !1,
+                    confirmButtonText: "Ok, got it!",
+                    customClass: {confirmButton: "btn fw-bold btn-primary"}
+                })
+            }))
+        }))
+    };
+    const a = () => {
+        const e = o.querySelectorAll('tbody [type="checkbox"]');
+        let c = !1, l = 0;
+        e.forEach((e => {
+            e.checked && (c = !0, l++)
+        })), c ? (r.innerHTML = l, t.classList.add("d-none"), n.classList.remove("d-none")) : (t.classList.remove("d-none"), n.classList.add("d-none"))
+    };
+    return {
+        init: function () {
+            o && (o.querySelectorAll("tbody tr").forEach((e => {
+                const t = e.querySelectorAll("td"), n = t[3].innerText.toLowerCase();
+                let r = 0, o = "minutes";
+                n.includes("yesterday") ? (r = 1, o = "days") : n.includes("mins") ? (r = parseInt(n.replace(/\D/g, "")), o = "minutes") : n.includes("hours") ? (r = parseInt(n.replace(/\D/g, "")), o = "hours") : n.includes("days") ? (r = parseInt(n.replace(/\D/g, "")), o = "days") : n.includes("weeks") && (r = parseInt(n.replace(/\D/g, "")), o = "weeks");
+                const c = moment().subtract(r, o).format();
+                t[3].setAttribute("data-order", c);
+                const l = moment(t[5].innerHTML, "DD MMM YYYY, LT").format();
+                t[5].setAttribute("data-order", l)
+            })), (e = $(o).DataTable({
+                info: !1,
+                order: [[0, "desc"],[5, "desc"]],
+                ajax: {
+                    "url": hostUrl+'admin/examination-fetch',
+                    "type": "GET",
+                    "data": function ( d ) {
+                        d.city=$('.city').val();
+                        d.date_range=$('.date_range').val();
+                        // d.space_id=$('.parking-spot').val();
+                        // d.daterange=$('.daterange').val();
+                        return d;
+                    }
+                },
+                processing: true,
+                serverSide: true,
+                searchDelay:500,
+                selectable:true,
+                columns:[
+                    {data:'id',render:function(data,row,full){
+                            return '<div class="form-check form-check-sm form-check-custom form-check-solid">\n' +
+                                '                                        <input class="form-check-input" type="checkbox" value="'+data+'" />\n' +
+                                '                                    </div>';
+                        }},
+                    {data:'user.name',render:function(data,row,full){
+                            console.log(full);
+                            if(full.user){
+                                let myHtml='<div class="symbol symbol-circle symbol-50px overflow-hidden me-3">\n' +
+                                    '                                       <a href="/admin/user/profile/'+full.user.id+'">\n' +
+                                    '                                            <div class="symbol-label">\n' +
+                                    '                                                <img src="'+full.user.image+'" alt="Emma Smith" class="w-100" />\n' +
+                                    '                                            </div>\n' +
+                                    '                                        </a>\n' +
+                                    '                                    </div>\n' +
+                                    '                                    <div class="d-flex flex-column">\n' +
+                                    '                                        <a href="/admin/user/profile/'+full.user.id+'"class="text-gray-800 text-hover-primary mb-1">'+full.user.name+'</a>\n' +
+                                    '                                        <span>'+full.user.email+'</span>\n' +
+                                    '                                    </div>';
+                                return myHtml;
+                            }
+                            return 'No User';
+                        }},
+                    // {data:'examiner.name','name':'examiner.first_name',render:function(data,row,full){
+                    //         console.log(full);
+                    //       if (full.examiner){
+                    //           let myHtml='<div class="symbol symbol-circle symbol-50px overflow-hidden me-3">\n' +
+                    //               '                                        <a href="/admin/user/profile/'+full.examiner.id+'">\n' +
+                    //               '                                            <div class="symbol-label">\n' +
+                    //               '                                                <img src="'+full.examiner.image+'" alt="Emma Smith" class="w-100" />\n' +
+                    //               '                                            </div>\n' +
+                    //               '                                        </a>\n' +
+                    //               '                                    </div>\n' +
+                    //               '                                    <div class="d-flex flex-column">\n' +
+                    //               '                                        <a href="/admin/user/profile/'+full.examiner.id+'" class="text-gray-800 text-hover-primary mb-1">'+full.examiner.name+'</a>\n' +
+                    //               '                                        <span>'+full.examiner.email+'</span>\n' +
+                    //               '                                    </div>';
+                    //           return myHtml;
+                    //       }else {
+                    //           return '<a href="#" class="btn-assign-examiner" data-id="'+full.id+'" data-bs-toggle="modal" data-bs-target="#assign_examiner">No Examiner</a>';
+                    //       }
+                    //     }},
+                    {data:'order.vehicle_type',name:'orders.vehicle_type'},
+                    {data:'price',render:function(data,row,full){
+                            if (data) {
+                                return data + "€";
+                            }else {
+                                return '0€'
+                            }
+                        }},
+
+                    {data:'order.vehicle_make_model'},
+                    {data:'examiner_id'},
+                    {data:'status'},
+
+                    {data:'actions'},
+                ]
+            })).on("draw", (function () {
+                l(), c(), a()
+            })), l(), document.querySelector('[data-kt-user-table-filter="search"]').addEventListener("keyup", (function (t) {
+                e.search(t.target.value).draw()
+            })), document.querySelector('[data-kt-user-table-filter="reset"]').addEventListener("click", (function () {
+                document.querySelector('[data-kt-user-table-filter="form"]').querySelectorAll("select").forEach((e => {
+                    $(e).val("").trigger("change")
+                })), e.search("").draw()
+            })), c(), (() => {
+                $('#kt_daterangepicker_4').on('change',function(){
+                    e.search("").draw()
+                })
+                const t = document.querySelector('[data-kt-user-table-filter="form"]'),
+                    n = t.querySelector('[data-kt-user-table-filter="filter"]'), r = t.querySelectorAll("select");
+                n.addEventListener("click", (function () {
+                    var t = "";
+                    r.forEach(((e, n) => {
+                        e.value && "" !== e.value && (0 !== n && (t += " "), t += e.value)
+                    })), e.search(t).draw()
+                }))
+            })())
+
+
+            var orderid='';
+            $(document).on('click','.btn-assign-examiner',function(e){
+                e.preventDefault();
+                orderid=$(this).attr('data-id');
+
+            });
+
+        }
+    }
+}();
+KTUtil.onDOMContentLoaded((function () {
+    KTUsersList.init()
+}));

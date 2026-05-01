@@ -1,0 +1,29 @@
+// AboutCards Slider Active
+var swiper = new Swiper(".about-cards-slider", {
+    slidesPerView: 1,
+    spaceBetween: 30,
+    loop: true,
+    autoplay: {
+        delay: 3000,
+        disableOnInteraction: false,
+        pauseOnMouseEnter: true,
+    },
+    breakpoints: {
+        576: {
+            slidesPerView: 2,
+            spaceBetween: 30,
+        },
+        992: {
+            slidesPerView: 3,
+            spaceBetween: 30,
+        },
+        1200: {
+            slidesPerView: 4,
+            spaceBetween: 30,
+        }
+    },
+    pagination: {
+       el: ".about-cards-pagination",
+       clickable: true,
+    },
+});

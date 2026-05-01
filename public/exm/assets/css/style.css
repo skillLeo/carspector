@@ -1,0 +1,431 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800&display=swap");
+/* root */
+:root {
+  --font-1: "Poppins", sans-serif;
+
+  --white-color: #fff;
+  --black-color: #000;
+
+  --primary: #000;
+  --secondary: #000;
+
+  --body-color: #2d3748;
+  --heading-color: #2d3748;
+}
+/* root */
+
+/* defaults-css-start */
+html {
+  font-size: 100%;
+  box-sizing: border-box;
+}
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  padding: 0;
+  line-height: 1.3;
+  font-family: var(--font-1);
+  font-size: 16px;
+  font-weight: 400;
+}
+a,
+button {
+  transition: all 0.3s ease-out 0s;
+  -webkit-transition: all 0.3s ease-out 0s;
+  -moz-transition: all 0.3s ease-out 0s;
+  -ms-transition: all 0.3s ease-out 0s;
+  -o-transition: all 0.3s ease-out 0s;
+}
+
+a:focus,
+button:focus,
+.btn:focus {
+  outline: none;
+}
+button:focus,
+input:focus,
+input:focus,
+textarea,
+textarea:focus {
+  outline: 0;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-1);
+  color: var(--heading-color);
+  margin-top: 0px;
+  font-style: normal;
+  font-weight: 700;
+  text-transform: normal;
+}
+h1 a,
+h2 a,
+h3 a,
+h4 a,
+h5 a,
+h6 a {
+  color: inherit;
+}
+ul {
+  margin: 0px;
+  padding: 0px;
+  list-style: none;
+}
+li {
+  list-style: none;
+}
+p {
+  font-size: 14px;
+  font-weight: normal;
+  line-height: 19px;
+  color: var(--body-color);
+  margin-bottom: 15px;
+}
+label {
+  color: var(--body-color);
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 400;
+}
+*::-moz-selection {
+  background: var(--secondary);
+  color: var(--white-color);
+  text-shadow: none;
+}
+::-moz-selection {
+  background: var(--secondary);
+  color: var(--white-color);
+  text-shadow: none;
+}
+::selection {
+  background: var(--secondary);
+  color: var(--white-color);
+  text-shadow: none;
+}
+*::-moz-placeholder {
+  color: var(--body-color);
+  font-size: 16px;
+  opacity: 1;
+}
+*::placeholder {
+  color: var(--body-color);
+  font-size: 16px;
+  opacity: 1;
+}
+/* defaults-css--end */
+
+/* theme-css */
+.fs-main {
+  font-size: 18px !important;
+  line-height: normal;
+}
+.btn {
+  font-size: 14px;
+  font-weight: 400;
+  padding: 6px 18px;
+  line-height: 1.5;
+}
+.btn-primary {
+  background-color: #2dd683;
+  border-color: #2dd683;
+  color: #fff;
+}
+.btn-primary:hover {
+  background-color: #15223c;
+  border-color: #15223c;
+}
+.btn.btn-white {
+	background: var(--white-color) !important;
+    color: #00449a !important;
+    border: 1px solid #00449a;
+}.header .btn.btn-white {
+	font-weight: 400;
+	padding: 9px 35px;
+	font-size: 16px;
+	border-radius: 50px;
+	line-height: 1;
+}
+/* theme-css-end */
+
+.root {
+  /*! padding: 40px 0px; */
+}
+.header {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: auto;
+  z-index: 11;
+  padding: 18px 0px;
+}
+.header-nav ul {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+.header-nav ul li a {
+  text-decoration: none !important;
+  font-size: 16px;
+  /*font-weight: 600;*/
+  color: #fff !important;
+}
+.header-nav ul li a:hover {
+  color: #151928;
+}
+
+/* ======== header style start ============ */
+
+/* ======== header style end ============ */
+
+/* ======== hero style start ============ */
+
+.hero-bg {
+  max-width: 100%;
+}
+.header-wrapper {
+  padding: 0px 25px;
+}
+.hero-content {
+  /*margin-left: 25px;*/
+  /*margin-right: 25px;*/
+  border-radius: 15px;
+  border: 1.5px solid #fff;
+  /*background: linear-gradient(*/
+  /*  113deg,*/
+  /*  rgba(245, 245, 245, 0.82) 0%,*/
+  /*  rgba(223, 230, 234, 0.8) 110.84%*/
+  /*);*/
+    background: white;
+    /*background: #f1f1f1;*/
+  box-shadow: 0px 2px 5.5px 0px rgba(0, 0, 0, 0.02);
+  backdrop-filter: blur(10.499999046325684px);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 16px;
+  margin-top: -73px !important;
+}
+.hero-user {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  width: 40%;
+  gap: 20px;
+}
+.user-btns {
+  max-width: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+  width: 100%;
+  margin-bottom: 3px;
+}
+.hero-user--content {
+  flex-grow: 1;
+}
+.hero-user--img {
+  flex: 0 0 auto;
+  width: 80px;
+  height: 80px;
+  position: relative;
+}
+.hero-user--img > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 12px;
+}
+.user-edit {
+  position: absolute;
+  right: -8px;
+  bottom: -12px;
+  border: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0px 2px 5.5px 0px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 6px;
+}
+
+.user-btns > * {
+  width: 53%;
+}
+.hero-user--content h4 {
+  margin-bottom: 0px;
+}
+.user-rattings {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.user-rattings span {
+  font-size: 14px;
+  font-weight: 600;
+  color: #15223c;
+}
+.hero-right {
+  text-align: end;
+}
+.btn-white {
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0px 2px 5.5px 0px rgba(0, 0, 0, 0.06);
+}
+.btn span {
+  line-height: 1;
+  position: relative;
+  bottom: 1px;
+}
+.hero-btns {
+  margin-bottom: 8px;
+}
+.btn-white:hover {
+  background: #e4e0e0;
+}
+
+/* ======== hero style end ============ */
+
+/* ======== content style start ============ */
+
+.main-content {
+  padding: 30px 0px;
+}
+.box-white {
+  border-radius: 15px;
+  background: var(--black-amp-white-white, #fff);
+  box-shadow: 0px 3.5px 5.5px 0px rgba(0, 0, 0, 0.02);
+}
+.work-box {
+  padding: 18px 30px;
+}
+.root {
+  background: #f1f1f1;
+}
+.work-box h4 {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.work-form form {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.work-form input {
+  flex-grow: 1;
+  border-radius: 8px;
+  border: 1px solid #c0c9c8;
+  padding: 0px 10px;
+}
+.btn.btn-secondary {
+  background: linear-gradient(82deg, #313860 2.25%, #151928 79.87%);
+  border-color: #15223c;
+}
+.btn-secondary:hover {
+  opacity: 0.8;
+}
+.work-lists ul li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0px;
+  border-bottom: 1px solid #dedede;
+  font-size: 14px;
+  font-weight: 500;
+  color: #2d3748;
+}
+.work-lists ul li button {
+  border: none;
+  background: transparent;
+  padding: 0;
+  line-height: 1;
+}
+.work-lists ul li:last-child {
+  border-bottom: none;
+}
+.widget {
+  border-radius: 15px;
+  border: 1px solid #e2e8f0;
+  background: var(--black-amp-white-white, #fff);
+  box-shadow: 0px 3.5px 5.5px 0px rgba(0, 0, 0, 0.02);
+  padding: 28px 30px 30px;
+}
+.widget.widget-credit h3 {
+  margin-bottom: 2px;
+}
+.credit-item h6 {
+  font-weight: 500;
+  font-size: 30px;
+  line-height: 1;
+  margin-bottom: 0px;
+}
+.credit-items {
+  display: flex;
+  align-items: center;
+}
+.credit-item {
+  flex: 0 0 auto;
+  width: 50%;
+  padding: 20px 0px 30px;
+}
+.price-input input {
+  border-radius: 15px;
+  border: 1px solid #e2e8f0;
+  height: 65px;
+  width: 100%;
+  padding: 0px 20px;
+}
+.price-input {
+  padding: 30px 0px;
+}
+.box-white.bookigs h4 {
+  margin-bottom: 0px;
+}
+.bookigs {
+  padding: 20px 20px;
+}
+.work-lists {
+  margin-top: 12px;
+}
+
+/* ======== content style end ============ */
+
+/* ======== offcanvas style start ============ */
+
+.offcanvas-menu ul li a {
+  text-decoration: none;
+  font-size: 18px;
+  display: block;
+  padding: 10px 0px;
+  text-align: center;
+  color: var(--black-color);
+}
+.offcanvas-menu .btn.btn-white { 	background: #1877F2; 	color: #fff; 	margin-top: 13px; 	padding: 6px 30px; 	border-radius: 50px; 	font-size: 16px; }
+/* ======== offcanvas style end ============ */
+
+/* ======== sections style start ============ */
+/* ======== sections style end ============ */
+
+/* ======== sections style start ============ */
+/* ======== sections style end ============ */
+
+/* ======== sections style start ============ */
+/* ======== sections style end ============ */
+
+/* ======== footer style start ============ */
+/* ======== footer style end ============ */

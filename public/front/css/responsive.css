@@ -1,0 +1,866 @@
+@media (min-width: 1500px) {
+    .container {
+        max-width: 1385px;
+    }
+}
+
+/* XX-Large devices (larger desktops, 1400px and up) */
+@media (max-width: 1499px) {
+
+    .container {
+        max-width: 1385px;
+    }
+
+    .hero-content.hero-content-two h1 {
+        font-size: 70px;
+        line-height: 72px;
+    }
+    .hero-content p {
+        font-size: 18px;
+    }
+    .hero-img img {
+        max-width: 571px;
+    }
+    .hero-bottom {
+        padding-top: 125px;
+    }
+    section.section.hero-area {
+        padding-bottom: 70px;
+    }
+    .live-wrapper {
+        padding: 40px 0 80px;
+    }
+    #used-car-history, #sets-us-apart, #safe-and-easy, #known-from-area, .faq-area, section.slider-area {
+        padding: 90px 0;
+    }
+    .you-get-thumb {
+        right: 0;
+    }
+    .sets-us-apart-wrapper {
+        margin-bottom: 100px;
+    }
+    #sets-us-apart h2 {
+        margin-bottom: 80px;
+    }
+    .slider-area h2 {
+        margin-bottom: 80px;
+    }
+}
+
+/* XX-Large devices (larger desktops, 1400px and up) */
+@media (max-width: 1399px) {
+    .container {
+        width: 1140px;
+    }
+    .hero-content h1 {
+        font-size: 60px;
+    }
+    section.logo-area {
+        padding: 60px 0px;
+    }
+    .header-nav ul li a {
+        font-size: 16px;
+        line-height: 24px;
+    }
+    .header-nav ul {
+        gap: 32px;
+    }
+    .header-nav {
+        margin-right: 12px;
+    }
+    .content-thumb-wrapper {
+        padding: 40px;
+    }
+    h2 {
+        font-size: 36px;
+    }
+    .desire-vehicle-img img {
+        width: 100%;
+    }
+    .live-wrapper {
+        padding: 40px 0 100px;
+    }
+    .how-does-work-img img {
+        width: 100%;
+    }
+    .you-get-list-row {
+        margin-right: 80px;
+    }
+    .you-get-thumb {
+        top: -145px;
+        right: 0;
+        width: 400px;
+    }
+    .you-get-thumb img {
+        width: 100%;
+    }
+    .safe-easy-thumb {
+        top: 0;
+        width: 500px;
+    }
+    .safe-easy-thumb img {
+        width: 100%;
+    }
+    .safe-and-easy-wrapper h2 {
+        max-width: 550px;
+    }
+    .input-box-icon input {
+        width: 400px;
+    }
+}
+
+/* X-Large devices (large desktops, 1200px and up) */
+@media (max-width: 1199px) {
+    .container {
+        width: 960px;
+    }
+    .fs-2 {
+        font-size: 36px !important;
+    }
+    .fs-3 {
+        font-size: 32px !important;
+    }
+    .steps-area {
+        padding: 80px 0px 0px;
+    }
+    .single-digit p {
+        font-size: 15px;
+    }
+    section.slider-area {
+        padding: 80px 0px 60px;
+    }
+    .faq-area {
+        padding-top: 50px;
+    }
+    #faq-section .accordion-button {
+        font-size: 16px;
+    }
+    footer.footer {
+        padding: 24px 0px 21px;
+    }
+
+    .step-count {
+        height: 40px;
+        width: 40px;
+        font-size: 16px;
+    }
+    .step-content span {
+        font-size: 16px;
+    }
+    .step-content p {
+        font-size: 16px;
+    }
+    .step-item {
+        gap: 10px;
+    }
+    .step-items {
+        gap: 30px;
+    }
+    .header-logo a {
+        gap: 6px;
+    }
+    .hero-img img {
+        max-width: 100%;
+    }
+    .hero-content.hero-content-two h1 {
+        font-size: 60px;
+        line-height: 64px;
+    }
+    .hero-img {
+        flex: 0 0 auto;
+        width: 50%;
+        text-align: center;
+    }
+    .hero-content ul li {
+        font-size: 15px;
+    }
+    .hero-content ul li span.icon img {
+        max-width: 35px;
+    }
+    .hero-form form p {
+        font-size: 16px;
+    }
+    .hero-content p {
+        font-size: 16px;
+    }
+    .hero-logo {
+        gap: 10px;
+        font-size: 16px;
+    }
+    .content-thumb-area {
+        padding: 68px 0 39px;
+        position: relative;
+        z-index: 1;
+    }
+    .content-thumbnail {
+        margin-bottom: -250px;
+        height: 100%;
+    }
+    .how-work-area {
+        margin-bottom: 90px;
+        padding-top: 30px;
+    }
+    .qs-wrapper {
+        text-align: center;
+    }
+    .qs-form {
+        position: unset;
+        margin: 0 auto;
+        margin-bottom: 50px;
+    }
+    .question-section {
+        margin-bottom: 100px;
+    }
+    .join-network-info {
+        padding-top: 125px;
+    }
+    .account-info .contact-form {
+        margin-top: 125px;
+        margin-bottom: 160px;
+    }
+    .desired-vehicle-wrapper h2 {
+        font-size: 32px;
+    }
+    .desire-vehicle-check-list ul li, .you-get-list-row ul li {
+        margin-bottom: 20px;
+    }
+    #you-get-area {
+        padding: 90px 0;
+    }
+    .you-get-wrapper {
+        position: relative;
+        z-index: 1;
+    }
+    .you-get-thumb {
+        width: 350px;
+    }
+    .safe-easy-thumb {
+        width: 400px;
+    }
+    .live-wrapper {
+        padding: 40px 0 80px;
+    }
+
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (max-width: 991px) {
+    .container {
+        width: 720px;
+    }
+    .logos-wrap > div {
+        width: 32%;
+    }
+    .logos-wrap img {
+        max-width: 100%;
+    }
+    .container-sm {
+        max-width: 720px;
+        margin: 0 auto;
+    }
+    .hero-content h1 {
+        font-size: 42px;
+    }
+    .hero-content p {
+        font-size: 16px;
+        color: var(--primary);
+    }
+    .hero-form form p {
+        font-size: 16px;
+    }
+    .header-logo a img {
+        max-width: 45px;
+    }
+    .header-end a.btn {
+        width: 119px;
+    }
+    .btn {
+        font-size: 15px;
+        padding: 10px 28px;
+    }
+    section.section.hero-area {
+        padding-bottom: 20px;
+    }
+    .shape-bg {
+        height: 90px;
+    }
+    section.logo-area {
+        padding: 40px 0px;
+    }
+    .steps-area {
+        padding: 30px 0px 0px;
+    }
+    .video-box {
+        max-width: 480px;
+        margin: 0 auto;
+        margin-bottom: 50px;
+    }
+    .video-box img{
+       max-width: 100%;
+    }
+    .about-img {
+        max-width: 384px;
+        margin: 0 auto;
+    }
+    .about-paragraph {
+        font-size: 16px;
+        padding-bottom: 30px;
+    }
+    section.slider-area {
+        padding: 60px 0px 40px;
+    }
+    .slider-area h3 {
+        padding-bottom: 0px;
+    }
+    .slider-title {
+        margin-bottom: 34px;
+    }
+    .footer-nav ul li a {
+        font-size: 15px;
+    }
+    .step-cards .col-lg-2 {
+        width: 100%;
+    }
+    .step-cards .col-lg-5 {
+        width: 80%;
+        margin: 0 auto;
+    }
+
+    .hero-wrapper {
+        flex-wrap: wrap;
+    }
+    .hero-area-two .hero-img {
+        width: 100%;
+        position: relative;
+        height: 200px;
+    }
+    .hero-area-two .hero-img img{
+        max-width: 400px;
+        position: absolute;
+        right: 0px;
+        top: 0px;
+    }
+    .hero-area.hero-area-two {
+        padding-top: 50px;
+    }
+    .header.header-two {
+        padding: 0;
+    }
+    .header-wrapper {
+        padding: 13.5px 0 !important;
+    }
+    .header-logo {
+        width: 40px;
+        height: 30px;
+    }
+    .content-blk h3 {
+        font-size: 60px;
+    }
+    .cta-btn a {
+        padding: 18px;
+        font-size: 18px;
+    }
+    .content-blk-paragraph {
+        margin-bottom: 34px;
+    }
+    .faq-title {
+        max-width: 574px;
+        border-radius: 5px;
+        background: #014FB3;
+        box-shadow: 0px 4px 25px 0px rgba(0, 0, 0, 0.25);
+        margin: 0 auto 60px;
+    }
+    .join-network-info {
+        text-align: center;
+        padding-top: 90px;
+    }
+    .join-network-info p {
+        max-width: 100%;
+        font-size: 17px;
+        margin-bottom: 26px;
+    }
+    .account-info .contact-form {
+        margin-top: 41px;
+        margin-bottom: 80px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .modal.modal-about .modal-dialog{
+        max-width: 520px;
+    }
+    section.section.hero-area {
+        padding-bottom: 60px;
+    }
+    .hero-content.hero-content-two h1 {
+        margin-top: 0;
+        letter-spacing: -1.7px;
+    }
+    .desired-vehicle-wrapper h2 {
+        font-size: 35px;
+        margin-bottom: 40px;
+    }
+    .desire-vehicle-img {
+        margin-top: 40px;
+    }
+    .how-does-work-content .paragraph {
+        margin-bottom: 70px;
+    }
+    .how-does-work-content {
+        margin-bottom: 60px;
+    }
+    .you-get-thumb {
+        width: auto;
+        position: relative !important;
+        top: 0;
+        margin-top: 80px;
+        margin-bottom: -400px;
+    }
+    #sets-us-apart {
+        padding-top: 400px;
+    }
+    .you-get-list {
+        flex-direction: column;
+    }
+    .you-get-list-row {
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+    .you-get-btn {
+        margin-top: 0;
+        padding-top: 45px;
+    }
+    .sets-us-apart-wrapper {
+        flex-wrap: wrap;
+    }
+    .safe-easy-thumb {
+        width: auto;
+        position: relative !important;
+        margin-top: 60px;
+        right: 0;
+    }
+    .slider-inner .swiper-button-prev {
+        left: -40px;
+    }
+    .slider-inner .swiper-button-next {
+        right: -40px;
+    }
+    .footer-wrapper {
+        flex-direction: column;
+    }
+    .footer-logo {
+        margin-right: auto;
+        margin-bottom: 35px;
+    }
+    .footer-end {
+        margin-left: auto;
+    }
+
+    /* index-2 (Blue Hero Area) page */
+    #blue-hero .hero-area {
+        margin-bottom: 300px;
+    }
+    #blue-hero .hero-content ul {
+        padding: 15px 0;
+        padding-left: 15px;
+    }
+    #blue-hero .hero-bottom {
+        padding-top: 90px;
+        margin-bottom: -275px;
+    }
+    #blue-hero #desired-vehicle {
+        padding-top: 0;
+    }
+    /* index-2 (Blue Hero Area) page */
+}
+
+/*  Medium devices (tablets, 768px and up) */
+@media (max-width: 767px) {
+    .container {
+        width: 540px;
+    }
+    .slider-inner {
+        padding: 18px 16px 15px;
+    }
+    .slider-content {
+        padding: 0px 0px;
+    }
+    .about-img {
+        max-width: 300px;
+        margin: 0 auto;
+    }
+    .logos-wrap > div {
+        width: 80%;
+        margin: 0 auto;
+        margin-bottom: 28px;
+        text-align: center;
+    }
+    .shape-bg {
+        height: 80%;
+        position: absolute;
+        bottom: 0;
+        z-index: -1;
+    }
+    section.logo-area {
+        position: relative;
+    }
+    .hero-form-icon {
+        max-width: 100px;
+        position: relative;
+        left: calc(100% - 100px);
+        transform: scaleX(-1);
+        width: 100%;
+    }
+    .hero-form button.btn {
+        min-width: 140px;
+    }
+
+    .hero-content h1 {
+        font-size: 40px;
+    }
+
+    .header-logo a img {
+        max-width: 46px;
+    }
+    body, html{
+        overflow-x: hidden;
+    }
+    .header {
+        padding: 15px 0px;
+    }
+    section.section.hero-area {
+        padding-bottom: 20px;
+        padding-top: 20px;
+    }
+
+    .step-cards .col-lg-2 {
+        width: 100%;
+    }
+    .step-cards .col-lg-5 {
+        width: 100%;
+        margin: 0 auto;
+    }
+    .user-card {
+        padding: 14px 14px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .user-card-img img {
+        height: 75px;
+    }
+    .user-card-img {
+        flex: 0 0 auto;
+        width: 75px;
+    }
+    .user-card-content {
+        gap: 15px;
+    }
+    .user-card-info h5 {
+        font-size: 19px;
+        line-height: 28px;
+    }
+    .user-card-content {
+        width: 100%;
+    }
+    .user-card-info {
+        flex-grow: 1;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+    .user-card-btns {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        justify-content: space-between;
+    }
+    .user-card-btns a.btn {
+        width: 49%;
+        padding: 10px 12px;
+    }
+    button.accordion-button span.icon img {
+        max-width: 45px;
+    }
+    #faq-section .accordion-button span.icon {
+        width: 40px;
+        height: 40px;
+    }
+    .hero-content.hero-content-two h1 {
+        font-size: 45px;
+        line-height: 45px;
+        margin-bottom: 11px !important;
+        letter-spacing: -.4px;
+    }
+    .hero-content ul {
+        column-count: 1;
+        padding: 15px 0 20px;
+    }
+    .hero-content ul li {
+        font-size: 17px;
+        padding: 0;
+        margin-bottom: 5px;
+    }
+    .hero-content p {
+        font-size: 18px;
+        color: var(--primary);
+    }
+    .hero-logo {
+        max-width: 300px;
+        margin: 0 auto;
+    }
+    section.section.hero-area.hero-area-two {
+        padding-bottom: 60px;
+        padding-top: 50px;
+    }
+    .content-blk h3 {
+        font-size: 38px;
+    }
+    .content-blk-paragraph {
+        font-size: 16px;
+    }
+    .cta-btn a {
+        padding: 14px;
+        font-size: 16px;
+    }
+    .ea-text h3 {
+        font-size: 24px;
+    }
+    .how-work-area {
+        padding-top: 30px;
+    }
+    .exam-card {
+        margin-bottom: 17px;
+    }
+    .faq-title {
+        margin: 0 auto 27px;
+    }
+    .contact-form {
+        padding: 20px;
+    }
+    .contact-form h5 {
+        margin-bottom: 16px;
+    }
+    .form-item {
+        margin-bottom: 13px;
+    }
+    .qs-single-input {
+        width: 100%;
+        margin-bottom: 18px;
+    }
+    .qs-form {
+        padding: 24px 20px 28px;
+    }
+    .bar {
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+    .form-login ,
+    .form-profile{
+        padding: 50px 0px 280px;
+    }
+    .faq-wrap {
+        padding: 50px 0px 120px;
+    }
+    .step-wrap{
+        padding: 50px 0px 100px;
+    }
+    .step-card-row{
+        margin-bottom: 90px;
+    }
+    .info-wrap {
+        padding: 28px 5px 28px;
+    }
+    .hero-content {
+        margin: 0 auto;
+    }
+    .section-title {
+        margin-bottom: 60px;
+    }
+    .how-work-area {
+        margin-bottom: 20px;
+    }
+    .exam-area {
+        padding-top: 0;
+        padding-bottom: 0px;
+    }
+    .faq-area {
+        padding-bottom: 60px;
+    }
+    .hero-form form p {
+        font-size: 17px;
+        margin-bottom: 4px;
+    }
+    .btn-further{
+        position: initial;
+        width: 100%;
+        margin-top: 58px;
+    }
+    .btn-further1{
+        position: initial;
+        width: 100%;
+        margin-top: -20px !important;
+    }
+    .modal-about .modal-content .user-card-btns a.btn {
+        width: auto;
+    }
+    .modal-about .modal-content {
+        border: 0px;
+        padding: 4px 4px;
+        background-color: #fff;
+    }
+    .hero-content.hero-content-two {
+        width: 100%;
+    }
+    .hero-content p {
+        max-width: 301px;
+        line-height: 22px;
+    }
+    .mobile-hero-area-btns {
+        gap: 12px;
+    }
+    .hero-area-form .input-box-icon input {
+        width: 100%;
+        height: 50px;
+        padding-left: 80px;
+        font-size: 17px;
+    }
+    .hero-area-form .input-box-icon input::placeholder {
+        font-size: 17px;
+    }
+    .hero-content.hero-content-two .input-box, .hero-content.hero-content-two button.btn.btn-secondary {
+        width: 100%;
+        height: 49px;
+    }
+    .input-shadow-1 {
+        box-shadow: 0px 4px 25px 0 rgba(0, 0, 0, 0.25);
+    }
+    .hero-form button.btn {
+        box-shadow: 0px 4px 25px 0 rgba(35, 193, 151, 0.5);
+        font-size: 19px;
+    }
+    .hero-content.hero-content-two .input-box img, .hero-content.hero-content-two button.btn.btn-secondary img {
+        /*width: 35px;*/
+    }
+    .hero-area-two .hero-img {
+        height: auto;
+        width: 65%;
+        margin-left: auto;
+        margin-top: -30px;
+    }
+    .hero-area-two .hero-img img {
+        max-width: 100%;
+        position: relative;
+    }
+    .hero-bottom {
+        padding-top: 0;
+        margin-top: -55px;
+    }
+    .desired-vehicle-wrapper {
+        padding: 60px 0;
+    }
+    .how-does-work-content {
+        margin-bottom: 45px;
+        margin-top: 45px;
+    }
+    .how-does-work-wrapper .mobile-section-btn {
+        margin: 55px auto 0;
+        text-align: center;
+    }
+    .sets-us-apart-wrapper {
+        justify-content: flex-start !important;
+    }
+    #sets-us-apart {
+        padding-bottom: 40px;
+    }
+    .slider-inner .swiper-btns {
+        display: none;
+    }
+    .footer .footer-paragraph {
+        font-size: 17px;
+    }
+    /* index-2 (Blue Hero Area) page */
+    #blue-hero .hero-content p {
+        margin: auto;
+        letter-spacing: 0;
+    }
+    #blue-hero .hero-content form p {
+        margin: 0;
+    }
+    #blue-hero .hero-content.hero-content-two .hero-form form {
+        margin-left: 0;
+    }
+    #blue-hero .input-box-icon input {
+        width: 100%;
+    }
+    #blue-hero .hero-bottom {
+        margin-top: 0;
+    }
+    /* index-2 (Blue Hero Area) page */
+}
+
+/* Small devices  */
+@media (max-width: 575px) {
+    .container {
+        width: 100%;
+        padding: 0 20px;
+    }
+    .hero-area-two .hero-img {
+        margin-top: -20px;
+        margin-right: -60px;
+        width: 75%;
+    }
+    .hero-bottom {
+        margin-top: -40px;
+    }
+    .desire-vehicle-check-list ul li, .you-get-list-row ul li {
+        padding-left: 50px;
+    }
+    .sets-us-apart-wrapper {
+        flex-direction: column;
+        margin-bottom: 50px;
+    }
+    .you-get-thumb {
+        margin-bottom: -218px;
+    }
+    #sets-us-apart {
+        padding-top: 300px;
+    }
+    #sets-us-apart h2 {
+        margin-bottom: 60px;
+    }
+    .single-set-us-box {
+        margin: 0 auto 50px;
+    }
+    #faq-section .accordion-button {
+        font-weight: 400;
+    }
+    .faq-area {
+        padding-bottom: 100px;
+    }
+    .safe-and-easy-wrapper p {
+        max-width: 525px;
+        padding: 35px 0 90px !important;
+        margin: 0;
+    }
+    .known-from-items {
+        flex-direction: column;
+    }
+    .kf-single-item {
+        margin: 0 auto 45px;
+    }
+    #known-from-area {
+        padding: 90px 0 50px;
+    }
+    .offcanvas {
+        max-width: 101%;
+    }
+
+    /* index-2 (Blue Hero Area) page */
+    #blue-hero .hero-bottom {
+        margin-bottom: -467px;
+    }
+    #blue-hero .hero-area {
+        margin-bottom: 475px;
+    }
+    /* index-2 (Blue Hero Area) page */
+}

@@ -1,0 +1,511 @@
+.section.userReview{
+    padding: 82px 0px 140px;
+}
+.userReview-wrapper{}
+.userReview-header{
+    border-bottom: 1px solid #6A6A6A;
+    margin-bottom: 30px;
+}
+.userReview-item{
+    margin-bottom: 70px;
+}
+.userReview-item p{
+    font-size: 17px;
+    font-weight: 400;
+    color: #000000;
+}
+.userReview-ratting button{
+    background-color: transparent;
+    border: none;
+    padding: 0px;
+    margin-right: 8px;
+}
+.userReview-form textarea{
+    resize: none;
+    min-height: 124px;
+    background: #FFFFFF;
+    border: 1px solid #6A6A6A;
+    border-radius: 15px;
+}
+.userReview-qa{
+    margin-bottom: 80px;
+}
+.userReview-qa-item{
+    display: flex;
+    justify-content: space-between;
+}
+.userReview-qa-text p{
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--black-color);
+    margin-bottom: 0px;
+}
+.userReview-qa-check{
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    width: 86px;
+}
+.userReview-qa-check .check-item{
+    padding: 4px 0px;
+}
+.userReview-qa-check .check-item input{
+    display: none;
+}
+.userReview-qa-check .check-item input:checked ~ label span{
+    border-color: var(--primary);
+}
+.userReview-qa-check .check-item input:checked ~ label span::after{
+    opacity: 1;
+    visibility: visible;
+}
+.userReview-qa-check .check-item label span{
+    position: relative;
+    height: 36px;
+    width: 36px;
+    background: #FFFFFF;
+    border: 1px solid #6A6A6A;
+    border-radius: 15px;
+    display: inline-block;
+}
+.userReview-qa-check .check-item label span::after{
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    height: 19px;
+    width: 19px;
+    margin-top: -9px;
+    margin-left: -9px;
+    background-color: var(--primary);
+    content: "";
+    opacity: 0;
+    visibility: hidden;
+    transition: .3s;
+    border-radius: 50%;
+}
+.userReview-qa-option{
+    max-width: 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+.userReview-qa-option span{
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--primary);
+}
+
+.userReview-bottom button{
+    font-size: 16px;
+    font-weight: 500;
+}
+.userReview-bottom p{
+    font-size: 15px;
+    line-height: 18px;
+}
+
+
+
+.rating-box {
+    display: inline-block;
+}
+
+.rating-box .rating-container {
+    direction: rtl !important;
+}
+
+.rating-box .rating-container label {
+    display: inline-block;
+    margin: 0px;
+    color: #d4d4d4;
+    cursor: pointer;
+    font-size: 45px;
+    transition: color 0.2s;
+    line-height: 1;
+}
+
+.rating-box .rating-container input {
+    display: none;
+}
+
+.rating-box .rating-container label:hover,
+.rating-box .rating-container label:hover~label,
+.rating-box .rating-container input:checked~label {
+    color: var(--primary);
+}
+
+.page-hero-step ul{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 30px;
+}
+.page-hero-step ul::after{
+    position: absolute;
+    left: 0px;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 1px;
+    width: 100%;
+    content: "";
+    z-index: -1;
+    background-color: #fff;
+}
+.page-hero-step ul li{
+    padding: 0px 14px;
+}
+.page-hero-step ul li.active span{
+    background-color: #fff;
+    color: var(--primary);
+}
+.page-hero-step ul li:first-child{
+    padding-left: 0px;
+}
+.page-hero-step ul li:last-child{
+    padding-right: 0px;
+}
+.page-hero-step ul li span{
+    height: 30px;
+    width: 30px;
+    border-radius: 50%;
+    background: #000000;
+    font-size: 18px;
+    font-weight: 500;
+    color: #fff;
+    display: inline-flex;
+    align-items: center;justify-content: center;
+}
+
+.booking-footer {
+    background-position: top;
+    background-repeat: no-repeat;
+    background-color: transparent !important;
+    padding-top: 54px;
+    background-size: cover;
+}
+.booking-form p.small {
+    font-size: 13px;
+}
+.booking-form p img {
+    max-width: 25px;
+}
+.booking-footer-info span img {
+    max-width: 35px;
+}
+
+/* section-booking */
+
+.section.booking {
+    padding: 210px 0px 100px;
+}
+.booking-form{
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.booking-form h6{
+    color: var(--primary);
+    margin-bottom: 10px;
+}
+.booking-form .input-group .form-control{
+    background: #FFFFFF;
+    border: 1px solid #6A6A6A;
+    border-radius: 15px;
+    height: 38px;
+    border-left: 0px;
+    box-shadow: none;
+    padding-left: 0px;
+}
+
+.booking-form .input-group textarea.form-control{
+    background: #FFFFFF;
+    border: 1px solid #6A6A6A;
+    border-radius: 15px;
+    height: 38px;
+    box-shadow: none;
+    min-height: 129px;
+    resize: none;
+}
+.booking-form .input-group .input-group-text{
+    background: #FFFFFF;
+    border: 1px solid #6A6A6A;
+    border-radius: 15px;
+    height: 38px;
+    padding: 10px 10px;
+}
+.booking-form .input-group .input-group-text:first-child{
+    border-right: 0px;
+}
+.booking-form .input-group .input-group-text:last-child{
+    border-left: 0px;
+}
+.booking-form .input-group-text img{
+    max-width: 20px;
+    max-height: 20px;
+}
+
+.booking-checkout .btn{
+    padding: 0px;
+    height: 48px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+.booking-checkout button.btn img {
+    max-width: 60px;
+    max-height: 20px;
+}
+.booking-sep{
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    margin: 60px 0px 60px;
+}
+.booking-sep::after{
+    position: absolute;
+    left: 0px;
+    top: 55%;
+    width: 100%;
+    height: 1px;
+    transform: translateY(-50%);
+    content: "";
+    background: #C1C1C1;
+    z-index: -1;
+}
+.booking-sep span{
+    position: relative;
+    z-index: 1;
+    display: inline-block;
+    padding: 0px 8px;
+    background: var(--white-color);
+    font-size: 16px;
+    color: #6A6A6A;
+}
+
+.payment-method-item input{
+    display: none;
+}
+.payment-method-item input:checked ~ label .pay-ind span{
+    background-color: var(--primary);
+}
+.payment-method-item label{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid #000;
+    border-radius: 15px;
+    padding: 0px 20px;
+    min-height: 65px;
+}
+.profile-info-header h6 {
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    margin-bottom: 0px;
+    margin-bottom: 15px;
+}
+.profile-info-header h6 img{
+    flex: 0 0 auto;
+    margin-right: 10px;
+}
+.profile-info-item ul li{
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 18px;
+    position: relative;
+    padding: 3px 0px;
+    padding-left: 26px;
+}
+.profile-info-item ul li span{
+    height: 15px;
+    width: 15px;
+    position: absolute;
+    left: 0px;
+    top: 3px;
+}
+.profile-info-item ul li span img{
+    max-width: 100%;
+}
+.profile-info-item p{
+    font-size: 15px;
+    line-height: 18px;
+}
+.profile-info-item p a{
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+}
+.profile-info p {
+    margin-bottom: 0px;
+}
+
+
+.all-info-popup .modal-dialog {
+    max-width: 345px;
+    margin: 0 auto;
+}
+
+.reviews-modal.modal .modal-dialog{
+    max-width: 350px;
+}
+.reviews-list{
+    height: 400px;
+    overflow-y: scroll;
+}
+
+/* popup-sidebar-end */
+
+
+/* popup-content-start */
+
+.profile-content {
+    flex-grow: 1;
+    background-color: #F5F5F5;
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
+}
+.profile-sidebar-header button{
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    box-shadow: none !important;
+}
+
+.profile-desc p{
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 20px;
+    color: #6A6A6A;
+}
+.profile-desc{
+    margin-bottom: 42px;
+    min-height: 90px;
+}
+.profile-content-wrapper{
+    padding: 24px 19px 18px 15px;
+}
+
+
+.profile-reviews{
+    flex: 0 0 auto;
+    width: 343px;
+}
+.profile-reviews h6{
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 20px;
+    margin-bottom: 6px;
+}
+.profile-review-item{
+    background: #FFFFFF;
+    border-radius: 15px;
+    margin-bottom: 8px;
+    padding: 12px 11px;
+}
+.profile-review-header{
+    display: flex;
+    align-items: center;
+}
+.profile-review-header h6{
+    font-weight: 500;
+    font-size: 17px;
+    line-height: 21px;
+    margin-bottom: 0px;
+}
+.profile-review-star{
+    display: flex;
+    align-items: center;
+
+}
+.profile-review-star img{
+    max-width: 16px;
+    width: 16px;
+}
+.profile-review-star p{
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 18px;
+    margin-bottom: 0px;
+}
+.profile-review-desc {
+    margin-top: 10px;
+}
+.profile-review-desc p{
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 18px;
+    margin-bottom: 0px;
+}
+
+.profile-service {
+    display: flex;
+    align-items: stretch;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 17px 8px;
+    border-radius: 15px;
+    background-color: var(--primary);
+    flex: 0 0 auto;
+    max-width: 350px;
+    width: 100%;
+}
+.profile-service-header h6{
+    color: var(--white-color);
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 0px;
+}
+.profile-service-content ul li{
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 20px;
+    color: var(--white-color);
+    padding: 3px 0px;
+    padding-left: 15px;
+    position: relative;
+}
+.profile-service-content ul li::after {
+    position: absolute;
+    left: 0px;
+    top: 12px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: var(--white-color);
+    content: "";
+}
+.profile-service-content ul li strong{
+    font-weight: 600;
+}
+.profile-content-info{
+    margin-bottom: 57px;
+}
+.book-now button.btn{
+    font-size: 16px;
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+.profile-service{
+    background-image: url('../img/logo-bgs/logo-bg-city.png');
+    background-size: 300px;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* popup-content-start-end */
+
+.overlay.show{
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    content: "";
+    background-color: rgba(0, 0, 0, 0.25);
+    z-index: 10;
+}

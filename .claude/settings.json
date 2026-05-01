@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/Saif Ur Rehman/AppData/Roaming/Code/User/History/-5d600e48/**)",
+      "Read(//c/Users/Saif Ur Rehman/AppData/Roaming/Code/User/History/485b2b79/**)",
+      "Read(//c/Users/Saif Ur Rehman/AppData/Roaming/Code/User/History/5ce5aa34/**)",
+      "Read(//c/Users/Saif Ur Rehman/AppData/Roaming/Code/User/History/7bd456fd/**)",
+      "Bash(git fsck *)",
+      "Read(//c/Users/Saif Ur Rehman/.claude/projects/c--xampp-htdocs-carspector-testing/**)",
+      "Bash(node -e \"var fs=require\\('fs'\\); var lines=fs.readFileSync\\('C:/Users/Saif Ur Rehman/.claude/projects/c--xampp-htdocs-carspector-testing/c06f2353-0c9b-46af-8945-affc8582807a.jsonl','utf8'\\).split\\('\\\\n'\\).filter\\(Boolean\\); var files={}; lines.forEach\\(function\\(line\\){ try{ var obj=JSON.parse\\(line\\); var msg=obj.message; if\\(msg&&msg.content&&Array.isArray\\(msg.content\\)\\){ msg.content.forEach\\(function\\(block\\){ if\\(block.type==='tool_use'&&\\(block.name==='Write'||block.name==='Edit'\\)\\){ var fp=\\(block.input&&block.input.file_path\\)||''; if\\(fp\\){ if\\(!files[fp]\\)files[fp]=[]; files[fp].push\\(block.name\\); } } }\\); } }catch\\(e\\){} }\\); Object.keys\\(files\\).forEach\\(function\\(f\\){ console.log\\(files[f].join\\(','\\)+' -> '+f\\); }\\);\")",
+      "Read(//c/Users/Saif Ur Rehman/.claude/projects/**)",
+      "Read(//c/Users/Saif Ur Rehman/.claude/**)",
+      "Bash(node -e \"var fs=require\\('fs'\\); ['agent-a277ca9353e580547','agent-af587d3f8f11706d5'].forEach\\(function\\(a\\){ var f='C:/Users/Saif Ur Rehman/.claude/projects/c--xampp-htdocs-carspector-testing/c06f2353-0c9b-46af-8945-affc8582807a/subagents/'+a+'.jsonl'; var lines=fs.readFileSync\\(f,'utf8'\\).split\\('\\\\n'\\).filter\\(Boolean\\); var files={}; lines.forEach\\(function\\(line\\){ try{ var obj=JSON.parse\\(line\\); var msg=obj.message; if\\(msg&&msg.content&&Array.isArray\\(msg.content\\)\\){ msg.content.forEach\\(function\\(block\\){ if\\(block.type==='tool_use'&&\\(block.name==='Write'||block.name==='Edit'\\)\\){ var fp=\\(block.input&&block.input.file_path\\)||''; if\\(fp\\){ if\\(!files[fp]\\)files[fp]=[]; files[fp].push\\(block.name\\); } } }\\); } }catch\\(e\\){} }\\); console.log\\('=== '+a+' ==='\\); Object.keys\\(files\\).forEach\\(function\\(fp\\){ console.log\\(files[fp].join\\(','\\)+' -> '+fp.split\\('carspector_testing'\\).pop\\(\\)\\); }\\); }\\);\")",
+      "Bash(py --version)",
+      "Bash(php --version)",
+      "Bash(node restore_phase1.js)",
+      "Bash(git -C \"c:/xampp/htdocs/carspector_testing\" status --short)",
+      "Read(//c/xampp/htdocs/**)",
+      "Bash(node fix_actions.js)",
+      "Bash(php -l \"app/Http/Controllers/Admin/BookingController.php\")"
+    ]
+  }
+}

@@ -1,0 +1,2255 @@
+/* ========================= */
+/* :: 1.0 WEB FONTS  */
+/* ========================= */
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
+
+/* ================================== */
+/* :: 2.0 GLOBAL Variable Define CSS  */
+/* ================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+
+    /* Google Font */
+    --lato: "Lato", sans-serif;
+
+    /* Color Palette */
+    --white: #fff;
+    --light-white: #F5F5F5;
+    --black: #000;
+    --primary: #01449A;
+    --secondary: #23C197;
+}
+
+/* ========================= */
+/* :: 3.0 COMMON CSS */
+/* ========================= */
+html,
+body {
+    height: 100%;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--lato);
+    font-size: 16px;
+    font-weight: 400;
+    line-height: normal;
+    background: var(--white);
+    color: var(--black);
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: 0;
+    padding: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: 700;  letter-spacing: -3.5%;
+}
+
+section,
+.section {
+    position: relative;
+}
+
+a,
+button {
+    text-decoration: none;
+    transition: all 0.3s ease-in-out;
+    -webkit-transition: all 0.3s ease-in-out;
+    -moz-transition: all 0.3s ease-in-out;
+    -ms-transition: all 0.3s ease-in-out;
+    -o-transition: all 0.3s ease-in-out;
+}
+
+a,
+button {
+    outline: none;
+    box-shadow: none;
+    border: none;
+}
+
+button {
+    background: unset;
+}
+
+ol,
+ul {
+    margin: 0;
+    padding: 0;
+}
+
+ol li,
+ul li {
+    list-style: none;
+}
+
+img {
+    height: auto;
+    max-width: 100%;
+    object-fit: cover;
+}
+
+input,
+input:focus,
+input:focus-visible,
+input:active,
+select,
+.form-select,
+.form-select:focus,
+textarea {
+    outline: none;
+    box-shadow: none;
+}
+
+*+address,
+*+dl,
+*+fieldset,
+*+figure,
+*+ol,
+*+p,
+*+pre,
+*+ul {
+    margin: 0;
+    padding: 0;
+}
+
+*::-moz-selection {
+    background: var(--secondary);
+    color: var(--white);
+    text-shadow: none;
+}
+
+::-moz-selection {
+    background: var(--secondary);
+    color: var(--white);
+    text-shadow: none;
+}
+
+::selection {
+    background: var(--secondary);
+    color: var(--white);
+    text-shadow: none;
+}
+
+*::-moz-placeholder {
+    color: var(--body-color);
+    font-size: 16px;
+    opacity: 1;
+}
+
+*::placeholder {
+    color: var(--body-color);
+    font-size: 16px;
+    opacity: 1;
+}
+
+.container {
+    width: 100%;
+    margin: 0 auto;
+}
+
+h1 {
+    font-size: 95px;
+    line-height: 1;
+    letter-spacing: -3px;
+}
+
+h3 {
+    font-size: 40px;
+    letter-spacing: -1px;
+    line-height: 1.1;
+}
+
+p {
+    font-size: 18px;
+    letter-spacing: -1%;
+    line-height: 1.39;
+}
+
+/* ----- Page Theme CSS Start ----- */
+.btn {
+    font-size: 18px;
+    font-weight: 500;
+    padding: 18px 40px;
+    border-radius: 5px;
+    text-decoration: none;
+    color: var(--light-white);
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    white-space: nowrap;
+    box-shadow: 0px 4px 15px 0 rgba(0, 0, 0, 0.2);
+    transition: all .3s ease-in-out;
+}
+
+.call-btn.btn {
+    line-height: 1;
+    max-width: 304px;
+    width: 100%;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    box-shadow: 0 0 15px #00000033;
+}
+
+.btn-outline {
+    border: 1px solid;
+    box-shadow: unset;
+}
+
+.btn-outline:hover {
+    background-color: var(--secondary);
+    border-color: var(--secondary);
+    color: var(--light-white);
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: var(--light-white);
+}
+
+.btn-primary:hover {
+    color: var(--light-white);
+    border-color: var(--secondary);
+    background-color: var(--secondary);
+}
+
+.btn-secondary {
+    background-color: var(--secondary);
+    border-color: var(--secondary);
+    color: var(--light-white);
+    /*! box-shadow: 0 4px 25px 0 rgba(35, 193, 151, 0.25); */
+}
+
+.btn-secondary:hover {
+    color: var(--light-white);
+    border-color: var(--primary);
+    background-color: var(--primary);
+}
+
+.bg-primary .btn-secondary:hover {
+    color: var(--primary);
+    background-color: var(--light-white);
+    border-color: var(--light-white);
+}
+
+.btn-icon {
+    max-width: 20px;
+    margin-top: -4px;
+}
+
+.btn-icon img {
+    transition: all .3s ease-in-out;
+}
+
+.bg-primary .btn-secondary:hover .btn-icon img {
+    filter: brightness(0) saturate(100%) invert(15%) sepia(74%) saturate(3110%) hue-rotate(206deg) brightness(95%) contrast(99%);
+}
+
+
+.shadow {
+    box-shadow: 0px 4px 4px 0 rgba(0, 0, 0, 0.25) !important;
+}
+
+.shadow-1 {
+    box-shadow: 0px 4px 25px 0 rgba(0, 0, 0, 0.25);
+}
+
+.shadow-2 {
+    box-shadow: 0px 4px 50px 0 rgba(0, 0, 0, 0.50);
+}
+
+.border-primary {
+    border-color: var(--primary) !important;
+}
+
+.section-padding {
+    padding: 60px 0;
+}
+
+.section-bg {
+    background-color: #F0F5FA;
+}
+
+/* ----- Page Theme CSS End ----- */
+
+
+/* ----- Customized Bootstrap CSS Start ----- */
+.fs-1 {
+    font-size: 95px !important;
+    padding-top: 0px !important;
+}
+
+.fs-3 {
+    font-size: 40px !important;
+}
+
+.fs-2 {
+    font-size: 50px !important;
+}
+
+
+.text-primary {
+    color: var(--primary) !important;
+}
+
+.text-secondary {
+    color: var(--secondary) !important;
+}
+
+.text-grey {
+    color: #7D7D7D !important;
+}
+
+.bg-primary {
+    background-color: var(--primary) !important;
+}
+
+.bg-secondary {
+    background-color: var(--secondary) !important;
+}
+
+/* ----- Customized Bootstrap CSS End ----- */
+
+
+
+/* =============================== */
+/* :: 4.0 index.html CSS Start */
+/* =============================== */
+
+/* ----- Header Area CSS Start ----- */
+.header {
+    padding: 30px 0px;
+}
+
+.index-header {
+    max-width: 1210px;
+    padding-right: 35px;
+    padding-left: 20px;
+}
+
+.header-logo a img {
+    max-width: 64px;
+}
+
+.logo {
+    font-size: 18px;
+    color: var(--light-white);
+}
+
+.header-nav ul {
+    gap: 75px;
+}
+
+.header-nav-link {
+    font-size: 18px;
+    color: var(--light-white);
+    gap: 12px;
+}
+
+.header-nav-item:hover>.header-nav-link {
+    color: var(--secondary);
+}
+
+.nav-triangle {
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 10px solid var(--light-white);
+    transition: all .3s ease-in-out;
+    margin-top: 2px;
+}
+
+.header-nav-item:hover>.header-nav-link .nav-triangle {
+    border-top-color: var(--secondary);
+    transform: rotate(-180deg);
+}
+
+.header-submenu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 200px;
+    border-radius: 4px;
+    margin-top: 50px;
+    background-color: var(--light-white);
+    transition: all .3s ease-in-out;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.header-nav-item:hover .header-submenu {
+    opacity: 1;
+    visibility: visible;
+    margin-top: 0;
+}
+
+.header-nav-item {
+    padding: 14px 0;
+}
+
+.header-submenu li a {
+    display: flex;
+    padding: 15px 20px;
+    font-weight: 600;
+    color: var(--primary);
+    border-bottom: 1px solid rgba(35, 193, 151, 0.5);
+}
+
+.header-submenu li:last-child a {
+    border-bottom: unset;
+}
+
+.header-submenu li:hover>a {
+    background-color: rgba(35, 193, 151, 0.25);
+}
+
+.header-end {
+    gap: 110px;
+}
+
+.header-btn {
+    height: 45px;
+    padding: 11px 34px 12px;
+}
+
+/* Mobile Menu Start */
+.mobile-menu .offcanvas-header {
+    padding: 16px 20px;
+    padding-left: 35px;
+}
+
+.mobile-menu-btn,
+.mobile-menu-close {
+    line-height: 1;
+    font-size: 26px;
+}
+
+.mobile-menu .offcanvas-title {
+    font-size: 20px;
+}
+
+.mobile-menu .offcanvas-body {
+    padding: 10px 35px 35px;
+}
+
+.mobile-nav-link {
+    font-size: 20px;
+    color: var(--light-white);
+    padding: 15px 0;
+    gap: 12px;
+}
+
+.mobile-nav-link:hover {
+    color: var(--secondary);
+}
+
+.mobile-nav-link[aria-expanded="true"] .nav-triangle {
+    transform: rotate(-180deg);
+}
+
+.mobile-submenu {
+    padding: 0 10px;
+    border-radius: 4px;
+}
+
+.mobile-submenu li a {
+    padding: 10px;
+    display: flex;
+    color: var(--light-white);
+    border-bottom: 1px solid rgba(35, 193, 151, 0.25);
+}
+
+.mobile-submenu li a:hover {
+    color: var(--secondary);
+}
+
+/* Mobile Menu End */
+
+/* ----- Header Area CSS End ----- */
+
+
+
+/* ----- Hero Section CSS Start ----- */
+.hero-wrapper {
+    max-width: 780px;
+}
+
+.main-hero-para {
+    font-size: 20px;
+    line-height: 1.25;
+    letter-spacing: 0;
+}
+
+.main-hero-btns .btn {
+    max-width: 315px;
+    width: 100%;
+}
+
+.counter-client-img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin-left: -16px;
+}
+
+.counter-content p {
+    font-size: 25px;
+    letter-spacing: -3%;
+}
+
+.counter-content .counter-text {
+    font-size: 30px;
+    letter-spacing: -3%;
+    margin-bottom: -6px;
+}
+
+/* ----- Hero Section CSS End ----- */
+
+
+
+/* ----- MiniCards Section CSS End ----- */
+.mini-cards-section {
+    padding: 40px 0;
+}
+
+.mini-cards-wrapper {
+    max-width: 1120px;
+}
+
+.mini-cards-slider {
+    padding: 16px;
+    margin: -16px;
+}
+
+.single-mini-card {
+    background: #fff;
+    height: 72px !important;
+    padding: 2px 15px;
+    border-radius: 5px;
+    gap: 17px;
+    font-size: 18px;
+    box-shadow: 0px 4px 12px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* ----- MiniCards Section CSS End ----- */
+
+
+
+/* ----- UsedCarCheck Section CSS Start ----- */
+.used-car-check-section {
+    padding: 50px 0;
+}
+
+.ucc-wrapper {
+    max-width: 1120px;
+}
+
+.ucc-thumb img {
+    max-width: 500px;
+}
+
+.ucc-text .section-title {
+    max-width: 400px;
+}
+
+/* ----- UsedCarCheck Section CSS End ----- */
+
+
+
+/* ----- VehicleCheck Section CSS Start ----- */
+.vehicle-check-section {
+    padding: 55px 0;
+}
+
+.vehicle-check-text {
+    max-width: 315px;
+}
+
+.vehicle-check-list {
+    padding: 0 100px;
+}
+
+.vehicle-check-list ul {
+    gap: 8px 0;
+}
+
+.vehicle-check-list ul li {
+    font-size: 18px;
+    gap: 18px;
+}
+
+.list-icon {
+    max-width: 27px;
+    width: 100%;
+    height: 27px;
+}
+
+/* ----- VehicleCheck Section CSS End ----- */
+
+
+
+/* ----- Advantage Section CSS Start ----- */
+.section-pretitle {
+    font-size: 20px;
+}
+
+.card-item {
+    min-height: 210px;
+    height: 100%;
+    padding: 15px 28px 30px;
+    border-radius: 5px;
+    box-shadow: 0px 4px 25px 0 rgba(0, 0, 0, 0.15);
+    transition: all .3s ease-in-out;
+}
+
+.card-item:hover {
+    box-shadow: 0px 4px 25px 0 rgba(0, 0, 0, 0.25);
+}
+
+.card-title {
+    font-size: 23px;
+    margin: 7px 0;
+}
+
+.card-para {
+    line-height: 1.16;
+    letter-spacing: -1%;
+}
+
+.advantage-cards-row {
+    --bs-gutter-x: 30px;
+    --bs-gutter-y: 30px;
+}
+
+/* ----- Advantage Section CSS End ----- */
+
+
+
+
+/* ----- HowDoesWork Section CSS Start ----- */
+.hdw-wrapper {
+    margin-bottom: 65px;
+}
+
+.hdw-card-inner {
+    max-width: 310px;
+}
+
+.hdw-number {
+    font-size: 30px;
+    color: var(--secondary);
+    padding: 0 12px;
+    width: 100%;
+}
+
+.hdw-number::before {
+    content: "";
+    position: absolute;
+    bottom: -100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1px;
+    height: 28px;
+    background-color: var(--primary);
+}
+
+.hdw-number::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateY(-50%);
+    width: 100%;
+    height: 1px;
+    background-color: var(--primary);
+    margin-left: 22px;
+}
+
+.hdw-card-inner:last-child .hdw-number::after {
+    display: none;
+}
+
+.hdw-card {
+    min-height: 200px;
+    height: 100%;
+    padding: 10px 16px 30px;
+    border-radius: 5px;
+    box-shadow: 0px 4px 25px 0 rgba(0, 0, 0, 0.15);
+    transition: all .3s ease-in-out;
+}
+
+.hdw-card:hover {
+    box-shadow: 0px 4px 25px 0 rgba(0, 0, 0, 0.25);
+}
+
+.hdw-card-icon {
+    height: 60px;
+    width: auto;
+    margin-bottom: 20px;
+}
+
+.hdw-title {
+    font-size: 25px;
+}
+
+.hdw-card-inner:last-child .hdw-title {
+    color: var(--secondary);
+}
+
+.hdw-para {
+    font-size: 17px;
+    line-height: 1.18;
+}
+
+.hdw-btn {
+    min-width: 345px;
+}
+
+/* ----- HowDoesWork Section CSS End ----- */
+
+
+
+/* ----- UsedCarCheck (2) OnSite Section CSS Start ----- */
+.used-car-check-section-2 {
+    padding: 60px 0;
+}
+
+.ucc-2-wrapper {
+    max-width: 1000px;
+}
+
+/* ----- UsedCarCheck (2) OnSite Section CSS End ----- */
+
+
+
+/* ----- CheckList Section CSS Start ----- */
+.checklist-section {
+    padding: 60px 0;
+}
+
+.checklist-wrapper {
+    max-width: 765px;
+}
+
+.single-checklist {
+    height: 100%;
+    border-radius: 5px;
+    box-shadow: 0px 4px 25px 0 rgba(0, 0, 0, 0.15);
+    border: 1px solid transparent;
+    overflow: hidden;
+    transition: all .3s ease-in-out;
+}
+
+.single-checklist.active {
+    border: 1px solid var(--primary);
+}
+
+.single-checklist:hover {
+    box-shadow: 0px 4px 25px 0 rgba(0, 0, 0, 0.25);
+}
+
+.checklist {
+    background: var(--white);
+    cursor: pointer;
+}
+
+.checklist-head {
+    min-height: 145px;
+    padding: 20px 24px;
+    border-bottom: 1px solid #E4EDFC;
+}
+
+.checklist-dot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1px solid var(--black);
+    transition: all .2s ease-in-out;
+}
+
+.checklist-inner-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--primary);
+    opacity: 0;
+    transition: all .2s ease-in-out;
+}
+
+.single-checklist input:checked+.checklist .checklist-dot {
+    border-color: var(--primary);
+}
+
+.single-checklist input:checked+.checklist .checklist-inner-dot {
+    opacity: 1;
+}
+
+.checklist-title {
+    font-size: 21px;
+    margin-bottom: 6px;
+}
+
+.checklist-pretitle {
+    font-size: 17px;
+    margin-bottom: 2px;
+}
+
+.checklist-ratings {
+    color: #6A6A6A;
+    font-size: 16px;
+}
+
+.checklist-content {
+    padding: 25px 24px 35px;
+    transition: all .3s ease-in-out;
+}
+
+.checklist-content ul li {
+    font-size: 17px;
+    gap: 18px;
+}
+
+.checklist-content .list-close-icon img {
+    margin-left: 3px;
+}
+
+/* .single-checklist input:checked + .checklist + .checklist-content {
+    display: none;
+} */
+.checklist-btn {
+    min-width: 335px;
+}
+
+.checklist-tag {
+    font-size: 16px;
+    padding: 8px 16px;
+    border-radius: 5px;
+    position: absolute;
+    top: -17px;
+    right: 35px;
+}
+
+/* ----- CheckList Section CSS End ----- */
+
+
+
+/* ----- UsedCarCheck (3) In Detail Section CSS Start ----- */
+.used-car-check-section-3 {
+    padding: 60px 0;
+}
+
+/* ----- UsedCarCheck (3) In Detail Section CSS End ----- */
+
+
+
+/* ----- UsedCarCheck (4) Nationwide Section CSS Start ----- */
+.ucc-4-top {
+    gap: 40px;
+}
+
+/* ----- UsedCarCheck (4) Nationwide Section CSS End ----- */
+
+
+
+/* ----- SafetyBanner Section CSS Start ----- */
+.safety-banner-section {
+    padding: 40px 0 70px;
+}
+
+.safety-banner-wrapper {
+    max-width: 360px;
+}
+
+.ratings-check {
+    max-width: 70px;
+}
+
+.safety-banner-wrapper .ratings-check {
+    margin-bottom: 28px;
+}
+
+.safety-banner-btn {
+    min-width: 315px;
+}
+
+/* ----- SafetyBanner Section CSS End ----- */
+
+
+
+/* ----- WhyIsImportant Section CSS Start ----- */
+.why-is-important-section .section-title {
+    max-width: 710px;
+}
+
+.car-check-importance-wrapper {
+    max-width: 755px;
+}
+
+.car-check-importance {
+    font-size: 20px;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0px 4px 25px 0 rgba(0, 0, 0, 0.15);
+    transition: all .3s ease-in-out;
+    letter-spacing: -3%;
+}
+
+.car-check-importance:hover {
+    box-shadow: 0px 4px 25px 0 rgba(0, 0, 0, 0.25);
+}
+
+/* ----- WhyIsImportant Section CSS End ----- */
+
+
+
+/* ----- BuyCarSafely Section CSS Start ----- */
+.buy-car-safely-section {
+    padding: 60px 0 80px;
+}
+
+.bcs-wrapper,
+.bcs-right {
+    gap: 35px;
+}
+
+.bcs-wrapper .section-title {
+    max-width: 400px;
+}
+
+.bcs-wrapper .ratings-check {
+    max-width: 80px;
+}
+
+.bcs-para {
+    max-width: 325px;
+}
+
+/* ----- BuyCarSafely Section CSS End ----- */
+
+
+
+/* ----- Testimonial Section CSS Start ----- */
+.testimonial-section {
+    padding: 70px 0 90px;
+}
+
+.testimonial-wrapper {
+    max-width: 1045px;
+}
+
+.testimonial-slider {
+    padding: 40px;
+    margin: -40px;
+    padding-bottom: 60px;
+}
+
+.testimonial-card {
+    padding: 30px 31px 35px;
+    border-radius: 5px;
+    min-height: 360px;
+    height: 100%;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.15);
+    transition: all .3s ease-in-out;
+}
+
+.testimonial-card:hover {
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.25);
+}
+
+.testimonial-ratings {
+    gap: 5px;
+}
+
+.testimonial-ratings span {
+    max-width: 20px;
+    display: flex;
+}
+
+.testimonial-para {
+    color: #6A6A6A;
+    margin-bottom: 30px;
+    line-height: 1.25;
+}
+
+.client-info img {
+    width: 80px;
+    border-radius: 5px;
+}
+
+.client-name {
+    font-size: 20px;
+    letter-spacing: -3%;
+}
+
+.testimonial-info {
+    font-size: 35px;
+    line-height: 1.72;
+}
+
+/* ----- Testimonial Section CSS End ----- */
+
+
+
+/* ----- SecuredBanner Section CSS Start ----- */
+.secured-banner-wrapper {
+    gap: 55px;
+}
+
+.secured-banner-right {
+    gap: 18px;
+}
+
+.secured-banner-right .ratings-check {
+    max-width: 80px;
+}
+
+.rd-title {
+    font-size: 35px;
+}
+
+.rd-bottom-title {
+    font-size: 23px;
+    letter-spacing: 0;
+}
+
+/* ----- SecuredBanner Section CSS End ----- */
+
+
+
+/* ----- FAQ Section CSS Start ----- */
+.faq-section {
+    padding: 80px 0;
+}
+
+.faq-accordion {
+    max-width: 650px;
+    margin-bottom: 75px;
+}
+
+.faq-accordion .accordion-item {
+    border: unset;
+    margin-bottom: 25px;
+    border-radius: 5px;
+    overflow: hidden;
+    border-radius: 5px;
+    background: #FFF;
+    box-shadow: 0px 4px 25px 0px rgba(0, 0, 0, 0.25);
+}
+
+.faq-accordion .accordion-item:last-child {
+    margin-bottom: 0;
+}
+
+.faq-accordion .accordion-button {
+    color: var(--black);
+    font-size: 18px;
+    padding: 20px;
+    font-weight: 700;
+    transition: all .25s ease-in-out;
+    gap: 10px;
+    background-color: var(--white);
+}
+
+.faq-accordion .accordion-button:focus {
+    border-color: unset;
+    box-shadow: unset;
+}
+
+.faq-accordion .accordion-button:not(.collapsed) {
+    color: var(--primary);
+    transition: all .25s ease-in-out;
+    padding: 20px 20px 19px;
+    box-shadow: unset;
+}
+
+.faq-accordion .accordion-button::after {
+    content: "\f078";
+    font-family: "Font Awesome 6 Pro";
+    font-weight: 500;
+    font-size: 20px;
+    width: auto;
+    height: auto;
+    background-image: unset;
+    line-height: 1;
+    margin-top: -2px;
+}
+
+.faq-accordion .accordion-body {
+    padding: 20px 0 24px;
+    margin: 0 24px;
+    color: var(--black);
+    background-color: var(--white);
+    font-size: 17px;
+    line-height: 1.18;
+    border-top: 1px solid var(--primary);
+}
+
+.faq-accordion .accordion-button span.icon {
+    position: relative;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 1px solid var(--primary);
+}
+
+button.accordion-button span.icon img {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-43%, -52%);
+}
+
+.faq-btn {
+    min-width: 275px;
+}
+
+/* ----- FAQ Section CSS End ----- */
+
+
+
+/* ----- Benefit Section CSS Start ----- */
+.benefit-banner-section {
+    padding: 50px 0;
+}
+
+.benefit-banner-wrapper .ratings-check {
+    margin-bottom: 20px;
+}
+
+.benefit-banner-btn {
+    min-width: 385px;
+}
+
+/* ----- Benefit Section CSS End ----- */
+
+
+
+/* ----- Proud Section CSS Start ----- */
+.proud-wrapper {
+    max-width: 900px;
+    border-radius: 5px;
+}
+
+.proud-item::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 62%;
+    background-color: var(--primary);
+}
+
+.proud-col:last-child .proud-item::after {
+    display: none;
+}
+
+.proud-icon {
+    max-width: 40px;
+}
+
+.proud-text .count {
+    font-size: 25px;
+    letter-spacing: -.75;
+}
+
+.proud-text p {
+    font-size: 21px;
+    letter-spacing: -3%;
+}
+
+/* ----- Proud Section CSS End ----- */
+
+/* ----- Footer Area CSS Start ----- */
+.footer-area {
+    margin-top: 40px;
+}
+
+.footer-wrapper {
+    max-width: 965px;
+}
+
+.footer-top {
+    padding: 35px 0 50px;
+}
+
+.footer-logo {
+    max-width: 85px;
+}
+
+.footer-para {
+    font-size: 17px;
+    letter-spacing: 0;
+}
+
+.footer-widget-title {
+    font-size: 21px;
+    letter-spacing: 0;
+}
+
+.footer-nav ul li a {
+    font-size: 18px;
+    letter-spacing: 0;
+    color: var(--primary);
+}
+
+.footer-nav ul li a:hover {
+    color: var(--secondary);
+}
+
+.copyright-text {
+    letter-spacing: 0;
+    padding: 10px 0;
+}
+
+.swiper-pagination {
+	position: relative;
+	top: 0 !important;
+	left: 0 !important;
+	margin: 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin-top: 50px !important;
+}
+
+.swiper-pagination-bullet {
+    width: 20px;
+    height: 4px;
+    border-radius: 0;
+    opacity: .09;
+    border-radius: 3px;
+}
+
+.swiper-pagination-bullet.swiper-pagination-bullet-active {
+    background: #23C197;
+    opacity: 1;
+}
+
+/* ----- Footer Area CSS End ----- */
+
+
+/* =============================== */
+/* :: 4.0 index.html CSS End */
+/* =============================== */
+
+
+
+/* =============================== */
+/* :: Steps Section CSS Start */
+/* =============================== */
+
+.check-wrapper .fade:not(.show) {
+    opacity: 1;
+}
+
+/* step-page-1 */
+
+.contentBox {
+    box-shadow: 0px 4px 25px #00000040;
+}
+
+.step-wrapper {
+    padding: 60px 20px 70px;
+}
+
+.step-item--header {
+    max-width: 609px;
+    margin: 0 auto;
+    text-align: center;
+    margin-bottom: 42px;
+}.step-item--header .btn.btn-outline-primary {
+	padding: 11px 35px;
+}
+
+.step-item--header h2 {
+    font-size: 55px;
+    line-height: 60px;
+    letter-spacing: -2px;
+}
+
+.step-item--header h2 span {
+    color: var(--primary);
+}
+
+.type-vehicle {
+    max-width: 555px;
+    margin: 0 auto;
+}
+
+.checkBtn label {
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    box-shadow: 0px 4px 15px #0000004D;
+    padding: 0px 27px;
+    border-radius: 5px;
+    height: 70px;
+    gap: 30px;
+    position: relative;
+    font-size: 17px;
+    line-height: 20px;
+    color: #000000;
+}
+
+.checkBtn > label::after {
+	border: 1px solid #01449a;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    content: "";
+    height: 100%;
+    width: 100%;
+    border-radius: 5px;
+    opacity: 0;
+    transition: .3s
+}
+
+.checkBtn > input:checked ~ label::after{
+    opacity: 1;
+}
+
+
+.checkBtn label span.info {
+    position: absolute;
+    right: 34px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.checkBtn label span.ind {
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    border: 1px solid #000000;
+    border-radius: 50%;
+    padding: 3px;
+}
+
+.checkBtn label span.dot {
+    background: #01449A;
+    width: 100%;
+    height: 100%;
+    display: block;
+    border-radius: 50%;
+    transition: .3s;
+    opacity: 0;
+}
+
+.checkBtn input:checked~label span.ind span.dot {
+    opacity: 1;
+}
+
+.checkBtn input:checked~label span.ind {
+    background: #F0F5FA;
+    border-color: #01449A;
+}
+
+.nextStep.btn {
+    padding: 16px 0px;
+    min-width: 300px;
+    gap: 23px;
+    box-shadow: 0px 4px 15px #00000033;
+}
+.pricing-select
+.nextStep.btn {
+	padding: 18px 0px;
+	min-width: 334px;
+}
+/* step-page-1--end */
+
+
+/* step-page-2 */
+
+
+.check-wrapper {
+    max-width: 794px;
+    margin: 0 auto;
+    margin-bottom: 50px;
+}
+
+.check-nav {
+    position: relative;
+    height: 100%;
+    z-index: 1;
+}
+
+.check-wrapper .tab-pane {
+    display: block !important;
+    transition: none !important;
+}
+
+.check-content {
+    position: relative;
+    z-index: 1;
+    border-top: 2px solid #E4EDFC;
+    background: #fff;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    background: #fff;
+    box-shadow: 0px 4px 15px #0000004D;
+    position: relative;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border: 1px solid transparent;
+    border-top-color: transparent;
+    border-right-color: transparent;
+    border-bottom-color: transparent;
+    border-left-color: transparent;
+    height: 100%;
+    transition: none;
+}
+
+.check-wrapper .check-content::after {
+    position: absolute;
+    left: 0;
+    top: -15px;
+    width: 100%;
+    height: 15px;
+    content: "";
+    background: #fff;
+}
+
+.check-badge {
+    position: absolute;
+    right: 50px;
+    top: -15px;
+    font-size: 16px;
+    line-height: 20px;
+    font-weight: 600;
+    color: #F5F5F5;
+    padding: 6px 18px 7px;
+    background: #23C197;
+    border-radius: 5px;
+}
+
+.check-nav input {
+    display: none;
+}
+
+.check-nav label {
+    border: 1px solid transparent;
+    background: #fff;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    padding: 29px 28px 18px;
+    height: 100%;
+    box-shadow: 0px 4px 15px #0000004D;
+    border-bottom: none;
+    width: 100%;
+    transition: .01s !important;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.pricing-select .check-nav label::after {
+	position: absolute;
+	left: 0;
+    right: 0;
+    margin: 0 auto;
+	bottom:  -37px;
+	width: 18px;
+	height: 18px;
+	content: "";
+	background: #fff;
+	transform: rotate(45deg);
+	border: 1px solid #01449a;
+	border-bottom: 0;
+	border-right: 0;
+	opacity: 0;
+	display: none;
+}
+
+.pricing-select
+.check-nav label.active::after {
+    opacity: 1
+}
+
+.check-nav-link span.ind {
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    border: 1px solid #000000;
+    border-radius: 50%;
+    padding: 3px;
+}
+
+.check-nav-link {
+    gap: 26px;
+}
+
+.check-nav-content h5 {
+    font-size: 21px;
+    line-height: 20px;
+    font-weight: 700;
+    color: #01449A;
+    margin-bottom: 5px;
+    letter-spacing: 0;
+}
+
+.check-nav-content p {
+    font-size: 17px;
+    line-height: 20px;
+    color: #000000;
+    margin-bottom: 7px;
+}
+
+.rattings {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #6A6A6A;
+    font-size: 16px;
+    line-height: 20px;
+}
+
+.rattings span {
+    display: block;
+    line-height: 1;
+}
+
+.rattings span.star {
+    position: relative;
+    top: -1px;
+}
+
+.check-nav-link span.dot {
+    background: #01449A;
+    width: 100%;
+    height: 100%;
+    display: block;
+    border-radius: 50%;
+    transition: .3s;
+    opacity: 0;
+}
+
+.check-nav input:checked~label span.dot {
+    opacity: 1;
+}
+
+.check-nav input:checked~label span.ind {
+    border-color: #01449A;
+}
+
+.check-cotnent-body {
+    padding: 20px 24px;
+    border-bottom: 2px solid #E4EDFC;
+    border-top: 2px solid #E4EDFC;
+}
+
+.check-cotnent-body ul {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.check-cotnent-body ul li {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.check-cotnent-body ul li span {
+    flex: 0 0 auto;
+    width: 27px;
+    height: 27px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.check-cotnent-footer {
+    padding: 20px 24px;
+}
+
+.check-cotnent-footer h6 {
+    margin-bottom: 0px;
+    color: #01449A;
+    font-weight: normal;
+    font-size: 19px;
+    line-height: 20px;
+}
+
+.check-nav label[aria-selected="true"] {
+    border-color: #01449A;
+}
+
+
+.tab-pane {
+    transition: none !important;
+}
+
+.tab-pane.active.show {
+    transition: none !important;
+}
+
+.tab-pane.active.show .check-content {
+    border-color: #01449A;
+}
+
+.check-bottom a {
+    font-size: 16px;
+    font-weight: 500;
+    color: #01449A;
+    display: block;
+}
+
+.check-bottom {
+    gap: 18px;
+}
+
+/* step-page-2--end */
+
+
+
+/* step-page-3 */
+
+.btn-outline-primary {
+    border-color: #01449A;
+    color: #01449A;
+}
+
+.btn-outline-primary:hover {
+    background-color: #01439a5e;
+    border-color: #01439a5e;
+    color: #01449A;
+}
+
+
+
+.form-control {
+    background: #fff;
+    box-shadow: 0px 4px 10px #00000040;
+    height: 65px;
+    border-radius: 5px;
+    font-size: 16px;
+    line-height: 20px;
+    /*color: #7F7F7F;*/
+    border: none;
+    padding-left: 28px;
+}
+
+.form-control::placeholder {
+    font-size: 16px;
+    line-height: 20px;
+    color: #7F7F7F;
+}
+
+.form-control:focus {
+    box-shadow: 0px 4px 10px #00000040;
+    outline: none !important;
+}
+
+textarea.form-control {
+    min-height: 190px;
+    resize: none;
+    padding-top: 16px;
+}
+
+.form-select {
+    background-color: #fff;
+    box-shadow: 0px 4px 10px #00000040;
+    height: 65px;
+    border-radius: 5px;
+    font-size: 16px;
+    line-height: 20px;
+    color: #7F7F7F;
+    border: none;
+    background-image: url('assets/imgs/icons/arrow-down.svg');
+    background-size: 18px 18px;
+    background-position: 96%;
+}
+
+
+
+
+.vehicle-infos-wrapper {
+    max-width: 684px;
+    margin: 0 auto;
+    background: #F0F5FA;
+    padding: 30px 117px 70px;
+    border-radius: 5px;
+}
+
+.vehicle-info-header h3 {
+    font-size: 27px;
+    line-height: 45px;
+}
+
+.vehicle-info-header {
+    text-align: center;
+    margin-bottom: 22px;
+}
+
+
+.input-box-text p {
+    font-size: 16px;
+    line-height: 20px;
+    color: #7F7F7F;
+    margin-bottom: 0px;
+}
+
+.vehicle-info-bottom {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.vehicle-info-bottom button {
+    width: 100%;
+}
+
+.vehicle-info-bottom p {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: #6D6C6C;
+    font-size: 17px;
+}
+
+
+.vehicle-info-bottom .hero-counter-wrapper .counter-client-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-left: -16px;
+    border: 2px solid #01449A !important;
+    padding: 0px;
+    overflow: hidden
+}
+
+.vehicle-info-bottom .hero-counter-wrapper .counter-client-img img {
+    object-fit: cover;
+    object-position: center;
+}
+
+
+
+
+/* step-page-3--end */
+
+
+
+/* step-navigations */
+
+
+.step-navigation {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.step-navigation button {
+    flex: 0 0 auto;
+    width: 33.33%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    background: transparent;
+    color: #EFF4F9;
+    font-size: 16px;
+    line-height: 20px;
+}
+
+.step-navigation button span.ind {
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    display: inline-block;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    z-index: 1;
+}
+
+.step-navigation button::after {
+    position: absolute;
+    left: 50%;
+    top: 10px;
+    width: 100%;
+    height: 1px;
+    content: "";
+    background: #F0F5FA;
+}
+
+.step-navigation button:last-child::after {
+    display: none;
+}
+
+.step-navigation button.current span.ind {
+    border-color: #23C197;
+}
+
+.step-navigation button.current {
+    color: #23C197;
+}
+
+
+.step-navigation button.checked {
+    color: #23C197;
+}
+
+.step-navigation button.checked span.ind {
+    background: #23C197;
+}
+
+
+.step-navigation button.checked::after {
+    background: #23C197;
+}
+
+/* step-navigations--end */
+
+
+/* =============================== */
+/* :: Steps Section CSS End */
+/* =============================== */
+
+/* =============================== */
+/* :: 6.0 Login And Register forms pages CSS Start */
+/* =============================== */
+
+/* login-page */
+
+
+.login-inner {
+    padding: 60px 20px 80px;
+}
+
+.form-content {
+    max-width: 360px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.form-text {
+    display: flex !important;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.form-text p {
+    color: #838383;
+}
+
+.link {
+    font-size: 17px;
+    text-decoration: underline;
+    display: inline-block;
+}
+
+.link:hover {
+    text-decoration: none;
+}
+
+.link-gray {
+    color: #8B8989;
+}
+
+.link-primary {
+    color: #01449A !important;
+}
+
+/* login-page--end */
+
+
+/* ,my-profile-page */
+
+.myProfile-form {
+    padding: 0px 0px 40px;
+}
+
+.myProfile-form .myProfile-inner {
+    padding: 60px 0px 80px;
+}
+
+.text-grey {
+    color: #838383;
+}
+
+.form-content.myProfile {
+    max-width: 403px;
+    width: 100%;
+}
+
+
+.myProfile-bookins {
+    background: #F0F5FA;
+    padding: 38px 0px 58px;
+}
+
+.myProfile-booking-form {
+    max-width: 325px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.myProfile-booking-form h2 {
+    font-size: 35px;
+    line-height: 45px;
+    margin-bottom: 4px;
+}
+
+.myProfile-booking-form h2 span {
+    color: var(--primary);
+}
+
+.myProfile-booking-form p {
+    color: #838383;
+    font-size: 16px;
+    line-height: 20px;
+    margin-bottom: 37px;
+}
+
+
+
+/* my-profile-page--end */
+
+
+/* faq-page */
+
+
+.faq-inner {
+    padding: 60px 0px 80px;
+}
+
+.faq-content {
+    max-width: 650px;
+    margin: 0 auto;
+}
+
+.faw-tag {
+    text-align: center;
+    background: #F0F5FA;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 18px;
+}
+
+.faw-tag h3 {
+    font-size: 27px !important;
+    line-height: 45px;
+    margin-bottom: 0px;
+}
+
+/* faq-page--end */
+
+
+/* =============================== */
+/* :: 6.0 Login And Register forms pages CSS End */
+/* =============================== */
+
+
+/* Contact-page--start */
+.page-header {
+    background: #F0F5FA;
+    padding: 60px 0;
+}
+
+.page-header-content h4 {
+    font-size: 27px;
+    margin-bottom: 5px;
+}
+
+.text-blue {
+    color: #01449A !important;
+}
+
+.myProfile-wrapper.contact-form {
+    padding: 45px;
+}
+
+.contact-form-inner {
+    max-width: 630px;
+    margin: 0 auto;
+}
+textarea.form-control.large {
+	min-height: 275px;
+	padding-top: 20px;
+}
+.section-title {
+    padding-bottom: 30px;
+}
+
+.section-title h4 {
+    font-size: 30px;
+    line-height: 1.1;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.section-title h4 span {
+    color: #01449A;
+}
+
+.text-grey {
+    color: #7F7F7F !important;
+}
+
+.social-btns a {
+    background: #fff;
+    display: flex;
+    align-items: center;
+    border-radius: 5px;
+    padding: 15px;
+    justify-content: center;
+    transition: .3s;
+    box-shadow: 0 0 15px #00000024;
+    min-height: 65px;
+    margin-bottom: 14px;
+    color: #000;
+    position: relative;
+}
+
+.social-btns a span {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.page-header-content.has-mw {
+    max-width: 250px;
+    margin: 0 auto;
+}
+
+.text-base {
+    font-size: 16px;
+}
+
+.page-header-rating .ratings-check {
+    margin-right: 18px;
+}
+
+.min-w-none {
+    min-width: auto !important;
+}
+
+/* Contact-page--end */
+
+
+/* Rating-page--Start */
+.rating-card {
+    border-radius: 5px;
+    background: rgb(255, 255, 255);
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 15px;
+    padding: 17px;
+    margin-bottom: 15px;
+}
+
+.rating-card-icon {
+    background: rgb(240, 245, 250);
+    height: 65px;
+    width: 65px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    flex: 0 0 auto;
+    margin-right: 26px;
+}
+
+.rating-card-text h5 {
+    font-size: 19px;
+    color: rgb(1, 68, 154);
+    font-weight: 600;
+    line-height: 1.1;
+    margin-bottom: 4px;
+}
+
+.rating-stars img {
+    max-width: 19px;
+    margin-right: 2px;
+}
+
+.rating-card-content {
+    color: rgb(1, 68, 154);
+    font-size: 16px;
+    padding-top: 20px;
+    line-height: 1.35;
+}
+
+.mw-290 {
+    max-width: 290px;
+}
+
+@media screen and (min-width: 575px) {
+    .mw-sm-290 {
+        max-width: 290px !important;
+    }
+}
+
+.hero-mobile-bg img {
+    width: 100%;
+}
+
+/* Rating-page--end */
+
+
+/* Report-page--Start */
+.report-card {
+    max-width: 750px;
+    margin: 0 auto;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    box-shadow: 0 4px 15px #0000002e;
+    padding: 40px;
+}
+
+.report-card-body {
+    max-width: 620px;
+    margin: 0 auto;
+}
+
+.report-card-body {
+    max-width: 570px;
+    margin: 0 auto;
+}
+
+.report-card-icon {
+    height: 115px;
+    width: 115px;
+    background: #F0F5FA;
+    margin-right: 32px;
+    border-radius: 5px;
+}
+
+.report-card-icon img {
+    height: 75px;
+}
+
+.report-card-content h4 {
+    font-size: 35px;
+    color: #01449A;
+    margin-bottom: 7px;
+}
+
+.report-card-content p {
+    font-size: 17px;
+}
+
+.report-card:nth-child(2n) .report-card-body {
+    flex-direction: row-reverse;
+    text-align: end;
+}
+
+.report-card:nth-child(2n) .report-card-icon {
+    margin-right: 0;
+    margin-left: 32px;
+}
+
+h3.section-title {
+    padding-bottom: 0;
+}
+
+.text-link {
+    color: #01449A;
+    text-decoration: underline;
+}
+
+/* Report-page--end */
+
+/* Table-page--start */
+.content-box {
+    background: #fff;
+    padding: 38px 23px;
+    border-radius: 5px;
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+    box-shadow: 0 4px 15px #00000027;
+}
+.content-box p {
+	letter-spacing: 0;
+}
+.price-list-box {
+    max-width: 870px;
+    margin: 0 auto;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 15px #0000003b;
+    border-radius: 5px;
+    padding: 40px 30px;
+}
+
+.price-list-table .table.three-column tbody tr>* {
+    width: 33.3%;
+}
+
+.price-list-table .table thead tr th {
+    vertical-align: middle;
+    font-size: 35px;
+    font-weight: 700;
+    line-height: 1.1;
+    padding: 8px;
+    text-align: center;
+}
+
+.price-list-table .table tbody tr>* {
+    background: #F0F5FA;
+    vertical-align: middle;
+    font-size: 27px;
+    font-weight: 400;
+    line-height: 1;
+    padding: 18px;
+    letter-spacing: -3%;
+}
+
+.price-list-table .table tbody tr>*:first-child {
+    border-radius: 5px 0 0 5px;
+    padding-left: 36px;
+}
+
+.price-list-table .table tbody tr>*:last-child {
+    border-radius: 0 5px 5px 0;
+}
+
+.price-list-table .table {
+    border-collapse: separate;
+    border-spacing: 0 15px;
+}
+
+.price-table-btn .btn {
+    height: 56px;
+    width: 73px;
+    padding: 0;
+    margin-right: 12px;
+    box-shadow: 0 4px 15px #0003;
+}
+
+/* Table-page--end */
