@@ -1,7 +1,14 @@
 "use strict";
 var AdminBookingsList = function () {
+    var findOne = function (primary, fallback) {
+        return document.querySelector(primary) || (fallback ? document.querySelector(fallback) : null);
+    };
+    var findAll = function (root, primary, fallback) {
+        var items = root.querySelectorAll(primary);
+        return items.length || !fallback ? items : root.querySelectorAll(fallback);
+    };
     var e, t, n, r, o = document.getElementById("kt_table_users"), c = () => {
-        o.querySelectorAll('[data-admin-table-filter="delete_row"]').forEach((t => {
+        findAll(o, '[data-admin-table-filter="delete_row"]', '[data-kt-users-table-filter="delete_row"]').forEach((t => {
             t.addEventListener("click", (function (t) {
                 t.preventDefault();
                 const n = t.target.closest("tr"), r = n.querySelectorAll("td")[1].querySelectorAll("a")[1].innerText;
@@ -39,15 +46,19 @@ var AdminBookingsList = function () {
         }))
     }, l = () => {
         const c = o.querySelectorAll('[type="checkbox"]');
-        t = document.querySelector('[data-admin-table-toolbar="base"]'), n = document.querySelector('[data-admin-table-toolbar="selected"]'), r = document.querySelector('[data-admin-table-select="selected_count"]');
-        const s = document.querySelector('[data-admin-table-select="delete_selected"]');
+        t = findOne('[data-admin-table-toolbar="base"]', '[data-kt-user-table-toolbar="base"]'), n = findOne('[data-admin-table-toolbar="selected"]', '[data-kt-user-table-toolbar="selected"]'), r = findOne('[data-admin-table-select="selected_count"]', '[data-kt-user-table-select="selected_count"]');
+        const s = findOne('[data-admin-table-select="delete_selected"]', '[data-kt-user-table-select="delete_selected"]');
         c.forEach((e => {
             e.addEventListener("click", (function () {
                 setTimeout((function () {
                     a()
                 }), 50)
             }))
-        })), s.addEventListener("click", (function () {
+        }));
+        if (!s) {
+            return;
+        }
+        s.addEventListener("click", (function () {
             Swal.fire({
                 text: "Are you sure you want to delete selected customers?",
                 icon: "warning",
@@ -104,6 +115,9 @@ var AdminBookingsList = function () {
         }))
     };
     const a = () => {
+        if (!t || !n || !r) {
+            return;
+        }
         const e = o.querySelectorAll('tbody [type="checkbox"]');
         let c = !1, l = 0;
         e.forEach((e => {
@@ -112,7 +126,11 @@ var AdminBookingsList = function () {
     };
     return {
         init: function () {
-            o && (o.querySelectorAll("tbody tr").forEach((e => {
+            if (!o) {
+                return;
+            }
+
+            o.querySelectorAll("tbody tr").forEach((e => {
                 const t = e.querySelectorAll("td"), n = t[3].innerText.toLowerCase();
                 let r = 0, o = "minutes";
                 n.includes("yesterday") ? (r = 1, o = "days") : n.includes("mins") ? (r = parseInt(n.replace(/\D/g, "")), o = "minutes") : n.includes("hours") ? (r = parseInt(n.replace(/\D/g, "")), o = "hours") : n.includes("days") ? (r = parseInt(n.replace(/\D/g, "")), o = "days") : n.includes("weeks") && (r = parseInt(n.replace(/\D/g, "")), o = "weeks");
@@ -120,7 +138,8 @@ var AdminBookingsList = function () {
                 t[3].setAttribute("data-order", c);
                 const l = moment(t[5].innerHTML, "DD MMM YYYY, LT").format();
                 t[5].setAttribute("data-order", l)
-            })), (e = $(o).DataTable({
+            }));
+            e = $(o).DataTable({
                 info: !1,
                 order: [], // use server-side default (latest first)
                 // Set default page length and menu options
@@ -193,7 +212,7 @@ var AdminBookingsList = function () {
                     {data:'actions', width:'430px'},
                     // {data:'document_in_english'},
                 ]
-            })).on("draw", (function () {
+            }).on("draw", (function () {
                 l(), c(), a()
                 // Initialize tooltips for elements that have title attributes
                 // Note: Action buttons intentionally have no titles to avoid tooltips
@@ -320,25 +339,41 @@ var AdminBookingsList = function () {
                             customClass: { confirmButton: 'btn btn-primary', cancelButton: 'btn btn-light' }
                         }).then(function(res){ if (res.isConfirmed) { window.location = href; } });
                     });
-            })), l(), document.querySelector('[data-admin-table-filter="search"]').addEventListener("keyup", (function (t) {
-                e.search(t.target.value).draw()
-            })), document.querySelector('[data-admin-table-filter="reset"]').addEventListener("click", (function () {
-                document.querySelector('[data-admin-table-filter="form"]').querySelectorAll("select").forEach((e => {
-                    $(e).val("").trigger("change")
-                })), e.search("").draw()
-            })), c(), (() => {
+            }));
+            l();
+            var searchInput = findOne('[data-admin-table-filter="search"]', '[data-kt-user-table-filter="search"]');
+            if (searchInput) {
+                searchInput.addEventListener("keyup", (function (t) {
+                    e.search(t.target.value).draw()
+                }));
+            }
+            var resetButton = findOne('[data-admin-table-filter="reset"]', '[data-kt-user-table-filter="reset"]');
+            var filterForm = findOne('[data-admin-table-filter="form"]', '[data-kt-user-table-filter="form"]');
+            if (resetButton && filterForm) {
+                resetButton.addEventListener("click", (function () {
+                    filterForm.querySelectorAll("select").forEach((e => {
+                        $(e).val("").trigger("change")
+                    }));
+                    e.search("").draw()
+                }))
+            }
+            c();
+            (() => {
                 $('#kt_daterangepicker_4').on('change',function(){
                     e.search("").draw()
                 })
-                const t = document.querySelector('[data-admin-table-filter="form"]'),
-                    n = t.querySelector('[data-admin-table-filter="filter"]'), r = t.querySelectorAll("select");
+                const t = filterForm,
+                    n = t ? (t.querySelector('[data-admin-table-filter="filter"]') || t.querySelector('[data-kt-user-table-filter="filter"]')) : null, r = t ? t.querySelectorAll("select") : [];
+                if (!n) {
+                    return;
+                }
                 n.addEventListener("click", (function () {
                     var t = "";
                     r.forEach(((e, n) => {
                         e.value && "" !== e.value && (0 !== n && (t += " "), t += e.value)
                     })), e.search(t).draw()
                 }))
-            })());
+            })();
 
             // Re-evaluate on resize to force all columns visible on desktop
             (function(){
