@@ -353,7 +353,7 @@ class BookingController extends Controller
             return $booking->price !== null && $booking->price !== '' ? '<span class="text-nowrap">' . e($booking->price) . ' €</span>' : '-';
         })->addColumn('order_type_display', function ($booking) {
             $type = strtoupper($booking->order_type ?: 'B2C');
-            $badgeClass = $type === 'B2B' ? 'badge-info' : 'badge-secondary';
+            $badgeClass = $type === 'B2B' ? 'source-badge-b2b' : 'source-badge-b2c';
             $partnerName = null;
 
             if ($type === 'B2B') {
@@ -363,7 +363,7 @@ class BookingController extends Controller
             }
 
             return '<div class="compact-cell">'
-                . '<span class="badge ' . $badgeClass . '">' . e($type) . '</span>'
+                . '<span class="source-badge ' . $badgeClass . '">' . e($type) . '</span>'
                 . ($partnerName ? '<span class="secondary">' . e($partnerName) . '</span>' : '')
                 . '</div>';
         })->addColumn('vehicle_display', function ($booking) {

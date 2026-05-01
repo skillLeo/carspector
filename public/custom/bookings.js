@@ -1,7 +1,7 @@
 "use strict";
-var KTUsersList = function () {
+var AdminBookingsList = function () {
     var e, t, n, r, o = document.getElementById("kt_table_users"), c = () => {
-        o.querySelectorAll('[data-kt-users-table-filter="delete_row"]').forEach((t => {
+        o.querySelectorAll('[data-admin-table-filter="delete_row"]').forEach((t => {
             t.addEventListener("click", (function (t) {
                 t.preventDefault();
                 const n = t.target.closest("tr"), r = n.querySelectorAll("td")[1].querySelectorAll("a")[1].innerText;
@@ -14,7 +14,7 @@ var KTUsersList = function () {
                     cancelButtonText: "No, cancel",
                     customClass: {
                         confirmButton: "btn fw-bold btn-danger",
-                        cancelButton: "btn fw-bold btn-active-light-primary"
+                        cancelButton: "btn fw-bold btn-light"
                     }
                 }).then((function (t) {
                     t.value ? Swal.fire({
@@ -39,8 +39,8 @@ var KTUsersList = function () {
         }))
     }, l = () => {
         const c = o.querySelectorAll('[type="checkbox"]');
-        t = document.querySelector('[data-kt-user-table-toolbar="base"]'), n = document.querySelector('[data-kt-user-table-toolbar="selected"]'), r = document.querySelector('[data-kt-user-table-select="selected_count"]');
-        const s = document.querySelector('[data-kt-user-table-select="delete_selected"]');
+        t = document.querySelector('[data-admin-table-toolbar="base"]'), n = document.querySelector('[data-admin-table-toolbar="selected"]'), r = document.querySelector('[data-admin-table-select="selected_count"]');
+        const s = document.querySelector('[data-admin-table-select="delete_selected"]');
         c.forEach((e => {
             e.addEventListener("click", (function () {
                 setTimeout((function () {
@@ -57,7 +57,7 @@ var KTUsersList = function () {
                 cancelButtonText: "No, cancel",
                 customClass: {
                     confirmButton: "btn fw-bold btn-danger",
-                    cancelButton: "btn fw-bold btn-active-light-primary"
+                    cancelButton: "btn fw-bold btn-light"
                 }
             }).then((function (t) {
                 t.value ? Swal.fire({
@@ -320,18 +320,18 @@ var KTUsersList = function () {
                             customClass: { confirmButton: 'btn btn-primary', cancelButton: 'btn btn-light' }
                         }).then(function(res){ if (res.isConfirmed) { window.location = href; } });
                     });
-            })), l(), document.querySelector('[data-kt-user-table-filter="search"]').addEventListener("keyup", (function (t) {
+            })), l(), document.querySelector('[data-admin-table-filter="search"]').addEventListener("keyup", (function (t) {
                 e.search(t.target.value).draw()
-            })), document.querySelector('[data-kt-user-table-filter="reset"]').addEventListener("click", (function () {
-                document.querySelector('[data-kt-user-table-filter="form"]').querySelectorAll("select").forEach((e => {
+            })), document.querySelector('[data-admin-table-filter="reset"]').addEventListener("click", (function () {
+                document.querySelector('[data-admin-table-filter="form"]').querySelectorAll("select").forEach((e => {
                     $(e).val("").trigger("change")
                 })), e.search("").draw()
             })), c(), (() => {
                 $('#kt_daterangepicker_4').on('change',function(){
                     e.search("").draw()
                 })
-                const t = document.querySelector('[data-kt-user-table-filter="form"]'),
-                    n = t.querySelector('[data-kt-user-table-filter="filter"]'), r = t.querySelectorAll("select");
+                const t = document.querySelector('[data-admin-table-filter="form"]'),
+                    n = t.querySelector('[data-admin-table-filter="filter"]'), r = t.querySelectorAll("select");
                 n.addEventListener("click", (function () {
                     var t = "";
                     r.forEach(((e, n) => {
@@ -628,6 +628,12 @@ var KTUsersList = function () {
         }
     }
 }();
-KTUtil.onDOMContentLoaded((function () {
-    KTUsersList.init()
-}));
+(function (callback) {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', callback);
+    } else {
+        callback();
+    }
+})(function () {
+    AdminBookingsList.init()
+});

@@ -130,6 +130,28 @@
         #kt_table_users .badge {
             white-space: nowrap;
         }
+        #kt_table_users .source-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 46px;
+            padding: .25rem .55rem;
+            border-radius: 999px;
+            font-size: .72rem;
+            font-weight: 700;
+            line-height: 1;
+            letter-spacing: 0;
+        }
+        #kt_table_users .source-badge-b2c {
+            background: #eef2f6;
+            color: #344054;
+            border: 1px solid #d0d5dd;
+        }
+        #kt_table_users .source-badge-b2b {
+            background: #e7f5ff;
+            color: #075985;
+            border: 1px solid #bae6fd;
+        }
         /* Professional, slightly thicker dividers */
         #kt_table_users thead th { border-bottom: 2px solid var(--bs-gray-400); }
         #kt_table_users tbody td { border-top: 1.5px solid var(--bs-gray-300); }
@@ -274,12 +296,12 @@
                         <!--begin::Card title-->
                         <div class="card-title">
                             <div class="d-flex align-items-center my-1">
-                                <input type="text" data-kt-user-table-filter="search" class="form-control w-250px" placeholder="Search..." />
+                                <input type="text" data-admin-table-filter="search" class="form-control w-250px" placeholder="Search..." />
                             </div>
                         </div>
                         <!--begin::Card toolbar-->
                         <div class="card-toolbar">
-                            <div class="d-flex justify-content-end gap-2" data-kt-user-table-toolbar="base">
+                            <div class="d-flex justify-content-end gap-2" data-admin-table-toolbar="base">
                                 {{-- Filter dropdown --}}
                                 <div class="dropdown">
                                     <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
@@ -287,7 +309,7 @@
                                     </button>
                                     <div class="dropdown-menu dropdown-menu-end p-3" style="min-width:325px;">
                                         <h6 class="fw-bold mb-3">Filter Options</h6>
-                                        <div data-kt-user-table-filter="form">
+                                        <div data-admin-table-filter="form">
                                             <div class="mb-3">
                                                 <label class="form-label fw-semibold">Date range</label>
                                                 <input class="form-control date_range" placeholder="Pick date range" id="kt_daterangepicker_4"/>
@@ -319,8 +341,8 @@
                                                 </select>
                                             </div>
                                             <div class="d-flex justify-content-end gap-2 mt-3">
-                                                <button type="reset" class="btn btn-light" data-kt-user-table-filter="reset">Reset</button>
-                                                <button type="submit" class="btn btn-primary" data-kt-user-table-filter="filter">Apply</button>
+                                                <button type="reset" class="btn btn-light" data-admin-table-filter="reset">Reset</button>
+                                                <button type="submit" class="btn btn-primary" data-admin-table-filter="filter">Apply</button>
                                             </div>
                                         </div>
                                     </div>
@@ -332,10 +354,10 @@
                             </div>
                             <!--end::Toolbar-->
                             <!--begin::Group actions-->
-                            <div class="d-flex justify-content-end align-items-center d-none" data-kt-user-table-toolbar="selected">
+                            <div class="d-flex justify-content-end align-items-center d-none" data-admin-table-toolbar="selected">
                                 <div class="fw-bold me-5">
-                                    <span class="me-2" data-kt-user-table-select="selected_count"></span>Selected</div>
-                                <button type="button" class="btn btn-danger" data-kt-user-table-select="delete_selected">Delete Selected</button>
+                                    <span class="me-2" data-admin-table-select="selected_count"></span>Selected</div>
+                                <button type="button" class="btn btn-danger" data-admin-table-select="delete_selected">Delete Selected</button>
                             </div>
                             <!--end::Group actions-->
                             <!--begin::Modal - Adjust Balance-->
@@ -359,7 +381,7 @@
                             <tr class="text-start fw-bold text-uppercase table-light">
 {{--                                <th class="w-10px pe-2">--}}
 {{--                                    <div class="form-check form-check-sm form-check-custom form-check-solid me-3">--}}
-{{--                                        <input class="form-check-input" type="checkbox" data-kt-check="true" data-kt-check-target="#kt_table_users .form-check-input" value="1" />--}}
+{{--                                        <input class="form-check-input" type="checkbox" value="1" />--}}
 {{--                                    </div>--}}
 {{--                                </th>--}}
 
@@ -404,11 +426,7 @@
                 <div class="modal-header">
                     <h3 class="modal-title">Assign Examiner</h3>
 
-                    <!--begin::Close-->
-                    <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal" aria-label="Close">
-                        <i class="ki-duotone ki-cross fs-1"><span class="path1"></span><span class="path2"></span></i>
-                    </div>
-                    <!--end::Close-->
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
                 <div class="modal-body">
@@ -440,9 +458,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h3 class="modal-title">Auftragsvergabe</h3>
-                    <div class="btn btn-icon btn-sm btn-active-light-primary ms-2" data-bs-dismiss="modal" aria-label="Close">
-                        <i class="ki-duotone ki-cross fs-1"><span class="path1"></span><span class="path2"></span></i>
-                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="examiner_email_order_id" value="">
@@ -608,16 +624,7 @@
                     <h2 class="fw-bold" id="booking-modal-title">Create Booking</h2>
                     <!--end::Modal title-->
                     <!--begin::Close-->
-                    <div class="btn btn-icon btn-sm btn-close-modal btn-active-icon-primary" data-bs-dismiss="modal" data-kt-users-modal-action="close">
-                        <!--begin::Svg Icon | path: icons/duotune/arrows/arr061.svg-->
-                        <span class="svg-icon svg-icon-1">
-																<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-																	<rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="currentColor" />
-																	<rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="currentColor" />
-																</svg>
-															</span>
-                        <!--end::Svg Icon-->
-                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     <!--end::Close-->
                 </div>
                 <!--end::Modal header-->
