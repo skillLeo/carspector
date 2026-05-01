@@ -317,7 +317,7 @@ class BookingController extends Controller
         // and keep Eloquent mode so rows are proper models (no id shadowing by related models)
         $bookings = Order::query()
             ->select('orders.*')
-            ->with(['examiner','user'])
+            ->with(['examiner','user','b2bPartner'])
             ->orderByDesc('orders.created_at');
 //        dd($bookings);
 //        dd($bookings);
@@ -334,6 +334,8 @@ class BookingController extends Controller
             });
         })->when(($request->status ?? '') !== '', function($q) use ($request){
             return $q->where('orders.admin_status', $request->status);
+        })->when(in_array($request->order_type, ['B2B', 'B2C'], true), function($q) use ($request){
+            return $q->where('orders.order_type', $request->order_type);
         });
         return DataTables::eloquent($bookings)->filterColumn('orderno', function ($query, $keyword) {
             $query->where(function ($q) use ($keyword) {
@@ -349,6 +351,21 @@ class BookingController extends Controller
             return '<span class="text-nowrap">' . e($date) . '</span>';
         })->addColumn('price_display', function ($booking) {
             return $booking->price !== null && $booking->price !== '' ? '<span class="text-nowrap">' . e($booking->price) . ' €</span>' : '-';
+        })->addColumn('order_type_display', function ($booking) {
+            $type = strtoupper($booking->order_type ?: 'B2C');
+            $badgeClass = $type === 'B2B' ? 'badge-info' : 'badge-secondary';
+            $partnerName = null;
+
+            if ($type === 'B2B') {
+                $partnerName = $booking->b2bPartner->name
+                    ?? $booking->b2bPartner->email
+                    ?? null;
+            }
+
+            return '<div class="compact-cell">'
+                . '<span class="badge ' . $badgeClass . '">' . e($type) . '</span>'
+                . ($partnerName ? '<span class="secondary">' . e($partnerName) . '</span>' : '')
+                . '</div>';
         })->addColumn('vehicle_display', function ($booking) {
             return '<div class="compact-cell">'
                 . '<span class="primary">' . e($booking->vehicle_make_model ?: '-') . '</span>'
@@ -381,7 +398,7 @@ class BookingController extends Controller
         })->addColumn('actions', function ($booking) {
             $examinerEmail = $booking->examiner && $booking->examiner->email ? e($booking->examiner->email) : '';
             $customerName = $booking->customer_name ?: ($booking->user->name ?? $booking->name ?? '');
-            $bookingCode = $booking->orderno ?: ('#' . $booking->id);
+            $bookingCode = $booking->orderno ?: Order::formatOrderNumber($booking);
             $manualMailData = [
                 'data-customer-name' => $customerName,
                 'data-booking-code' => $bookingCode,
@@ -446,7 +463,7 @@ class BookingController extends Controller
 
             }
             return '';
-        })->rawColumns(['actions', 'status','examiner_id', 'order_number', 'admin_order_date_display', 'price_display', 'customer_display', 'vehicle_display', 'examiner_display'])->make(true);
+        })->rawColumns(['actions', 'status','examiner_id', 'order_number', 'admin_order_date_display', 'price_display', 'order_type_display', 'customer_display', 'vehicle_display', 'examiner_display'])->make(true);
     }
 
     public function bookingStatus($id, Request $request)

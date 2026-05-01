@@ -130,8 +130,8 @@ var KTUsersList = function () {
                 scrollX: true,
                 autoWidth: false,
                 columnDefs: [
-                    { targets: [0, 1, 2, 3, 4, 8, 9, 10], className: 'align-middle text-nowrap' },
-                    { targets: [5, 6, 7], className: 'align-middle text-column' },
+                    { targets: [0, 1, 2, 3, 4, 5, 9, 10, 11], className: 'align-middle text-nowrap' },
+                    { targets: [6, 7, 8], className: 'align-middle text-column' },
                     { targets: -1, className: 'text-end text-nowrap align-middle', orderable: false, searchable: false, width: '430px' }
                 ],
                 ajax: {
@@ -143,6 +143,7 @@ var KTUsersList = function () {
                         d.user_id=$('#filter_user_select').val();
                         d.examiner_email=$('#filter_examiner_email').val();
                         d.status=$('#filter_status').val();
+                        d.order_type=$('#filter_order_type').val();
                         // d.space_id=$('.parking-spot').val();
                         // d.daterange=$('.daterange').val();
                         return d;
@@ -181,6 +182,7 @@ var KTUsersList = function () {
                     //       }
                     //     }},
                     {data:'price_display', name:'price', width:'130px'},
+                    {data:'order_type_display', name:'order_type', width:'170px'},
                     {data:'vehicle_type', name:'vehicle_type', width:'155px'},
                     {data:'status', name:'admin_status', width:'150px'},
                     {data:'vehicle_display', name:'vehicle_make_model', width:'220px'},
@@ -353,7 +355,7 @@ var KTUsersList = function () {
             })();
 
             // Filters
-            $('#filter_examiner_email, #filter_status').on('keyup change', function(){ e.draw(); });
+            $('#filter_examiner_email, #filter_status, #filter_order_type').on('keyup change', function(){ e.draw(); });
             $('#filter_user_select').on('change', function(){ e.draw(); });
 
 

@@ -56,6 +56,9 @@ class Order extends Model
     public function user(){
         return $this->belongsTo(User::class,'user_id');
     }
+    public function b2bPartner(){
+        return $this->belongsTo(User::class,'b2b_partner_id');
+    }
     public function examination()
     {
         return $this->hasOne(OrderExamination::class,'order_id');

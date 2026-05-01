@@ -86,7 +86,7 @@
             overflow-x: auto;
         }
         #kt_table_users {
-            min-width: 2050px;
+            min-width: 2200px;
             table-layout: fixed;
         }
         #kt_table_users th,
@@ -310,6 +310,14 @@
                                                     <option value="Abgeschlossen">Abgeschlossen</option>
                                                 </select>
                                             </div>
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Order source</label>
+                                                <select class="form-select" id="filter_order_type">
+                                                    <option value="">Any</option>
+                                                    <option value="B2C">B2C customer orders</option>
+                                                    <option value="B2B">B2B partner orders</option>
+                                                </select>
+                                            </div>
                                             <div class="d-flex justify-content-end gap-2 mt-3">
                                                 <button type="reset" class="btn btn-light" data-kt-user-table-filter="reset">Reset</button>
                                                 <button type="submit" class="btn btn-primary" data-kt-user-table-filter="filter">Apply</button>
@@ -358,7 +366,8 @@
                                 <th style="width: 130px;">Datum</th>
                                 <th style="width: 150px;">ID</th>
                                 <th style="width: 130px;">Kosten in €</th>
-                                <th style="width: 155px;">Typ</th>
+                                <th style="width: 170px;">Quelle</th>
+                                <th style="width: 155px;">Fahrzeugtyp</th>
                                 <th style="width: 150px;">Status</th>
                                 <th style="width: 220px;">Fahrzeug</th>
                                 <th style="width: 240px;">Kunde</th>
