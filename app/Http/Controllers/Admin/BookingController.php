@@ -268,7 +268,6 @@ class BookingController extends Controller
         }
 
         $order->brand = isset($request['brand']) ? $request['brand'] : '';
-        $order->orderno = trim((string) $request->orderno) ?: $order->orderno;
         $order->admin_order_date = $this->parseOptionalDate($request->admin_order_date);
         $order->customer_name = trim((string) $request->customer_name) ?: null;
         $order->examiner_name = trim((string) $request->examiner_name) ?: null;

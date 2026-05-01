@@ -636,14 +636,6 @@
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="mb-3">
-                                                        <p class="mb-0 text-black fs-6">ID</p>
-                                                        <div class="input-box">
-                                                            <input name="orderno" type="text" value="{{ old('orderno') }}" class="form-control form-control-sm shadow" placeholder="CS-264553">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="mb-3">
                                                         <p class="mb-0 text-black fs-6">Kunde</p>
                                                         <div class="input-box">
                                                             <input name="customer_name" type="text" value="{{ old('customer_name') }}" class="form-control form-control-sm shadow" placeholder="Customer name">
