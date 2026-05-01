@@ -122,6 +122,8 @@ var KTUsersList = function () {
                 t[5].setAttribute("data-order", l)
             })), (e = $(o).DataTable({
                 info: !1,
+                scrollX: true,
+                autoWidth: false,
                 ajax: {
                     "url": hostUrl+'admin/fetch-withdraw',
                     "type": "GET",
