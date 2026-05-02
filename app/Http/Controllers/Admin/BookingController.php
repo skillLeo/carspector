@@ -387,9 +387,11 @@ class BookingController extends Controller
             }
             return '<a class="btn-assign-examiner" href="#assign_examiner" data-id="'.$booking->id.'" data-bs-target="#assign_examiner" data-bs-toggle="modal">Assign Examiner</a>';
         })->addColumn('completed_at_display', function ($booking) {
-            return $booking->completed_at ? $booking->completed_at->format('d.m.Y') : '-';
+            $value = $booking->completed_at ? $booking->completed_at->format('Y-m-d') : '';
+            return '<input type="date" class="form-control form-control-sm inline-admin-field inline-date-field js-inline-booking-field" data-id="' . $booking->id . '" data-field="completed_at" value="' . e($value) . '">';
         })->addColumn('paid_at_display', function ($booking) {
-            return $booking->paid_at ? $booking->paid_at->format('d.m.Y') : '-';
+            $value = $booking->paid_at ? $booking->paid_at->format('Y-m-d') : '';
+            return '<input type="date" class="form-control form-control-sm inline-admin-field inline-date-field js-inline-booking-field" data-id="' . $booking->id . '" data-field="paid_at" value="' . e($value) . '">';
         })->editColumn('examiner_id',function ($row){
             if($row->examiner){
                 return '<a class="btn-assign-examiner" href="#assign_examiner" data-id="'.$row->id.'" data-bs-target="#assign_examiner" data-bs-toggle="modal">'.$row->examiner->email.'</a>';
@@ -413,22 +415,20 @@ class BookingController extends Controller
                 $emailDataAttributes .= sprintf(' %s="%s"', $attribute, e($value ?? ''));
             }
 
-            return '<div class="booking-actions">'
-                . '<a href="#" data-id="' . $booking->id . '" data-bs-toggle="modal" data-bs-target="#exampleModal" class="btn action-btn btn-order-details btn-sm btn-outline-secondary" title="View Details"><i class="fas fa-eye"></i></a>'
-                . '<a href="#" data-id="' . $booking->id . '" class="btn action-btn btn-edit-order btn-sm btn-outline-primary" title="Edit Booking"><i class="fas fa-pen"></i></a>'
-                . '<a href="#" data-id="' . $booking->id . '" data-email="' . $examinerEmail . '"' . $emailDataAttributes . ' class="btn action-btn btn-email-examiner btn-sm btn-outline-info" title="Email Examiner"><i class="fas fa-envelope"></i></a>'
-                . '<a href="' . route('booking.delete', $booking->id) . '" class="btn action-btn btn-delete btn-sm btn-outline-danger" title="Delete Booking"><i class="fas fa-trash"></i></a>'
-                . '<a href="' . route('examiner.order', $booking->id) . '" target="_blank" class="btn btn-sm btn-outline-secondary" title="Examiner Report"><i class="fas fa-file-alt"></i></a>'
-                . '<a href="' . route('examination.delete', $booking->id) . '" class="btn action-btn btn-delete btn-sm btn-outline-danger" title="Delete Examination"><i class="fas fa-file-excel"></i></a>'
-                . '<a href="' . route('order.pdf', ['number' => $booking->pdf_number ?? 1]) . '" target="_blank" class="btn btn-sm btn-outline-secondary" title="Download PDF (DE)"><i class="fas fa-file-pdf"></i> DE</a>'
-                . '<a href="' . route('order.pdf.en', ['number' => $booking->pdf_number ?? 1]) . '" target="_blank" class="btn btn-sm btn-outline-secondary" title="Download PDF (EN)"><i class="fas fa-file-pdf"></i> EN</a>'
-                . '<a href="' . route('send.customer.pdf', ['id' => $booking->id]) . '" class="btn action-btn send-customer-pdf btn-sm btn-outline-success" title="Send to Customer"><i class="fas fa-paper-plane"></i></a>'
-                . '</div>';
+            return '<a href="#" data-id="' . $booking->id . '" data-bs-toggle="modal" data-bs-target="#exampleModal" class="btn action-btn btn-order-details btn-sm btn-outline-secondary" title="View Details"><i class="fas fa-eye"></i></a>';
         })->editColumn('created_at', function ($booking) {
             return date('d M Y, H:i a', strtotime($booking->created_at));
         })->addColumn('booking_time', function ($booking) {
             return date('d M Y, H:i', strtotime($booking->date . ' ' . $booking->time));
         })->editColumn('status', function ($booking) {
+            $current = $booking->admin_status ?: ($booking->status == 'completed' ? 'Abgeschlossen' : 'PrÃ¼fung');
+            $statuses = ['Zuweisung', 'PrÃ¼fung', 'Fertigstellung', 'Abgeschlossen'];
+            $html = '<select class="form-select form-select-sm inline-admin-field js-inline-booking-field" data-id="' . $booking->id . '" data-field="admin_status">';
+            foreach ($statuses as $status) {
+                $html .= '<option value="' . e($status) . '"' . ($current === $status ? ' selected' : '') . '>' . e($status) . '</option>';
+            }
+            $html .= '</select>';
+            return $html;
             if ($booking->admin_status) {
                 $classes = [
                     'Zuweisung' => 'badge-secondary',
@@ -463,7 +463,44 @@ class BookingController extends Controller
 
             }
             return '';
-        })->rawColumns(['actions', 'status','examiner_id', 'order_number', 'admin_order_date_display', 'price_display', 'order_type_display', 'customer_display', 'vehicle_display', 'examiner_display'])->make(true);
+        })->rawColumns(['actions', 'status','examiner_id', 'order_number', 'admin_order_date_display', 'completed_at_display', 'paid_at_display', 'customer_display', 'vehicle_display', 'examiner_display'])->make(true);
+    }
+
+    public function updateInline(Request $request)
+    {
+        $data = $request->validate([
+            'id' => ['required', 'exists:orders,id'],
+            'field' => ['required', 'in:admin_status,completed_at,paid_at'],
+            'value' => ['nullable', 'string', 'max:190'],
+        ]);
+
+        $order = Order::findOrFail($data['id']);
+        $value = trim((string) ($data['value'] ?? ''));
+
+        if ($data['field'] === 'admin_status') {
+            $allowed = ['Zuweisung', 'PrÃ¼fung', 'Fertigstellung', 'Abgeschlossen'];
+            abort_unless(in_array($value, $allowed, true), 422, 'Invalid status.');
+            $order->admin_status = $value;
+            if ($value === 'Abgeschlossen') {
+                $order->status = 'completed';
+                $order->completed_at = $order->completed_at ?: now();
+            } elseif ($value === 'Fertigstellung') {
+                $order->status = 'inspecting';
+            } else {
+                $order->status = 'processing';
+            }
+        } elseif ($data['field'] === 'completed_at') {
+            $order->completed_at = $this->parseOptionalDate($value);
+        } elseif ($data['field'] === 'paid_at') {
+            $order->paid_at = $this->parseOptionalDate($value);
+        }
+
+        $order->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Booking updated successfully.',
+        ]);
     }
 
     public function bookingStatus($id, Request $request)

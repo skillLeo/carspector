@@ -30,10 +30,23 @@
         body { font-family: 'Inter', sans-serif; }
         .main-sidebar { z-index: 1038; }
         .brand-link { border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .brand-link .brand-image-logo {
+            width: 150px;
+            max-height: 42px;
+            object-fit: contain;
+        }
         .nav-sidebar .nav-item > .nav-link { font-size: 0.9rem; }
         .content-wrapper { background-color: #f4f6f9; }
         .card { border: none; box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2); }
         .main-header { border-bottom: 1px solid #dee2e6; }
+        .navbar-user-link {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            color: #374151 !important;
+            font-weight: 600;
+        }
+        .navbar-user-link.text-danger { color: #dc3545 !important; }
 
         /* ── DataTable global fixes ── */
         /* Constrain all images inside DataTables to avatar size */
@@ -380,29 +393,21 @@
         </ul>
 
         <ul class="navbar-nav ms-auto">
-            {{-- User dropdown --}}
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" data-bs-toggle="dropdown">
+            <li class="nav-item">
+                <a class="nav-link navbar-user-link" href="{{ route('admin.profile.settings') }}">
                     <i class="fas fa-user-circle fa-lg"></i>
                     <span>{{ auth()->user()->name ?? auth()->user()->first_name }}</span>
                 </a>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                        <a class="dropdown-item" href="{{ route('admin.profile.settings') }}">
-                            <i class="fas fa-cog me-2"></i> Profile Settings
-                        </a>
-                    </li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <a class="dropdown-item text-danger" href="{{ route('logout') }}"
-                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                            <i class="fas fa-sign-out-alt me-2"></i> Logout
-                        </a>
-                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                            @csrf
-                        </form>
-                    </li>
-                </ul>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link navbar-user-link text-danger" href="{{ route('logout') }}"
+                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                    @csrf
+                </form>
             </li>
         </ul>
     </nav>
@@ -411,8 +416,7 @@
     {{-- ===== SIDEBAR ===== --}}
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
         <a href="{{ route('admin') }}" class="brand-link d-flex align-items-center px-3 py-3">
-            <i class="fas fa-car text-white me-2 fa-lg"></i>
-            <span class="brand-text fw-bold text-white">Carspector</span>
+            <img src="{{ asset('logo-admin.png') }}" alt="Carspector" class="brand-image-logo">
         </a>
 
         <div class="sidebar">
@@ -427,26 +431,17 @@
                         </a>
                     </li>
 
-                    {{-- Orders --}}
-                    <li class="nav-item {{ request()->routeIs('admin.bookings', 'admin.new-bookings.*') ? 'menu-open' : '' }}">
-                        <a href="#" class="nav-link {{ request()->routeIs('admin.bookings', 'admin.new-bookings.*') ? 'active' : '' }}">
+                    <li class="nav-item">
+                        <a href="{{ route('admin.bookings') }}" class="nav-link {{ request()->routeIs('admin.bookings') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-shopping-cart"></i>
-                            <p>Orders <i class="right fas fa-angle-left"></i></p>
+                            <p>All Bookings</p>
                         </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="{{ route('admin.bookings') }}" class="nav-link {{ request()->routeIs('admin.bookings') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>All Bookings</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('admin.new-bookings.index') }}" class="nav-link {{ request()->routeIs('admin.new-bookings.*') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>New Bookings</p>
-                                </a>
-                            </li>
-                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.new-bookings.index') }}" class="nav-link {{ request()->routeIs('admin.new-bookings.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-calendar-plus"></i>
+                            <p>New Bookings</p>
+                        </a>
                     </li>
 
                     {{-- Examinations --}}
@@ -457,56 +452,47 @@
                         </a>
                     </li>
 
-                    {{-- Users --}}
-                    <li class="nav-item {{ request()->routeIs('user.view', 'examiners.view', 'partners.view', 'admins.view', 'staff.view', 'unverified.view', 'users.heard_about') ? 'menu-open' : '' }}">
-                        <a href="#" class="nav-link {{ request()->routeIs('user.view', 'examiners.view', 'partners.view', 'admins.view', 'staff.view', 'unverified.view', 'users.heard_about') ? 'active' : '' }}">
+                    <li class="nav-item">
+                        <a href="{{ route('user.view') }}" class="nav-link {{ request()->routeIs('user.view') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-users"></i>
-                            <p>Users <i class="right fas fa-angle-left"></i></p>
+                            <p>All Users</p>
                         </a>
-                        <ul class="nav nav-treeview">
-                            <li class="nav-item">
-                                <a href="{{ route('user.view') }}" class="nav-link {{ request()->routeIs('user.view') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>All Users</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('examiners.view') }}" class="nav-link {{ request()->routeIs('examiners.view') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Examiners</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('partners.view') }}" class="nav-link {{ request()->routeIs('partners.view') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Partners</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('admins.view') }}" class="nav-link {{ request()->routeIs('admins.view') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Admins</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('staff.view') }}" class="nav-link {{ request()->routeIs('staff.view') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Staff</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('unverified.view') }}" class="nav-link {{ request()->routeIs('unverified.view') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Unverified</p>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="{{ route('users.heard_about') }}" class="nav-link {{ request()->routeIs('users.heard_about') ? 'active' : '' }}">
-                                    <i class="far fa-circle nav-icon"></i>
-                                    <p>Heard About</p>
-                                </a>
-                            </li>
-                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('examiners.view') }}" class="nav-link {{ request()->routeIs('examiners.view') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-user-check"></i>
+                            <p>Examiners</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('partners.view') }}" class="nav-link {{ request()->routeIs('partners.view') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-handshake"></i>
+                            <p>Partners</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admins.view') }}" class="nav-link {{ request()->routeIs('admins.view') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-user-shield"></i>
+                            <p>Admins</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('staff.view') }}" class="nav-link {{ request()->routeIs('staff.view') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-id-badge"></i>
+                            <p>Staff</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('unverified.view') }}" class="nav-link {{ request()->routeIs('unverified.view') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-user-clock"></i>
+                            <p>Unverified</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('users.heard_about') }}" class="nav-link {{ request()->routeIs('users.heard_about') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-bullhorn"></i>
+                            <p>Heard About</p>
+                        </a>
                     </li>
 
                     {{-- Partner Logos --}}

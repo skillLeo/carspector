@@ -149,9 +149,9 @@ var AdminBookingsList = function () {
                 scrollX: true,
                 autoWidth: false,
                 columnDefs: [
-                    { targets: [0, 1, 2, 3, 4, 5, 9, 10, 11], className: 'align-middle text-nowrap' },
-                    { targets: [6, 7, 8], className: 'align-middle text-column' },
-                    { targets: -1, className: 'text-end text-nowrap align-middle', orderable: false, searchable: false, width: '430px' }
+                    { targets: [0, 1, 2, 3, 7, 8, 9], className: 'align-middle text-nowrap' },
+                    { targets: [4, 5, 6], className: 'align-middle text-column' },
+                    { targets: -1, className: 'text-end text-nowrap align-middle', orderable: false, searchable: false, width: '90px' }
                 ],
                 ajax: {
                     "url": hostUrl+'admin/fetch-bookings',
@@ -162,7 +162,6 @@ var AdminBookingsList = function () {
                         d.user_id=$('#filter_user_select').val();
                         d.examiner_email=$('#filter_examiner_email').val();
                         d.status=$('#filter_status').val();
-                        d.order_type=$('#filter_order_type').val();
                         // d.space_id=$('.parking-spot').val();
                         // d.daterange=$('.daterange').val();
                         return d;
@@ -200,8 +199,6 @@ var AdminBookingsList = function () {
                     //           return '<a href="#" class="btn-assign-examiner" data-id="'+full.id+'" data-bs-toggle="modal" data-bs-target="#assign_examiner">No Examiner</a>';
                     //       }
                     //     }},
-                    {data:'price_display', name:'price', width:'130px'},
-                    {data:'order_type_display', name:'order_type', width:'170px'},
                     {data:'vehicle_type', name:'vehicle_type', width:'155px'},
                     {data:'status', name:'admin_status', width:'150px'},
                     {data:'vehicle_display', name:'vehicle_make_model', width:'220px'},
@@ -209,7 +206,7 @@ var AdminBookingsList = function () {
                     {data:'examiner_display', name:'examiner_name', width:'190px'},
                     {data:'completed_at_display', name:'completed_at', width:'150px'},
                     {data:'paid_at_display', name:'paid_at', width:'150px'},
-                    {data:'actions', width:'430px'},
+                    {data:'actions', width:'90px'},
                     // {data:'document_in_english'},
                 ]
             }).on("draw", (function () {
@@ -389,8 +386,46 @@ var AdminBookingsList = function () {
                 });
             })();
 
+            $(document).off('change.inlineBooking', '.js-inline-booking-field').on('change.inlineBooking', '.js-inline-booking-field', function(){
+                var $field = $(this);
+                var previous = $field.data('previous');
+                if (typeof previous === 'undefined') {
+                    previous = $field.attr('value') || '';
+                }
+                $field.addClass('is-saving');
+                $.ajax({
+                    url: bookingInlineUpdateRoute,
+                    headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+                    type: 'POST',
+                    data: {
+                        id: $field.data('id'),
+                        field: $field.data('field'),
+                        value: $field.val()
+                    },
+                    success: function(resp){
+                        $field.data('previous', $field.val());
+                        toastr.success('', (resp && resp.message) ? resp.message : 'Booking updated.');
+                        if ($field.data('field') === 'admin_status' && $field.val() === 'Abgeschlossen') {
+                            e.draw(false);
+                        }
+                    },
+                    error: function(xhr){
+                        $field.val(previous);
+                        var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Could not update booking.';
+                        toastr.error('', msg);
+                    },
+                    complete: function(){
+                        $field.removeClass('is-saving');
+                    }
+                });
+            });
+
+            $(document).off('focus.inlineBooking', '.js-inline-booking-field').on('focus.inlineBooking', '.js-inline-booking-field', function(){
+                $(this).data('previous', $(this).val());
+            });
+
             // Filters
-            $('#filter_examiner_email, #filter_status, #filter_order_type').on('keyup change', function(){ e.draw(); });
+            $('#filter_examiner_email, #filter_status').on('keyup change', function(){ e.draw(); });
             $('#filter_user_select').on('change', function(){ e.draw(); });
 
 

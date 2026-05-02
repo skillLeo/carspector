@@ -86,7 +86,7 @@
             overflow-x: auto;
         }
         #kt_table_users {
-            min-width: 2200px;
+            min-width: 1650px;
             table-layout: fixed;
         }
         #kt_table_users th,
@@ -130,27 +130,21 @@
         #kt_table_users .badge {
             white-space: nowrap;
         }
-        #kt_table_users .source-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 46px;
-            padding: .25rem .55rem;
-            border-radius: 999px;
-            font-size: .72rem;
-            font-weight: 700;
-            line-height: 1;
-            letter-spacing: 0;
+        #kt_table_users .inline-admin-field {
+            min-width: 128px;
+            height: 36px;
+            border-radius: .5rem;
+            border-color: #d0d5dd;
+            font-size: .82rem;
+            font-weight: 600;
+            background-color: #fff;
         }
-        #kt_table_users .source-badge-b2c {
-            background: #eef2f6;
-            color: #344054;
-            border: 1px solid #d0d5dd;
+        #kt_table_users .inline-admin-field.is-saving {
+            opacity: .65;
+            pointer-events: none;
         }
-        #kt_table_users .source-badge-b2b {
-            background: #e7f5ff;
-            color: #075985;
-            border: 1px solid #bae6fd;
+        #kt_table_users .inline-date-field {
+            min-width: 136px;
         }
         /* Professional, slightly thicker dividers */
         #kt_table_users thead th { border-bottom: 2px solid var(--bs-gray-400); }
@@ -332,14 +326,6 @@
                                                     <option value="Abgeschlossen">Abgeschlossen</option>
                                                 </select>
                                             </div>
-                                            <div class="mb-3">
-                                                <label class="form-label fw-semibold">Order source</label>
-                                                <select class="form-select" id="filter_order_type">
-                                                    <option value="">Any</option>
-                                                    <option value="B2C">B2C customer orders</option>
-                                                    <option value="B2B">B2B partner orders</option>
-                                                </select>
-                                            </div>
                                             <div class="d-flex justify-content-end gap-2 mt-3">
                                                 <button type="reset" class="btn btn-light" data-admin-table-filter="reset">Reset</button>
                                                 <button type="submit" class="btn btn-primary" data-admin-table-filter="filter">Apply</button>
@@ -387,8 +373,6 @@
 
                                 <th style="width: 130px;">Datum</th>
                                 <th style="width: 150px;">ID</th>
-                                <th style="width: 130px;">Kosten in €</th>
-                                <th style="width: 170px;">Quelle</th>
                                 <th style="width: 155px;">Fahrzeugtyp</th>
                                 <th style="width: 150px;">Status</th>
                                 <th style="width: 220px;">Fahrzeug</th>
@@ -396,7 +380,7 @@
                                 <th style="width: 190px;">Gutachter</th>
                                 <th style="width: 150px;">Abschluss am</th>
                                 <th style="width: 150px;">Bezahlt am</th>
-                                <th class="text-end" style="width: 430px;">Actions</th>
+                                <th class="text-end" style="width: 90px;">Details</th>
                             </tr>
                             <!--end::Table row-->
                             </thead>
@@ -981,6 +965,7 @@
     <script>
         var examinerAssign='{{route('examiners.assign')}}';
         var examinerEmailRoute='{{ route('admin.examiner.email') }}';
+        var bookingInlineUpdateRoute='{{ route('admin.booking.inline-update') }}';
     </script>
 
     @if (session()->has('errors'))
