@@ -738,36 +738,6 @@
                                                 </div>
                                             </div>
                                             </div>
-                                            @if(request('id'))
-                                                <div class="row mb-5 mb-md-4">
-                                                    <div class="col-12">
-                                                        <h5>Details zum Fahrzeug</h5>
-                                                    </div>
-                                                    <div style="padding-top: 15px" class="">
-                                                        <div class="mb-3  mb-lg-4">
-                                                            <p class="mb-0 text-black fs-6">Marke & Modell<sup class="text-primary">*</sup></p>
-                                                            <div class="input-box">
-                                                                <input name="vehicle_make_model" type="text" value="{{old('vehicle_make_model')}}" class="form-control form-control-solid mb-3 mb-lg-0">
-                                                                @error('vehicle_make_model')
-                                                                <div class="invalid-feedback d-block">Dies ist ein Pflichtfeld.</div>
-                                                                @enderror
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="">
-                                                        <div class="mb-3">
-                                                            <p class="mb-0 text-black fs-6">Link zum Inserat - z.B. mobile.de</p>
-                                                            <div class="input-box">
-                                                                <input name="advertisement_link"  value="{{old('advertisement_link')}}" type="text" class="form-control form-control-sm shadow">
-                                                                @error('advertisement_link')
-                                                                <div class="invalid-feedback d-block">Dies ist ein Pflichtfeld.</div>
-                                                                @enderror
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                            @else
 
 
                                                 <?php
@@ -873,8 +843,6 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                            @endif
-
 
                                             <div class="row">
                                                 <div class="">
