@@ -322,7 +322,7 @@ class BookingController extends Controller
 
 
         $order->save();
-        return redirect()->back()->with('success', 'Booking Created Successfully...');
+        return redirect()->route('admin.bookings')->with('success', 'Booking saved successfully.');
     }
 
     public function fetchBookings(Request $request)
