@@ -580,7 +580,12 @@ class BookingController extends Controller
 
         $recipient = $order->email ?: ($order->user->email ?? null);
         if ($recipient) {
-            Mail::to($recipient)->send(new AppointmentSetMail($order));
+            try {
+                Mail::to($recipient)->send(new AppointmentSetMail($order));
+            } catch (\Throwable $e) {
+                Log::warning('Appointment email failed', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+                return redirect()->back()->with('success', 'Appointment saved. (Email could not be sent — check mail config.)');
+            }
         }
 
         return redirect()->back()->with('success', 'Appointment set and customer notified.');

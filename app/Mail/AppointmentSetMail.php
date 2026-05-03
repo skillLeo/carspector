@@ -20,7 +20,7 @@ class AppointmentSetMail extends Mailable
 
     public function build()
     {
-        return $this->markdown('mail.appointment-set', [
+        return $this->view('mail.appointment-set', [
             'order' => $this->order,
         ]);
     }
