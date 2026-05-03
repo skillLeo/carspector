@@ -90,6 +90,8 @@ class BookingController extends Controller
 
 //            Mail::to('info@carspector.de')->send(new ExaminationMail($order,$request->email));
             Mail::to($request->email)->send(new ExaminationMail($order,$request->email,$pass));
+            $order->admin_status = 'Prüfung';
+            $order->status = 'inspecting';
             $order->update();
             return response(['success'=>true,'message'=>'Examiner updated successfully....']);
         }

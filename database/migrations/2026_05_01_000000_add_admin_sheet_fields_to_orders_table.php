@@ -44,11 +44,11 @@ return new class extends Migration {
             DB::table('orders')
                 ->whereNull('admin_status')
                 ->update(['admin_status' => DB::raw("CASE
-                    WHEN status = 'completed' THEN 'Abgeschlossen'
+                    WHEN status = 'completed' THEN 'Completed'
                     WHEN status = 'inspecting' THEN 'Prüfung'
                     WHEN status = 'processing' THEN 'Prüfung'
                     WHEN status = 'visited' THEN 'Fertigstellung'
-                    ELSE 'Zuweisung'
+                    ELSE 'New'
                 END")]);
         }
 

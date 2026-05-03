@@ -519,10 +519,12 @@ Route::group(['prefix'=>'admin','middleware'=>['auth','admin_or_staff']],functio
     Route::get('delete-users',[\App\Http\Controllers\Admin\UserController::class,'deleteUsers'])->name('delete.users');
 
     Route::get('bookings',[\App\Http\Controllers\Admin\BookingController::class,'bookings'])->name('admin.bookings');
+    Route::get('bookings/{order}',[\App\Http\Controllers\Admin\BookingController::class,'showBooking'])->name('admin.bookings.show');
     Route::get('/booking/edit',[\App\Http\Controllers\Admin\BookingController::class,'editBooking'])->name('booking.edit');
 
     Route::post('booking-store',[\App\Http\Controllers\Admin\BookingController::class,'storeBooking'])->name('admin.booking.store');
     Route::post('booking-inline-update',[\App\Http\Controllers\Admin\BookingController::class,'updateInline'])->name('admin.booking.inline-update');
+    Route::post('bookings/{order}/status',[\App\Http\Controllers\Admin\BookingController::class,'confirmStatus'])->name('admin.booking.status-confirm');
     Route::post('send-examiner-email',[\App\Http\Controllers\Admin\BookingController::class,'sendExaminerEmail'])->name('admin.examiner.email');
     Route::get('fetch-bookings',[\App\Http\Controllers\Admin\BookingController::class,'fetchBookings'])->name('bookings.fetch');
     Route::get('new-bookings',[\App\Http\Controllers\Admin\BookingController::class,'newBookings'])->name('admin.new-bookings.index');

@@ -1340,6 +1340,7 @@ class FrontPageController extends Controller
                 $examination->update();
 
                 $order->status='inspecting';
+                $order->admin_status='Fertigstellung';
                 $order->update();
 
                 try {

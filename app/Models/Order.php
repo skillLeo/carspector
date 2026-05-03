@@ -21,6 +21,10 @@ class Order extends Model
         parent::boot();
 
         static::creating(function (self $order) {
+            if (empty($order->admin_status)) {
+                $order->admin_status = 'New';
+            }
+
             if (empty($order->pdf_number)) {
                 // ensure uniqueness in application layer; DB unique index is the final guard
                 do {
@@ -40,14 +44,31 @@ class Order extends Model
 
     public static function formatOrderNumber(self $order): string
     {
-        $year = $order->created_at ? $order->created_at->format('Y') : now()->format('Y');
+        return self::generateMonthlyOrderNumber($order);
+    }
 
-        return 'CS-' . $year . '-' . str_pad((string) $order->id, 5, '0', STR_PAD_LEFT);
+    public static function generateMonthlyOrderNumber(?self $order = null): string
+    {
+        $date = $order && $order->created_at ? $order->created_at : now();
+        $prefix = $date->format('ym');
+        $id = $order?->id ?: 1;
+        $next = 101 + (($id - 1) * 3);
+
+        return $prefix . $next;
+    }
+
+    public function getDisplayOrderNumberAttribute(): string
+    {
+        if ($this->orderno && preg_match('/^\d{7}$/', $this->orderno)) {
+            return $this->orderno;
+        }
+
+        return self::formatOrderNumber($this);
     }
 
     public function getFormattedOrderNumberAttribute(): string
     {
-        return $this->orderno ?: self::formatOrderNumber($this);
+        return $this->display_order_number;
     }
 
     public function examiner(){

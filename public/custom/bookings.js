@@ -405,7 +405,7 @@ var AdminBookingsList = function () {
                     success: function(resp){
                         $field.data('previous', $field.val());
                         toastr.success('', (resp && resp.message) ? resp.message : 'Booking updated.');
-                        if ($field.data('field') === 'admin_status' && $field.val() === 'Abgeschlossen') {
+                        if ($field.data('field') === 'admin_status' && $field.val() === 'Completed') {
                             e.draw(false);
                         }
                     },
@@ -422,6 +422,21 @@ var AdminBookingsList = function () {
 
             $(document).off('focus.inlineBooking', '.js-inline-booking-field').on('focus.inlineBooking', '.js-inline-booking-field', function(){
                 $(this).data('previous', $(this).val());
+            });
+
+            $(document).off('click.statusModal', '.js-open-status-modal').on('click.statusModal', '.js-open-status-modal', function(){
+                var id = $(this).data('id');
+                var current = ($(this).data('current') || '').toString();
+                var normalized = current === 'Prüfung' ? 'Pruefung' : current;
+                if (normalized === 'Abgeschlossen') {
+                    normalized = 'Completed';
+                }
+                if (normalized.indexOf('fung') !== -1) {
+                    normalized = 'Pruefung';
+                }
+                $('#status_confirm_select').val(normalized);
+                $('#statusConfirmForm').attr('action', bookingStatusConfirmBase + '/' + id + '/status');
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('status_confirm_modal')).show();
             });
 
             // Filters

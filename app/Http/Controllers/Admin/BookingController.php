@@ -46,6 +46,13 @@ class BookingController extends Controller
         ]);
 
     }
+
+    public function showBooking(Order $order)
+    {
+        $order->load(['user', 'examiner', 'b2bPartner', 'partnerLogo']);
+        return view('admin.booking-detail', compact('order'));
+    }
+
     public function sendExaminerEmail(Request $request)
     {
         if (!auth()->check() || !in_array(auth()->user()->type, ['admin', 'staff'])) {
@@ -83,6 +90,8 @@ class BookingController extends Controller
             }
 
 //            $order->examiner_id = $examiner->id;
+            $order->admin_status = 'Prüfung';
+            $order->status = 'inspecting';
             $order->save();
 
             $customMessage = trim((string) ($data['message'] ?? '')) ?: null;
@@ -126,6 +135,8 @@ class BookingController extends Controller
                 $examination->update();
             }
             $order->status='completed';
+            $order->admin_status = 'Completed';
+            $order->completed_at = $order->completed_at ?: now();
             $order->update();
             // Determine whether to hide upsell sections in the email
             $hideUpsell = (bool) $request->boolean('no_upsell');
@@ -179,6 +190,8 @@ class BookingController extends Controller
                 $examination->update();
             }
             $order->status = 'completed';
+            $order->admin_status = 'Completed';
+            $order->completed_at = $order->completed_at ?: now();
             $order->update();
 
             $hideUpsell = (bool) $request->boolean('no_upsell');
@@ -271,7 +284,7 @@ class BookingController extends Controller
         $order->admin_order_date = $this->parseOptionalDate($request->admin_order_date);
         $order->customer_name = trim((string) $request->customer_name) ?: null;
         $order->examiner_name = trim((string) $request->examiner_name) ?: null;
-        $order->admin_status = trim((string) $request->admin_status) ?: ($order->admin_status ?: 'Zuweisung');
+        $order->admin_status = trim((string) $request->admin_status) ?: ($order->admin_status ?: 'New');
         $order->completed_at = $this->parseOptionalDate($request->completed_at);
         $order->paid_at = $this->parseOptionalDate($request->paid_at);
         $order->make_year = isset($request['make_year']) ? $request['make_year'] : '';
@@ -333,7 +346,16 @@ class BookingController extends Controller
                 $qq->where('email', 'like', '%'.$request->examiner_email.'%');
             });
         })->when(($request->status ?? '') !== '', function($q) use ($request){
-            return $q->where('orders.admin_status', $request->status);
+            $status = $request->status === 'Pruefung' ? 'Prüfung' : $request->status;
+            return $q->where(function ($qq) use ($status) {
+                $qq->where('orders.admin_status', $status);
+                if ($status === 'Completed') {
+                    $qq->orWhere('orders.admin_status', 'Abgeschlossen');
+                }
+                if ($status === 'Prüfung') {
+                    $qq->orWhere('orders.admin_status', 'Pruefung');
+                }
+            });
         })->when(in_array($request->order_type, ['B2B', 'B2C'], true), function($q) use ($request){
             return $q->where('orders.order_type', $request->order_type);
         });
@@ -344,7 +366,7 @@ class BookingController extends Controller
                     ->orWhere('orders.pdf_number', 'like', "%{$keyword}%");
             });
         })->addColumn('order_number', function ($booking) {
-            $orderNumber = $booking->orderno ?: Order::formatOrderNumber($booking);
+            $orderNumber = $booking->display_order_number;
             return '<span class="fw-semibold text-nowrap">' . e($orderNumber) . '</span>';
         })->addColumn('admin_order_date_display', function ($booking) {
             $date = $booking->admin_order_date ? $booking->admin_order_date->format('d.m.Y') : $booking->created_at->format('d.m.Y');
@@ -400,7 +422,7 @@ class BookingController extends Controller
         })->addColumn('actions', function ($booking) {
             $examinerEmail = $booking->examiner && $booking->examiner->email ? e($booking->examiner->email) : '';
             $customerName = $booking->customer_name ?: ($booking->user->name ?? $booking->name ?? '');
-            $bookingCode = $booking->orderno ?: Order::formatOrderNumber($booking);
+            $bookingCode = $booking->display_order_number;
             $manualMailData = [
                 'data-customer-name' => $customerName,
                 'data-booking-code' => $bookingCode,
@@ -415,12 +437,49 @@ class BookingController extends Controller
                 $emailDataAttributes .= sprintf(' %s="%s"', $attribute, e($value ?? ''));
             }
 
-            return '<a href="#" data-id="' . $booking->id . '" data-bs-toggle="modal" data-bs-target="#exampleModal" class="btn action-btn btn-order-details btn-sm btn-outline-secondary" title="View Details"><i class="fas fa-eye"></i></a>';
+            return '<a href="' . route('admin.bookings.show', $booking->id) . '" class="btn action-btn btn-sm btn-outline-secondary" title="View Details"><i class="fas fa-eye"></i></a>';
         })->editColumn('created_at', function ($booking) {
             return date('d M Y, H:i a', strtotime($booking->created_at));
         })->addColumn('booking_time', function ($booking) {
             return date('d M Y, H:i', strtotime($booking->date . ' ' . $booking->time));
         })->editColumn('status', function ($booking) {
+            $current = $booking->admin_status ?: ($booking->status == 'completed' ? 'Completed' : 'New');
+            if ($current === 'Abgeschlossen') {
+                $current = 'Completed';
+            } elseif ($current === 'Pruefung' || str_contains($current, 'fung')) {
+                $current = 'Pruefung';
+            }
+            $classes = [
+                'New' => 'badge-secondary',
+                'Zuweisung' => 'badge-secondary',
+                'Pruefung' => 'badge-info',
+                'PrÃ¼fung' => 'badge-info',
+                'Prüfung' => 'badge-info',
+                'Fertigstellung' => 'badge-warning',
+                'Completed' => 'badge-success',
+                'Abgeschlossen' => 'badge-success',
+                'Problem' => 'badge-danger',
+            ];
+            $class = $classes[$current] ?? 'badge-primary';
+            $labels = [
+                'New' => 'New',
+                'Zuweisung' => 'Zuweisung',
+                'Pruefung' => 'Pr&uuml;fung',
+                'Fertigstellung' => 'Fertigstellung',
+                'Completed' => 'Completed',
+                'Problem' => 'Problem',
+            ];
+            return '<button type="button" class="badge border-0 ' . $class . ' js-open-status-modal" data-id="' . $booking->id . '" data-current="' . e($current) . '">' . ($labels[$current] ?? e($current)) . '</button>';
+            $current = $booking->admin_status ?: ($booking->status == 'completed' ? 'Abgeschlossen' : 'Pruefung');
+            $classes = [
+                'Zuweisung' => 'badge-secondary',
+                'Pruefung' => 'badge-info',
+                'Prüfung' => 'badge-info',
+                'Fertigstellung' => 'badge-warning',
+                'Abgeschlossen' => 'badge-success',
+            ];
+            $class = $classes[$current] ?? 'badge-primary';
+            return '<button type="button" class="badge border-0 ' . $class . ' js-open-status-modal" data-id="' . $booking->id . '" data-current="' . e($current) . '">' . e($current) . '</button>';
             $current = $booking->admin_status ?: ($booking->status == 'completed' ? 'Abgeschlossen' : 'PrÃ¼fung');
             $statuses = ['Zuweisung', 'PrÃ¼fung', 'Fertigstellung', 'Abgeschlossen'];
             $html = '<select class="form-select form-select-sm inline-admin-field js-inline-booking-field" data-id="' . $booking->id . '" data-field="admin_status">';
@@ -478,6 +537,18 @@ class BookingController extends Controller
         $value = trim((string) ($data['value'] ?? ''));
 
         if ($data['field'] === 'admin_status') {
+            $allowed = ['New', 'Zuweisung', 'Pruefung', 'Fertigstellung', 'Completed', 'Problem'];
+            abort_unless(in_array($value, $allowed, true), 422, 'Invalid status.');
+            $order->admin_status = $value;
+            if ($value === 'Completed') {
+                $order->status = 'completed';
+                $order->completed_at = $order->completed_at ?: now();
+            } elseif (in_array($value, ['Pruefung', 'Fertigstellung'], true)) {
+                $order->status = 'inspecting';
+            } else {
+                $order->status = 'processing';
+            }
+        } elseif (false && $data['field'] === 'admin_status') {
             $allowed = ['Zuweisung', 'PrÃ¼fung', 'Fertigstellung', 'Abgeschlossen'];
             abort_unless(in_array($value, $allowed, true), 422, 'Invalid status.');
             $order->admin_status = $value;
@@ -503,6 +574,147 @@ class BookingController extends Controller
         ]);
     }
 
+    public function confirmStatus(Request $request, Order $order)
+    {
+        $status = (string) $request->input('admin_status');
+        if (in_array($status, ['New', 'Zuweisung', 'Pruefung', 'Prüfung', 'Fertigstellung', 'Completed', 'Problem'], true)) {
+            if (auth()->check() && auth()->user()->type === 'staff') {
+                abort(403, 'Staff is not allowed to change status.');
+            }
+
+            $status = $status === 'Pruefung' ? 'Prüfung' : $status;
+
+            if ($status === 'Completed') {
+                $order->status = 'completed';
+                $order->admin_status = 'Completed';
+                $order->completed_at = $order->completed_at ?: now();
+
+                $examination = OrderExamination::where('order_id', $order->id)->first();
+                if ($examination) {
+                    $examination->status = 'finished';
+                    $examination->update();
+                }
+
+                $order->update();
+
+                $isEnglish = (bool) ($order->document_in_english ?? false);
+                $isEnglish
+                    ? app(OrderPdfService::class)->generateAndStoreEn($order)
+                    : app(OrderPdfService::class)->generateAndStore($order);
+
+                try {
+                    if ($isEnglish) {
+                        Mail::to($order->email)->send(new \App\Mail\PdfOrderEn($order, $examination, $order->user));
+                    } else {
+                        Mail::to($order->email)->send(new PdfOrder($order, $examination, $order->user));
+                    }
+                } catch (Throwable $e) {
+                    Log::warning('Manual status PDF mail send failed', [
+                        'order_id' => $order->id,
+                        'email' => $order->email,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+
+                return redirect()->back()->with('success', 'Booking status updated and PDF email processed.');
+            }
+
+            $order->admin_status = $status;
+            $order->status = in_array($status, ['Prüfung', 'Fertigstellung'], true) ? 'inspecting' : 'processing';
+
+            if ($status === 'Prüfung') {
+                try {
+                    $examination = OrderExamination::where('order_id', $order->id)->first();
+                    if ($examination) {
+                        $examination->status = 'inspecting';
+                        $examination->update();
+                    }
+                    $recipient = $order->user->email ?? $order->email;
+                    if ($recipient) {
+                        Mail::to($recipient)->send(new ExaminationStatusMail($order, $examination, $order->user));
+                    }
+                } catch (Throwable $e) {
+                    Log::debug($e->getMessage());
+                }
+            }
+
+            $order->update();
+
+            return redirect()->back()->with('success', 'Booking status updated successfully.');
+        }
+
+        if (auth()->check() && auth()->user()->type === 'staff') {
+            abort(403, 'Staff is not allowed to change status.');
+        }
+
+        $data = $request->validate([
+            'admin_status' => ['required', 'in:Zuweisung,Pruefung,Prüfung,Fertigstellung,Abgeschlossen'],
+        ]);
+
+        $status = $data['admin_status'];
+        if ($status === 'Pruefung') {
+            $status = 'Prüfung';
+        }
+
+        if ($status === 'Abgeschlossen') {
+            $order->status = 'completed';
+            $order->admin_status = 'Abgeschlossen';
+            $order->completed_at = $order->completed_at ?: now();
+
+            $examination = OrderExamination::where('order_id', $order->id)->first();
+            if ($examination) {
+                $examination->status = 'finished';
+                $examination->update();
+            }
+
+            $order->update();
+
+            $isEnglish = (bool) ($order->document_in_english ?? false);
+            $isEnglish
+                ? app(OrderPdfService::class)->generateAndStoreEn($order)
+                : app(OrderPdfService::class)->generateAndStore($order);
+
+            try {
+                if ($isEnglish) {
+                    Mail::to($order->email)->send(new \App\Mail\PdfOrderEn($order, $examination, $order->user));
+                } else {
+                    Mail::to($order->email)->send(new PdfOrder($order, $examination, $order->user));
+                }
+            } catch (Throwable $e) {
+                Log::warning('Manual status PDF mail send failed', [
+                    'order_id' => $order->id,
+                    'email' => $order->email,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'Booking status updated and PDF email processed.');
+        }
+
+        $order->admin_status = $status;
+        $order->status = in_array($status, ['Prüfung', 'Fertigstellung'], true) ? 'inspecting' : 'processing';
+
+        if ($status === 'Prüfung') {
+            try {
+                $examination = OrderExamination::where('order_id', $order->id)->first();
+                if ($examination) {
+                    $examination->status = 'inspecting';
+                    $examination->update();
+                }
+                $recipient = $order->user->email ?? $order->email;
+                if ($recipient) {
+                    Mail::to($recipient)->send(new ExaminationStatusMail($order, $examination, $order->user));
+                }
+            } catch (Throwable $e) {
+                Log::debug($e->getMessage());
+            }
+        }
+
+        $order->update();
+
+        return redirect()->back()->with('success', 'Booking status updated successfully.');
+    }
+
     public function bookingStatus($id, Request $request)
     {
         if (auth()->check() && auth()->user()->type === 'staff') {
@@ -515,7 +727,7 @@ class BookingController extends Controller
             if ($request->status == 'completed') {
 
                 $order->status = 'completed';
-                $order->admin_status = 'Abgeschlossen';
+                $order->admin_status = 'Completed';
                 $order->completed_at = $order->completed_at ?: now();
                 if ($order){
                     $examination=OrderExamination::where('order_id',$order->id)->first();

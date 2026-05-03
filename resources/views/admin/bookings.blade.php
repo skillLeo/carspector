@@ -94,9 +94,11 @@
             vertical-align: middle;
             padding: .75rem .85rem;
             line-height: 1.25;
+            font-size: .86rem;
         }
         #kt_table_users th {
             white-space: nowrap;
+            font-size: .78rem;
         }
         #kt_table_users .booking-actions {
             display: inline-flex;
@@ -320,10 +322,12 @@
                                                 <label class="form-label fw-semibold">Status</label>
                                                 <select class="form-select" id="filter_status">
                                                     <option value="">Any</option>
+                                                    <option value="New">New</option>
                                                     <option value="Zuweisung">Zuweisung</option>
-                                                    <option value="Prüfung">Prüfung</option>
+                                                    <option value="Pruefung">Pr&uuml;fung</option>
                                                     <option value="Fertigstellung">Fertigstellung</option>
-                                                    <option value="Abgeschlossen">Abgeschlossen</option>
+                                                    <option value="Completed">Completed</option>
+                                                    <option value="Problem">Problem</option>
                                                 </select>
                                             </div>
                                             <div class="d-flex justify-content-end gap-2 mt-3">
@@ -527,6 +531,36 @@
         </div>
     </div>
 
+    <div class="modal fade" tabindex="-1" id="status_confirm_modal" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form class="modal-content" id="statusConfirmForm" method="POST">
+                @csrf
+                <div class="modal-header">
+                    <h3 class="modal-title">Change booking status</h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label fw-semibold">Status</label>
+                    <select class="form-select" name="admin_status" id="status_confirm_select">
+                        <option value="New">New</option>
+                        <option value="Zuweisung">Zuweisung</option>
+                        <option value="Pruefung">Pr&uuml;fung</option>
+                        <option value="Fertigstellung">Fertigstellung</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Problem">Problem</option>
+                    </select>
+                    <div class="form-text mt-3">
+                        Confirming specific statuses can send the same customer emails used by the existing status workflow.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Confirm status</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
                         (function () {
                             const emailInput = document.getElementById("email_examiner_email");
@@ -656,9 +690,12 @@
                                                         <div class="input-box">
                                                             <select class="form-select" name="admin_status">
                                                                 <option value="">Select status</option>
-                                                                @foreach(['Zuweisung', 'Prüfung', 'Fertigstellung', 'Abgeschlossen'] as $sheetStatus)
-                                                                    <option value="{{ $sheetStatus }}" {{ old('admin_status') === $sheetStatus ? 'selected' : '' }}>{{ $sheetStatus }}</option>
-                                                                @endforeach
+                                                                <option value="New" {{ old('admin_status') === 'New' ? 'selected' : '' }}>New</option>
+                                                                <option value="Zuweisung" {{ old('admin_status') === 'Zuweisung' ? 'selected' : '' }}>Zuweisung</option>
+                                                                <option value="Pruefung" {{ old('admin_status') === 'Pruefung' ? 'selected' : '' }}>Pr&uuml;fung</option>
+                                                                <option value="Fertigstellung" {{ old('admin_status') === 'Fertigstellung' ? 'selected' : '' }}>Fertigstellung</option>
+                                                                <option value="Completed" {{ old('admin_status') === 'Completed' ? 'selected' : '' }}>Completed</option>
+                                                                <option value="Problem" {{ old('admin_status') === 'Problem' ? 'selected' : '' }}>Problem</option>
                                                             </select>
                                                         </div>
                                                     </div>
@@ -966,6 +1003,7 @@
         var examinerAssign='{{route('examiners.assign')}}';
         var examinerEmailRoute='{{ route('admin.examiner.email') }}';
         var bookingInlineUpdateRoute='{{ route('admin.booking.inline-update') }}';
+        var bookingStatusConfirmBase='{{ url('admin/bookings') }}';
     </script>
 
     @if (session()->has('errors'))
