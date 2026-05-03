@@ -98,7 +98,7 @@
         }
         #kt_table_users th {
             white-space: nowrap;
-            font-size: .60rem;
+            font-size: .55rem !important;
             letter-spacing: 0;
         }
         #kt_table_users .booking-actions {
@@ -397,9 +397,9 @@
 {{--                                </th>--}}
 
                                 <th style="width: 130px;">Datum</th>
-                                <th style="width: 80px;">ID</th>
+                                <th style="width: 60px;">ID</th>
                                 <th style="width: 155px;">Fahrzeugtyp</th>
-                                <th style="width: 88px;">Status</th>
+                                <th style="width: 70px;">Status</th>
                                 <th style="width: 220px;">Fahrzeug</th>
                                 <th style="width: 240px;">Kunde</th>
                                 <th style="width: 190px;">Gutachter</th>

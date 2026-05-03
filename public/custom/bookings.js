@@ -179,7 +179,7 @@ var AdminBookingsList = function () {
                     //         return "";
                     //     }},
                     {data:'admin_order_date_display', name:'admin_order_date', width:'120px'},
-                    {data:'order_number', name:'orderno', width:'80px'},
+                    {data:'order_number', name:'orderno', width:'60px'},
                     // {data:'examiner.name','name':'examiner.first_name',render:function(data,row,full){
                     //         console.log(full);
                     //       if (full.examiner){
@@ -200,7 +200,7 @@ var AdminBookingsList = function () {
                     //       }
                     //     }},
                     {data:'vehicle_type', name:'vehicle_type', width:'155px'},
-                    {data:'status', name:'admin_status', width:'88px'},
+                    {data:'status', name:'admin_status', width:'70px'},
                     {data:'vehicle_display', name:'vehicle_make_model', width:'220px'},
                     {data:'customer_display', name:'customer_name', width:'240px'},
                     {data:'examiner_display', name:'examiner_name', width:'190px'},
