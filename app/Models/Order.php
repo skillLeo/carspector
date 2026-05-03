@@ -12,6 +12,7 @@ class Order extends Model
 
     protected $casts = [
         'admin_order_date' => 'date',
+        'appointment_date' => 'date',
         'completed_at' => 'datetime',
         'paid_at' => 'datetime',
     ];

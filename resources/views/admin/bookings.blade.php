@@ -86,7 +86,7 @@
             overflow-x: auto;
         }
         #kt_table_users {
-            min-width: 1650px;
+            min-width: 1270px;
             table-layout: fixed;
         }
         #kt_table_users th,
@@ -98,7 +98,8 @@
         }
         #kt_table_users th {
             white-space: nowrap;
-            font-size: .78rem;
+            font-size: .60rem;
+            letter-spacing: 0;
         }
         #kt_table_users .booking-actions {
             display: inline-flex;
@@ -131,6 +132,23 @@
         }
         #kt_table_users .badge {
             white-space: nowrap;
+        }
+        .booking-scope-tabs {
+            gap: .3rem;
+            flex-wrap: wrap;
+        }
+        .booking-scope-tabs .btn {
+            min-width: 88px;
+            padding: .38rem .75rem;
+            border-radius: .35rem !important;
+            font-size: .85rem;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+        .booking-scope-tabs .btn.active {
+            background: var(--bs-primary);
+            border-color: var(--bs-primary);
+            color: #fff;
         }
         #kt_table_users .inline-admin-field {
             min-width: 128px;
@@ -288,12 +306,15 @@
 @section('content')
                 <div class="card">
                     <!--begin::Card header-->
-                    <div class="card-header border-0 pt-6">
-                        <!--begin::Card title-->
-                        <div class="card-title">
-                            <div class="d-flex align-items-center my-1">
-                                <input type="text" data-admin-table-filter="search" class="form-control w-250px" placeholder="Search..." />
+                    <div class="card-header border-0 pt-5">
+                        <!--begin::Card title: scope tabs + search-->
+                        <div class="card-title d-flex flex-column align-items-start gap-0">
+                            <div class="d-flex booking-scope-tabs mb-3" role="group" aria-label="Booking filters">
+                                <button type="button" class="btn btn-sm btn-outline-primary active" data-booking-scope="all">All Bookings</button>
+                                <button type="button" class="btn btn-sm btn-outline-primary" data-booking-scope="active">Active Bookings</button>
+                                <button type="button" class="btn btn-sm btn-outline-primary" data-booking-scope="ready">Fertigstellung</button>
                             </div>
+                            <input type="text" data-admin-table-filter="search" class="form-control w-200px" placeholder="Search..." />
                         </div>
                         <!--begin::Card toolbar-->
                         <div class="card-toolbar">
@@ -376,15 +397,14 @@
 {{--                                </th>--}}
 
                                 <th style="width: 130px;">Datum</th>
-                                <th style="width: 150px;">ID</th>
+                                <th style="width: 80px;">ID</th>
                                 <th style="width: 155px;">Fahrzeugtyp</th>
-                                <th style="width: 150px;">Status</th>
+                                <th style="width: 88px;">Status</th>
                                 <th style="width: 220px;">Fahrzeug</th>
                                 <th style="width: 240px;">Kunde</th>
                                 <th style="width: 190px;">Gutachter</th>
                                 <th style="width: 150px;">Abschluss am</th>
                                 <th style="width: 150px;">Bezahlt am</th>
-                                <th class="text-end" style="width: 90px;">Details</th>
                             </tr>
                             <!--end::Table row-->
                             </thead>

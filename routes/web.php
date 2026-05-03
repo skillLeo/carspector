@@ -524,6 +524,7 @@ Route::group(['prefix'=>'admin','middleware'=>['auth','admin_or_staff']],functio
 
     Route::post('booking-store',[\App\Http\Controllers\Admin\BookingController::class,'storeBooking'])->name('admin.booking.store');
     Route::post('booking-inline-update',[\App\Http\Controllers\Admin\BookingController::class,'updateInline'])->name('admin.booking.inline-update');
+    Route::post('bookings/{order}/appointment',[\App\Http\Controllers\Admin\BookingController::class,'updateAppointment'])->name('admin.booking.appointment');
     Route::post('bookings/{order}/status',[\App\Http\Controllers\Admin\BookingController::class,'confirmStatus'])->name('admin.booking.status-confirm');
     Route::post('send-examiner-email',[\App\Http\Controllers\Admin\BookingController::class,'sendExaminerEmail'])->name('admin.examiner.email');
     Route::get('fetch-bookings',[\App\Http\Controllers\Admin\BookingController::class,'fetchBookings'])->name('bookings.fetch');

@@ -124,6 +124,7 @@ class ExaminationController extends Controller
 
             $order->examiner_id = null;
             $order->status = 'pending';
+            $order->admin_status = 'New';
             $order->update();
           $examination=OrderExamination::where('order_id',$id)->first();
           if ($examination) {

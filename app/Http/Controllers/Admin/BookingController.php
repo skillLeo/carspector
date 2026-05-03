@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\AppointmentSetMail;
 use App\Mail\ExaminationStatusMail;
 use App\Mail\ExaminerBookingMail;
 use App\Mail\PdfOrder;
@@ -345,6 +346,13 @@ class BookingController extends Controller
             return $q->whereHas('examiner', function($qq) use ($request){
                 $qq->where('email', 'like', '%'.$request->examiner_email.'%');
             });
+        })->when(($request->booking_scope ?? '') === 'active', function ($q) {
+            return $q->where(function ($qq) {
+                $qq->whereNull('orders.admin_status')
+                    ->orWhereNotIn('orders.admin_status', ['Completed', 'Abgeschlossen', 'Fertigstellung']);
+            });
+        })->when(($request->booking_scope ?? '') === 'ready', function ($q) {
+            return $q->where('orders.admin_status', 'Fertigstellung');
         })->when(($request->status ?? '') !== '', function($q) use ($request){
             $status = $request->status === 'Pruefung' ? 'Prüfung' : $request->status;
             return $q->where(function ($qq) use ($status) {
@@ -367,7 +375,7 @@ class BookingController extends Controller
             });
         })->addColumn('order_number', function ($booking) {
             $orderNumber = $booking->display_order_number;
-            return '<span class="fw-semibold text-nowrap">' . e($orderNumber) . '</span>';
+            return '<a href="' . route('admin.bookings.show', $booking->id) . '" class="fw-semibold text-nowrap text-primary">' . e($orderNumber) . '</a>';
         })->addColumn('admin_order_date_display', function ($booking) {
             $date = $booking->admin_order_date ? $booking->admin_order_date->format('d.m.Y') : $booking->created_at->format('d.m.Y');
             return '<span class="text-nowrap">' . e($date) . '</span>';
@@ -419,25 +427,6 @@ class BookingController extends Controller
                 return '<a class="btn-assign-examiner" href="#assign_examiner" data-id="'.$row->id.'" data-bs-target="#assign_examiner" data-bs-toggle="modal">'.$row->examiner->email.'</a>';
             }
             return '<a class="btn-assign-examiner" href="#assign_examiner" data-id="'.$row->id.'" data-bs-target="#assign_examiner" data-bs-toggle="modal">Assign Examiner</a>';
-        })->addColumn('actions', function ($booking) {
-            $examinerEmail = $booking->examiner && $booking->examiner->email ? e($booking->examiner->email) : '';
-            $customerName = $booking->customer_name ?: ($booking->user->name ?? $booking->name ?? '');
-            $bookingCode = $booking->display_order_number;
-            $manualMailData = [
-                'data-customer-name' => $customerName,
-                'data-booking-code' => $bookingCode,
-                'data-car-model' => $booking->vehicle_make_model ?: ($booking->vehicle_type ?? ''),
-                'data-seller-name' => $booking->seller_name ?? ($booking->name ?? ''),
-                'data-seller-address' => $booking->seller_address ?? $booking->inspection_address ?? $booking->street ?? '',
-                'data-seller-phone' => $booking->seller_phone ?? $booking->phone ?? '',
-                'data-listing-link' => $booking->advertisement_link ?? $booking->link ?? '',
-            ];
-            $emailDataAttributes = '';
-            foreach ($manualMailData as $attribute => $value) {
-                $emailDataAttributes .= sprintf(' %s="%s"', $attribute, e($value ?? ''));
-            }
-
-            return '<a href="' . route('admin.bookings.show', $booking->id) . '" class="btn action-btn btn-sm btn-outline-secondary" title="View Details"><i class="fas fa-eye"></i></a>';
         })->editColumn('created_at', function ($booking) {
             return date('d M Y, H:i a', strtotime($booking->created_at));
         })->addColumn('booking_time', function ($booking) {
@@ -522,7 +511,7 @@ class BookingController extends Controller
 
             }
             return '';
-        })->rawColumns(['actions', 'status','examiner_id', 'order_number', 'admin_order_date_display', 'completed_at_display', 'paid_at_display', 'customer_display', 'vehicle_display', 'examiner_display'])->make(true);
+        })->rawColumns(['status','examiner_id', 'order_number', 'admin_order_date_display', 'completed_at_display', 'paid_at_display', 'customer_display', 'vehicle_display', 'examiner_display'])->make(true);
     }
 
     public function updateInline(Request $request)
@@ -572,6 +561,29 @@ class BookingController extends Controller
             'success' => true,
             'message' => 'Booking updated successfully.',
         ]);
+    }
+
+    public function updateAppointment(Request $request, Order $order)
+    {
+        if (!auth()->check() || auth()->user()->type !== 'admin') {
+            abort(403);
+        }
+
+        $data = $request->validate([
+            'appointment_date' => ['required', 'date'],
+            'appointment_time' => ['nullable', 'date_format:H:i'],
+        ]);
+
+        $order->appointment_date = $data['appointment_date'];
+        $order->appointment_time = $data['appointment_time'] ?? null;
+        $order->save();
+
+        $recipient = $order->email ?: ($order->user->email ?? null);
+        if ($recipient) {
+            Mail::to($recipient)->send(new AppointmentSetMail($order));
+        }
+
+        return redirect()->back()->with('success', 'Appointment set and customer notified.');
     }
 
     public function confirmStatus(Request $request, Order $order)

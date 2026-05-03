@@ -149,9 +149,8 @@ var AdminBookingsList = function () {
                 scrollX: true,
                 autoWidth: false,
                 columnDefs: [
-                    { targets: [0, 1, 2, 3, 7, 8, 9], className: 'align-middle text-nowrap' },
-                    { targets: [4, 5, 6], className: 'align-middle text-column' },
-                    { targets: -1, className: 'text-end text-nowrap align-middle', orderable: false, searchable: false, width: '90px' }
+                    { targets: [0, 1, 2, 3, 7, 8], className: 'align-middle text-nowrap' },
+                    { targets: [4, 5, 6], className: 'align-middle text-column' }
                 ],
                 ajax: {
                     "url": hostUrl+'admin/fetch-bookings',
@@ -162,6 +161,7 @@ var AdminBookingsList = function () {
                         d.user_id=$('#filter_user_select').val();
                         d.examiner_email=$('#filter_examiner_email').val();
                         d.status=$('#filter_status').val();
+                        d.booking_scope=$('.booking-scope-tabs [data-booking-scope].active').data('bookingScope') || 'all';
                         // d.space_id=$('.parking-spot').val();
                         // d.daterange=$('.daterange').val();
                         return d;
@@ -178,8 +178,8 @@ var AdminBookingsList = function () {
                     //         //     '                                    </div>';
                     //         return "";
                     //     }},
-                    {data:'admin_order_date_display', name:'admin_order_date', width:'130px'},
-                    {data:'order_number', name:'orderno', width:'150px'},
+                    {data:'admin_order_date_display', name:'admin_order_date', width:'120px'},
+                    {data:'order_number', name:'orderno', width:'80px'},
                     // {data:'examiner.name','name':'examiner.first_name',render:function(data,row,full){
                     //         console.log(full);
                     //       if (full.examiner){
@@ -200,13 +200,12 @@ var AdminBookingsList = function () {
                     //       }
                     //     }},
                     {data:'vehicle_type', name:'vehicle_type', width:'155px'},
-                    {data:'status', name:'admin_status', width:'150px'},
+                    {data:'status', name:'admin_status', width:'88px'},
                     {data:'vehicle_display', name:'vehicle_make_model', width:'220px'},
                     {data:'customer_display', name:'customer_name', width:'240px'},
                     {data:'examiner_display', name:'examiner_name', width:'190px'},
                     {data:'completed_at_display', name:'completed_at', width:'150px'},
                     {data:'paid_at_display', name:'paid_at', width:'150px'},
-                    {data:'actions', width:'90px'},
                     // {data:'document_in_english'},
                 ]
             }).on("draw", (function () {
@@ -217,12 +216,6 @@ var AdminBookingsList = function () {
                     document.querySelectorAll('#kt_table_users [title]')
                         .forEach(function (el) { try { new bootstrap.Tooltip(el); } catch (e) {} });
                 }
-                // Ensure actions column is right-aligned and stays on one line.
-                $('#kt_table_users tbody tr').each(function(){
-                    var $cells = $(this).find('td');
-                    var $actions = $cells.eq($cells.length-1); // actions column
-                    $actions.addClass('text-end text-nowrap align-middle');
-                });
                 // Ensure all columns are visible on desktop, let Responsive collapse on small screens
 
                 // Add confirmation on send buttons (including send-customer-pdf)
@@ -442,6 +435,11 @@ var AdminBookingsList = function () {
             // Filters
             $('#filter_examiner_email, #filter_status').on('keyup change', function(){ e.draw(); });
             $('#filter_user_select').on('change', function(){ e.draw(); });
+            $(document).off('click.bookingScope', '.booking-scope-tabs [data-booking-scope]').on('click.bookingScope', '.booking-scope-tabs [data-booking-scope]', function(){
+                $('.booking-scope-tabs [data-booking-scope]').removeClass('active');
+                $(this).addClass('active');
+                e.draw();
+            });
 
 
             var orderid='';
@@ -710,6 +708,50 @@ var AdminBookingsList = function () {
                 }
                 return String(value).substring(0, 10);
             }
+
+            // Auto-open edit modal when coming back from detail page Edit button (?id=N in URL)
+            (function(){
+                if (!bookingModalEl) return;
+                var params = new URLSearchParams(window.location.search);
+                var autoEditId = params.get('id');
+                if (!autoEditId) return;
+                $.ajax({
+                    url: hostUrl + 'admin/booking/edit',
+                    type: 'GET',
+                    data: {id: autoEditId},
+                    success: function(data) {
+                        var mydt = data.dt;
+                        if (!mydt) return;
+                        $('[name=vehicle_make_model]').val(mydt.vehicle_make_model);
+                        $('[name=advertisement_link]').val(mydt.advertisement_link);
+                        $('[name=city]').val(mydt.city);
+                        $('[name=email]').val(mydt.email);
+                        $('[name=customer_name]').val(mydt.customer_name || '');
+                        $('[name=examiner_name]').val(mydt.examiner_name || '');
+                        $('[name=admin_order_date]').val(toDateInputValue(mydt.admin_order_date));
+                        $('[name=admin_status]').val(mydt.admin_status || '');
+                        $('[name=completed_at]').val(toDateInputValue(mydt.completed_at));
+                        $('[name=paid_at]').val(toDateInputValue(mydt.paid_at));
+                        $('[name=desc]').val(mydt.desc);
+                        $('[name=address]').val(mydt.street);
+                        $('[name=phone]').val(mydt.phone);
+                        $('[name=price]').val(mydt.price);
+                        $('[name=id]').val(mydt.id);
+                        $('[name=vehicle_type]').val(mydt.vehicle_type);
+                        $('[name=document_in_english]').prop('checked', mydt.document_in_english == 1);
+                        $('[name=pdf_with_partner_logo]').prop('checked', mydt.pdf_with_partner_logo == 1);
+                        if ($('[name=partner_logo_id]').length) {
+                            $('[name=partner_logo_id]').val(mydt.partner_logo_id || '').trigger('change');
+                        }
+                        if (typeof window.togglePartnerLogoField === 'function') {
+                            window.togglePartnerLogoField();
+                        }
+                        $('[name=negotiation_checklist]').prop('checked', mydt.negotiation_checklist == 1);
+                        bookingEditMode = true;
+                        bootstrap.Modal.getOrCreateInstance(bookingModalEl).show();
+                    }
+                });
+            })();
         }
     }
 }();
