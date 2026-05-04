@@ -12,15 +12,24 @@ class AppointmentSetMail extends Mailable
 
     public $order;
 
+    protected string $viewName;
+
     public function __construct($order)
     {
         $this->order = $order;
-        $this->subject = 'Ihr Carspector Termin wurde gesetzt';
+        $isEnglish = (bool) ($order->document_in_english ?? false);
+        if ($isEnglish) {
+            $this->subject = 'Your Carspector appointment has been scheduled';
+            $this->viewName = 'mail.appointment-set-en';
+        } else {
+            $this->subject = 'Ihr Carspector Termin wurde gesetzt';
+            $this->viewName = 'mail.appointment-set';
+        }
     }
 
     public function build()
     {
-        return $this->view('mail.appointment-set', [
+        return $this->view($this->viewName, [
             'order' => $this->order,
         ]);
     }

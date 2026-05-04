@@ -659,6 +659,22 @@ class BookingController extends Controller
                 }
             }
 
+            if ($status === 'Fertigstellung') {
+                try {
+                    $examination = OrderExamination::where('order_id', $order->id)->first();
+                    if ($examination) {
+                        $examination->status = 'finishing';
+                        $examination->update();
+                    }
+                    $recipient = $order->user->email ?? $order->email;
+                    if ($recipient) {
+                        Mail::to($recipient)->send(new ExaminationStatusMail($order, $examination, $order->user));
+                    }
+                } catch (Throwable $e) {
+                    Log::debug($e->getMessage());
+                }
+            }
+
             $order->update();
 
             return redirect()->back()->with('success', 'Booking status updated successfully.');
