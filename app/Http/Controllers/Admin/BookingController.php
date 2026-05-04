@@ -353,7 +353,7 @@ class BookingController extends Controller
         })->when(($request->booking_scope ?? '') === 'active', function ($q) {
             return $q->where(function ($qq) {
                 $qq->whereNull('orders.admin_status')
-                    ->orWhereNotIn('orders.admin_status', ['Completed', 'Abgeschlossen', 'Fertigstellung']);
+                    ->orWhereNotIn('orders.admin_status', ['Completed', 'Abgeschlossen']);
             });
         })->when(($request->booking_scope ?? '') === 'ready', function ($q) {
             return $q->where('orders.admin_status', 'Fertigstellung');

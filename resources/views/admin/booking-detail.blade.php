@@ -57,7 +57,7 @@
         </div>
         <div class="card-body">
             <div class="d-flex flex-wrap gap-2 mb-4">
-                <a href="{{ route('admin.bookings', ['id' => $order->id]) }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-pen"></i> Edit</a>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#edit_booking_modal"><i class="fas fa-pen"></i> Edit</button>
                 <button type="button" class="btn btn-sm btn-outline-info" id="btn-open-examiner-email"><i class="fas fa-envelope"></i> Email examiner</button>
                 <a href="{{ route('booking.delete', $order->id) }}" class="btn btn-sm btn-outline-danger js-confirm-delete" data-message="Are you sure you want to delete this booking? This cannot be undone."><i class="fas fa-trash"></i> Delete booking</a>
                 <a href="{{ route('examiner.order', $order->id) }}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fas fa-file-alt"></i> Examiner report</a>
@@ -137,6 +137,102 @@
         </div>
     </div>
 @endsection
+
+{{-- Edit Booking Modal --}}
+<div class="modal fade" tabindex="-1" id="edit_booking_modal" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <form action="{{ route('admin.booking.store') }}" method="POST" class="modal-content">
+            @csrf
+            <input type="hidden" name="id" value="{{ $order->id }}">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Booking</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Datum</label>
+                        <input type="date" name="admin_order_date" class="form-control" value="{{ $order->admin_order_date ? $order->admin_order_date->format('Y-m-d') : '' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Status</label>
+                        <select name="admin_status" class="form-select">
+                            @foreach(['New','Zuweisung','Pruefung','Fertigstellung','Completed','Problem'] as $s)
+                                <option value="{{ $s }}" {{ ($order->admin_status === $s || ($s === 'Pruefung' && $order->admin_status === 'Prüfung')) ? 'selected' : '' }}>{{ $s === 'Pruefung' ? 'Prüfung' : $s }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Kunde</label>
+                        <input type="text" name="customer_name" class="form-control" value="{{ $order->customer_name }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Gutachter</label>
+                        <input type="text" name="examiner_name" class="form-control" value="{{ $order->examiner_name }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">E-Mail</label>
+                        <input type="text" name="email" class="form-control" value="{{ $order->email }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Telefon</label>
+                        <input type="text" name="phone" class="form-control" value="{{ $order->phone }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Fahrzeug</label>
+                        <input type="text" name="vehicle_make_model" class="form-control" value="{{ $order->vehicle_make_model }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Fahrzeugtyp</label>
+                        <input type="text" name="vehicle_type" class="form-control" value="{{ $order->vehicle_type }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Preis</label>
+                        <input type="text" name="price" class="form-control" value="{{ $order->price }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Inserat-Link</label>
+                        <input type="text" name="advertisement_link" class="form-control" value="{{ $order->advertisement_link }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Adresse</label>
+                        <input type="text" name="address" class="form-control" value="{{ $order->street }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Stadt</label>
+                        <input type="text" name="city" class="form-control" value="{{ $order->city }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Abschluss am</label>
+                        <input type="date" name="completed_at" class="form-control" value="{{ $order->completed_at ? $order->completed_at->format('Y-m-d') : '' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Bezahlt am</label>
+                        <input type="date" name="paid_at" class="form-control" value="{{ $order->paid_at ? $order->paid_at->format('Y-m-d') : '' }}">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Wünsche</label>
+                        <textarea name="desc" class="form-control" rows="3">{{ $order->desc }}</textarea>
+                    </div>
+                    <div class="col-12 d-flex gap-4 flex-wrap">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="negotiation_checklist" value="1" id="eb_neg" {{ $order->negotiation_checklist ? 'checked' : '' }}>
+                            <label class="form-check-label" for="eb_neg">Verhandlungs-Checkliste</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="document_in_english" value="1" id="eb_eng" {{ $order->document_in_english ? 'checked' : '' }}>
+                            <label class="form-check-label" for="eb_eng">Dokumente auf Englisch</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Abbrechen</button>
+                <button type="submit" class="btn btn-primary">Speichern</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 {{-- Email Examiner Modal --}}
 <div class="modal fade" tabindex="-1" id="email_examiner_detail" aria-hidden="true">
