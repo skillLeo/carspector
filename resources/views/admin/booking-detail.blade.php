@@ -58,7 +58,7 @@
         <div class="card-body">
             <div class="d-flex flex-wrap gap-2 mb-4">
                 <a href="{{ route('admin.bookings', ['id' => $order->id]) }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-pen"></i> Edit</a>
-                <a href="{{ $examinerEmail ? 'mailto:' . $examinerEmail : '#' }}" class="btn btn-sm btn-outline-info"><i class="fas fa-envelope"></i> Email examiner</a>
+                <button type="button" class="btn btn-sm btn-outline-info" id="btn-open-examiner-email"><i class="fas fa-envelope"></i> Email examiner</button>
                 <a href="{{ route('booking.delete', $order->id) }}" class="btn btn-sm btn-outline-danger js-confirm-delete" data-message="Are you sure you want to delete this booking? This cannot be undone."><i class="fas fa-trash"></i> Delete booking</a>
                 <a href="{{ route('examiner.order', $order->id) }}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="fas fa-file-alt"></i> Examiner report</a>
                 <a href="{{ route('examination.delete', $order->id) }}" class="btn btn-sm btn-outline-danger js-confirm-delete" data-message="Delete examination? The booking status will be reset to New."><i class="fas fa-file-excel"></i> Delete examination</a>
@@ -138,6 +138,74 @@
     </div>
 @endsection
 
+{{-- Email Examiner Modal --}}
+<div class="modal fade" tabindex="-1" id="email_examiner_detail" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Auftragsvergabe</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">E-Mail</label>
+                    <input type="email" class="form-control" id="det_examiner_email" placeholder="name@example.com">
+                </div>
+                <div class="mb-4 form-check">
+                    <input class="form-check-input" type="checkbox" id="det_use_tuv_email">
+                    <label class="form-check-label fw-semibold" for="det_use_tuv_email">TÜV (tsw@de.tuv.com)</label>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Betreff</label>
+                    <input type="text" class="form-control" id="det_examiner_subject" placeholder="CarCheck | ">
+                </div>
+                <div class="mb-4 pt-2 border-top">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Kunde</label>
+                            <input type="text" class="form-control" id="det_customer_name">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Auftrags-Nr.</label>
+                            <input type="text" class="form-control" id="det_booking_code">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Fahrzeug</label>
+                            <input type="text" class="form-control" id="det_car_model">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Verkäufer (Name)</label>
+                            <input type="text" class="form-control" id="det_seller_name">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Verkäufer Adresse</label>
+                            <input type="text" class="form-control" id="det_seller_address">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Verkäufer Tel.</label>
+                            <input type="text" class="form-control" id="det_seller_phone">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Inserat-Link</label>
+                            <input type="text" class="form-control" id="det_listing_link">
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label fw-semibold">E-Mail Nachricht</label>
+                    <textarea class="form-control" id="det_examiner_message" rows="6"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Abbrechen</button>
+                <button type="button" class="btn btn-primary" id="det_send_examiner_btn">
+                    <span class="btn-label">E-Mail senden</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section('js')
 <script>
     // Confirmation for delete actions
@@ -190,5 +258,86 @@
             });
         });
     }
+
+    // Email Examiner Modal
+    (function () {
+        var PREFIX = 'CarCheck | ';
+        var examinerEmailRoute = '{{ route('admin.examiner.email') }}';
+
+        var subjectInput = document.getElementById('det_examiner_subject');
+        var bookingCodeInput = document.getElementById('det_booking_code');
+
+        function ensurePrefix() {
+            if (subjectInput && !subjectInput.value.startsWith(PREFIX)) {
+                subjectInput.value = PREFIX + subjectInput.value.replace(/^CarCheck\s*\|\s*/i, '');
+            }
+        }
+
+        // TÜV checkbox
+        document.getElementById('det_use_tuv_email').addEventListener('change', function () {
+            var emailInput = document.getElementById('det_examiner_email');
+            if (this.checked) { emailInput.dataset.prev = emailInput.value; emailInput.value = 'tsw@de.tuv.com'; }
+            else { emailInput.value = emailInput.dataset.prev || ''; }
+        });
+
+        // Booking code → subject
+        if (bookingCodeInput) {
+            bookingCodeInput.addEventListener('input', function () {
+                ensurePrefix();
+                if (subjectInput) subjectInput.value = PREFIX + (this.value || '');
+            });
+        }
+
+        // Open modal and pre-fill
+        document.getElementById('btn-open-examiner-email').addEventListener('click', function () {
+            document.getElementById('det_examiner_email').value = '{{ $examinerEmail }}';
+            document.getElementById('det_customer_name').value = '{{ addslashes($order->customer_name ?: ($order->user->name ?? '')) }}';
+            document.getElementById('det_booking_code').value = '{{ addslashes($order->display_order_number) }}';
+            document.getElementById('det_car_model').value = '{{ addslashes($order->vehicle_make_model ?: '') }}';
+            document.getElementById('det_seller_name').value = '';
+            document.getElementById('det_seller_address').value = '{{ addslashes($order->street ?: '') }}';
+            document.getElementById('det_seller_phone').value = '{{ addslashes($order->seller_phone ?: $order->phone ?: '') }}';
+            document.getElementById('det_listing_link').value = '{{ addslashes($order->advertisement_link ?: '') }}';
+            ensurePrefix();
+            if (subjectInput) subjectInput.value = PREFIX + '{{ addslashes($order->display_order_number) }}';
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('email_examiner_detail')).show();
+        });
+
+        // Send button
+        document.getElementById('det_send_examiner_btn').addEventListener('click', function () {
+            var btn = this;
+            var email = document.getElementById('det_examiner_email').value;
+            var subject = document.getElementById('det_examiner_subject').value;
+            var message = document.getElementById('det_examiner_message').value;
+            if (!email) { alert('Bitte eine E-Mail angeben.'); return; }
+            if (!subject) { alert('Bitte einen Betreff eingeben.'); return; }
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Senden...';
+            fetch(examinerEmailRoute, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                body: JSON.stringify({
+                    order_id: {{ $order->id }},
+                    email: email,
+                    subject: subject,
+                    message: message,
+                    manual_customer_name: document.getElementById('det_customer_name').value,
+                    manual_booking_code: document.getElementById('det_booking_code').value,
+                    manual_car_model: document.getElementById('det_car_model').value,
+                    manual_seller_name: document.getElementById('det_seller_name').value,
+                    manual_seller_address: document.getElementById('det_seller_address').value,
+                    manual_seller_phone: document.getElementById('det_seller_phone').value,
+                    manual_listing_link: document.getElementById('det_listing_link').value,
+                })
+            })
+            .then(function(r){ return r.json(); })
+            .then(function(data){
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('email_examiner_detail')).hide();
+                toastr.success(data.message || 'E-Mail wurde versendet.');
+            })
+            .catch(function(){ toastr.error('Fehler beim Senden.'); })
+            .finally(function(){ btn.disabled = false; btn.innerHTML = 'E-Mail senden'; });
+        });
+    })();
 </script>
 @endsection
