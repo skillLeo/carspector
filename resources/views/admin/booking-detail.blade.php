@@ -386,16 +386,39 @@
 
         // Open modal and pre-fill
         document.getElementById('btn-open-examiner-email').addEventListener('click', function () {
-            document.getElementById('det_examiner_email').value = '{{ $examinerEmail }}';
-            document.getElementById('det_customer_name').value = '{{ addslashes($order->customer_name ?: ($order->user->name ?? '')) }}';
-            document.getElementById('det_booking_code').value = '{{ addslashes($order->display_order_number) }}';
-            document.getElementById('det_car_model').value = '{{ addslashes($order->vehicle_make_model ?: '') }}';
-            document.getElementById('det_seller_name').value = '';
-            document.getElementById('det_seller_address').value = '{{ addslashes($order->street ?: '') }}';
-            document.getElementById('det_seller_phone').value = '{{ addslashes($order->seller_phone ?: $order->phone ?: '') }}';
-            document.getElementById('det_listing_link').value = '{{ addslashes($order->advertisement_link ?: '') }}';
+            var customerName  = '{{ addslashes($order->customer_name ?: ($order->user->name ?? '')) }}';
+            var bookingCode   = '{{ addslashes($order->display_order_number) }}';
+            var carModel      = '{{ addslashes($order->vehicle_make_model ?: '') }}';
+            var sellerAddress = '{{ addslashes($order->street ?: '') }}';
+            var sellerPhone   = '{{ addslashes($order->seller_phone ?: $order->phone ?: '') }}';
+            var listingLink   = '{{ addslashes($order->advertisement_link ?: '') }}';
+
+            document.getElementById('det_examiner_email').value  = '{{ $examinerEmail }}';
+            document.getElementById('det_customer_name').value   = customerName;
+            document.getElementById('det_booking_code').value    = bookingCode;
+            document.getElementById('det_car_model').value       = carModel;
+            document.getElementById('det_seller_name').value     = '';
+            document.getElementById('det_seller_address').value  = sellerAddress;
+            document.getElementById('det_seller_phone').value    = sellerPhone;
+            document.getElementById('det_listing_link').value    = listingLink;
             ensurePrefix();
-            if (subjectInput) subjectInput.value = PREFIX + '{{ addslashes($order->display_order_number) }}';
+            if (subjectInput) subjectInput.value = PREFIX + bookingCode;
+
+            // Auto-generate email body from the fields above
+            var lines = [];
+            if (customerName)  lines.push('Kunde: ' + customerName);
+            if (bookingCode)   lines.push('Auftragsnummer: ' + bookingCode);
+            if (carModel)      lines.push('Fahrzeug: ' + carModel);
+            if (sellerAddress) lines.push('Adresse: ' + sellerAddress);
+            if (sellerPhone)   lines.push('Telefon: ' + sellerPhone);
+            if (listingLink)   lines.push('Inserat: ' + listingLink);
+
+            var body = 'Sehr geehrte Damen und Herren,\n\nhiermit übermitteln wir Ihnen die Auftragsdetails:\n\n';
+            body += lines.join('\n');
+            body += '\n\nMit freundlichen Grüßen\nIhr Team von Carspector';
+
+            document.getElementById('det_examiner_message').value = body;
+
             bootstrap.Modal.getOrCreateInstance(document.getElementById('email_examiner_detail')).show();
         });
 
