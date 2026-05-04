@@ -322,6 +322,10 @@ class BookingController extends Controller
 
 
         $order->save();
+
+        if ($request->id) {
+            return redirect()->route('admin.bookings.show', $order->id)->with('success', 'Booking saved successfully.');
+        }
         return redirect()->route('admin.bookings')->with('success', 'Booking saved successfully.');
     }
 
