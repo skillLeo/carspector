@@ -51,7 +51,8 @@ class BookingController extends Controller
     public function showBooking(Order $order)
     {
         $order->load(['user', 'examiner', 'b2bPartner', 'partnerLogo']);
-        return view('admin.booking-detail', compact('order'));
+        $partnerLogos = \App\Models\PartnerLogo::orderBy('name')->get();
+        return view('admin.booking-detail', compact('order', 'partnerLogos'));
     }
 
     public function sendExaminerEmail(Request $request)
@@ -287,7 +288,14 @@ class BookingController extends Controller
         $order->examiner_name = trim((string) $request->examiner_name) ?: null;
         $order->admin_status = trim((string) $request->admin_status) ?: ($order->admin_status ?: 'New');
         $order->completed_at = $this->parseOptionalDate($request->completed_at);
-        $order->paid_at = $this->parseOptionalDate($request->paid_at);
+        $paidAtStatus = trim((string) $request->paid_at_status);
+        if (in_array($paidAtStatus, ['error', 'missing'], true)) {
+            $order->paid_at = null;
+            $order->paid_at_status = $paidAtStatus;
+        } else {
+            $order->paid_at = $this->parseOptionalDate($request->paid_at);
+            $order->paid_at_status = null;
+        }
         $order->make_year = isset($request['make_year']) ? $request['make_year'] : '';
         $order->link = isset($request['link']) ? $request['link'] : '';
         $order->desc = isset($request['desc']) ? $request['desc'] : '';
@@ -424,6 +432,12 @@ class BookingController extends Controller
             $value = $booking->completed_at ? $booking->completed_at->format('Y-m-d') : '';
             return '<input type="date" class="form-control form-control-sm inline-admin-field inline-date-field js-inline-booking-field" data-id="' . $booking->id . '" data-field="completed_at" value="' . e($value) . '">';
         })->addColumn('paid_at_display', function ($booking) {
+            if ($booking->paid_at_status === 'error') {
+                return '<span class="badge badge-danger px-2 py-1">Error</span>';
+            }
+            if ($booking->paid_at_status === 'missing') {
+                return '<span class="badge badge-warning px-2 py-1">Missing</span>';
+            }
             $value = $booking->paid_at ? $booking->paid_at->format('Y-m-d') : '';
             return '<input type="date" class="form-control form-control-sm inline-admin-field inline-date-field js-inline-booking-field" data-id="' . $booking->id . '" data-field="paid_at" value="' . e($value) . '">';
         })->editColumn('examiner_id',function ($row){

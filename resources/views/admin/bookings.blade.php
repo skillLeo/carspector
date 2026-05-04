@@ -731,8 +731,16 @@
                                                 <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <p class="mb-0 text-black fs-6">Bezahlt am</p>
-                                                        <div class="input-box">
-                                                            <input name="paid_at" type="date" value="{{ old('paid_at') }}" class="form-control form-control-sm shadow">
+                                                        <input type="hidden" name="paid_at_status" id="cb_paid_at_status" value="">
+                                                        <div class="input-group">
+                                                            <input name="paid_at" type="date" id="cb_paid_at_input" value="{{ old('paid_at') }}" class="form-control form-control-sm shadow">
+                                                            <span id="cb_paid_at_text" class="form-control form-control-sm d-none" style="background:#f8f9fa; text-transform:capitalize;"></span>
+                                                            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false"></button>
+                                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                                <li><a class="dropdown-item cb-paid-mode" href="#" data-mode="">Datum</a></li>
+                                                                <li><a class="dropdown-item cb-paid-mode" href="#" data-mode="error">Error</a></li>
+                                                                <li><a class="dropdown-item cb-paid-mode" href="#" data-mode="missing">Missing</a></li>
+                                                            </ul>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1004,6 +1012,28 @@
     <script src="{{ asset('custom/bookings.js') }}"></script>
 
     <script>
+        // Bezahlt am mode switcher (create modal)
+        document.querySelectorAll('.cb-paid-mode').forEach(function(el) {
+            el.addEventListener('click', function(e) {
+                e.preventDefault();
+                var mode = this.dataset.mode;
+                var dateInput   = document.getElementById('cb_paid_at_input');
+                var textSpan    = document.getElementById('cb_paid_at_text');
+                var statusInput = document.getElementById('cb_paid_at_status');
+                if (mode === 'error' || mode === 'missing') {
+                    dateInput.classList.add('d-none');
+                    textSpan.textContent = mode.charAt(0).toUpperCase() + mode.slice(1);
+                    textSpan.classList.remove('d-none');
+                    statusInput.value = mode;
+                    dateInput.value = '';
+                } else {
+                    textSpan.classList.add('d-none');
+                    dateInput.classList.remove('d-none');
+                    statusInput.value = '';
+                }
+            });
+        });
+
         window.togglePartnerLogoField = function () {
             var checkbox = document.getElementById('pdf_with_partner_logo');
             var wrapper = document.getElementById('partner_logo_wrapper');

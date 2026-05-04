@@ -85,7 +85,12 @@
                             </dd>
                         @endif
                         <dt class="col-sm-4">Completed on</dt><dd class="col-sm-8">{{ $order->completed_at ? $order->completed_at->format('d.m.Y') : '-' }}</dd>
-                        <dt class="col-sm-4">Paid on</dt><dd class="col-sm-8">{{ $order->paid_at ? $order->paid_at->format('d.m.Y') : '-' }}</dd>
+                        <dt class="col-sm-4">Paid on</dt><dd class="col-sm-8">
+                            @if($order->paid_at_status === 'error') <span class="badge badge-danger">Error</span>
+                            @elseif($order->paid_at_status === 'missing') <span class="badge badge-warning">Missing</span>
+                            @else {{ $order->paid_at ? $order->paid_at->format('d.m.Y') : '-' }}
+                            @endif
+                        </dd>
                     </dl>
                     @if(auth()->user()->type === 'admin')
                         <form action="{{ route('admin.booking.appointment', $order->id) }}" method="POST" class="mt-4 border-top pt-3">
@@ -184,7 +189,17 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Fahrzeugtyp</label>
-                        <input type="text" name="vehicle_type" class="form-control" value="{{ $order->vehicle_type }}">
+                        @php
+                        $eb_vehicle_types = ['Auto/ PKW XL','Auto/ PKW XXL','Transporter XL','Transporter XXL','Oldtimer XL','Oldtimer XXL','Sportwagen XL','Sportwagen XXL','Elektro XL','Elektro XXL','Wohnmobil XL','Wohnmobil XXL','Sonstiges-Check','Kaufbegleitung XL','Kaufbegleitung XXL'];
+                        @endphp
+                        <select name="vehicle_type" class="form-select">
+                            <option value="{{ $order->vehicle_type }}" selected>{{ $order->vehicle_type ?: 'Select type' }}</option>
+                            @foreach($eb_vehicle_types as $vt)
+                                @if($vt !== $order->vehicle_type)
+                                    <option value="{{ $vt }}">{{ $vt }}</option>
+                                @endif
+                            @endforeach
+                        </select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Preis</label>
@@ -208,7 +223,17 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label fw-semibold">Bezahlt am</label>
-                        <input type="date" name="paid_at" class="form-control" value="{{ $order->paid_at ? $order->paid_at->format('Y-m-d') : '' }}">
+                        <input type="hidden" name="paid_at_status" id="eb_paid_at_status" value="{{ $order->paid_at_status ?? '' }}">
+                        <div class="input-group">
+                            <input type="date" name="paid_at" id="eb_paid_at_input" class="form-control {{ in_array($order->paid_at_status ?? '', ['error','missing']) ? 'd-none' : '' }}" value="{{ $order->paid_at ? $order->paid_at->format('Y-m-d') : '' }}">
+                            <span id="eb_paid_at_text" class="form-control {{ !in_array($order->paid_at_status ?? '', ['error','missing']) ? 'd-none' : '' }}" style="background:#f8f9fa; text-transform:capitalize;">{{ $order->paid_at_status ?? '' }}</span>
+                            <button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false"></button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item eb-paid-mode" href="#" data-mode="">Datum</a></li>
+                                <li><a class="dropdown-item eb-paid-mode" href="#" data-mode="error">Error</a></li>
+                                <li><a class="dropdown-item eb-paid-mode" href="#" data-mode="missing">Missing</a></li>
+                            </ul>
+                        </div>
                     </div>
                     <div class="col-12">
                         <label class="form-label fw-semibold">Wünsche</label>
@@ -223,6 +248,23 @@
                             <input class="form-check-input" type="checkbox" name="document_in_english" value="1" id="eb_eng" {{ $order->document_in_english ? 'checked' : '' }}>
                             <label class="form-check-label" for="eb_eng">Dokumente auf Englisch</label>
                         </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="pdf_with_partner_logo" value="1" id="eb_partner_logo" {{ $order->pdf_with_partner_logo ? 'checked' : '' }}>
+                            <label class="form-check-label" for="eb_partner_logo">PDF with partner logo</label>
+                        </div>
+                    </div>
+                    <div class="col-12 {{ $order->pdf_with_partner_logo ? '' : 'd-none' }}" id="eb_partner_logo_wrapper">
+                        @if(($partnerLogos ?? collect())->isEmpty())
+                            <div class="text-muted small">No partner logos available.</div>
+                        @else
+                            <label class="form-label fw-semibold">Select partner logo</label>
+                            <select name="partner_logo_id" class="form-select form-select-sm">
+                                <option value="">Choose partner</option>
+                                @foreach($partnerLogos ?? collect() as $logo)
+                                    <option value="{{ $logo->id }}" {{ (string)($order->partner_logo_id) === (string)$logo->id ? 'selected' : '' }}>{{ $logo->name }}</option>
+                                @endforeach
+                            </select>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -304,6 +346,33 @@
 
 @section('js')
 <script>
+    // Partner logo toggle in edit modal
+    document.getElementById('eb_partner_logo').addEventListener('change', function() {
+        document.getElementById('eb_partner_logo_wrapper').classList.toggle('d-none', !this.checked);
+    });
+
+    // Bezahlt am mode switcher
+    document.querySelectorAll('.eb-paid-mode').forEach(function(el) {
+        el.addEventListener('click', function(e) {
+            e.preventDefault();
+            var mode = this.dataset.mode;
+            var dateInput = document.getElementById('eb_paid_at_input');
+            var textSpan  = document.getElementById('eb_paid_at_text');
+            var statusInput = document.getElementById('eb_paid_at_status');
+            if (mode === 'error' || mode === 'missing') {
+                dateInput.classList.add('d-none');
+                textSpan.textContent = mode.charAt(0).toUpperCase() + mode.slice(1);
+                textSpan.classList.remove('d-none');
+                statusInput.value = mode;
+                dateInput.value = '';
+            } else {
+                textSpan.classList.add('d-none');
+                dateInput.classList.remove('d-none');
+                statusInput.value = '';
+            }
+        });
+    });
+
     // Confirmation for delete actions
     document.querySelectorAll('.js-confirm-delete').forEach(function(el) {
         el.addEventListener('click', function(e) {
