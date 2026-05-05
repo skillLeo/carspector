@@ -344,7 +344,7 @@ class BookingController extends Controller
         $bookings = Order::query()
             ->select('orders.*')
             ->with(['examiner','user','b2bPartner'])
-            ->orderByRaw('COALESCE(orders.admin_order_date, DATE(orders.created_at)) DESC');
+            ->orderByRaw('COALESCE(orders.admin_order_date, DATE(orders.created_at)) DESC, orders.created_at DESC');
 //        dd($bookings);
 //        dd($bookings);
         $bookings = $bookings->when($request->date_range != '', function ($q) {
