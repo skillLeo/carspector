@@ -223,7 +223,9 @@
         </div>
 
         <div>
-          @if($order->status == 'completed')
+          @if(in_array($order->admin_status, ['Prüfung', 'Pruefung']))
+            <span class="badge bg-primary">In Bearbeitung</span>
+          @elseif($order->status == 'completed')
             <span class="badge bg-success">Abgeschlossen</span>
           @elseif($order->status == 'inspecting')
             <span class="badge bg-warning text-dark">Fertigstellung</span>
