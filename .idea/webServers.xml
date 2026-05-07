@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="70c49771-baba-480f-91f8-d74aeac110c0" name="carspector">
+        <fileTransfer accessType="SFTP" host="access893595161.webspace-data.io" port="22" sshConfigId="d4c9a647-8a11-4825-9796-190b8bf56ff5" sshConfig="u106717942@access893595161.webspace-data.io:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
