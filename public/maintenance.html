@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head> 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carspector – Maintenance</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            min-height: 100vh;
+            background: #0a0e1a;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            color: #fff;
+        }
+
+        /* Animated background */
+        .bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+        }
+
+        .bg-gradient {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 20% 20%, rgba(30, 160, 100, 0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 80% 80%, rgba(30, 100, 200, 0.10) 0%, transparent 60%),
+                #0a0e1a;
+        }
+
+        .grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+        }
+
+        /* Floating particles */
+        .particles {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #22c55e;
+            border-radius: 50%;
+            opacity: 0;
+            animation: float linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-100px) translateX(30px); opacity: 0; }
+        }
+
+        /* Card */
+        .card {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 64px 56px;
+            max-width: 560px;
+            width: 90%;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 24px;
+            backdrop-filter: blur(20px);
+            box-shadow:
+                0 0 80px rgba(34, 197, 94, 0.06),
+                0 40px 80px rgba(0,0,0,0.5),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+            animation: fadeUp 0.8s ease both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Logo */
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 24px rgba(34,197,94,0.4);
+        }
+
+        .logo-icon svg {
+            width: 28px;
+            height: 28px;
+            fill: white;
+        }
+
+        .logo-text {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: #fff;
+        }
+
+        /* Gear animation */
+        .gear-wrap {
+            margin: 0 auto 32px;
+            width: 80px;
+            height: 80px;
+            position: relative;
+        }
+
+        .gear-wrap svg {
+            width: 80px;
+            height: 80px;
+        }
+
+        .gear-1 { animation: spin 6s linear infinite; transform-origin: center; }
+        .gear-2 { animation: spin-reverse 4s linear infinite; transform-origin: center; }
+
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes spin-reverse { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+
+        /* Status badge */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(34,197,94,0.1);
+            border: 1px solid rgba(34,197,94,0.25);
+            color: #4ade80;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 6px 16px;
+            border-radius: 100px;
+            margin-bottom: 28px;
+        }
+
+        .badge-dot {
+            width: 6px;
+            height: 6px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulse 1.5s ease-in-out infinite;
+            box-shadow: 0 0 6px #22c55e;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.7); }
+        }
+
+        h1 {
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            line-height: 1.1;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        p {
+            font-size: 16px;
+            color: rgba(255,255,255,0.45);
+            line-height: 1.7;
+            margin-bottom: 40px;
+        }
+
+        /* Progress bar */
+        .progress-wrap {
+            margin-bottom: 40px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: rgba(255,255,255,0.35);
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 100px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 72%;
+            background: linear-gradient(90deg, #16a34a, #22c55e, #4ade80);
+            border-radius: 100px;
+            animation: shimmer 2s ease-in-out infinite;
+            background-size: 200% 100%;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% center; }
+            100% { background-position: -200% center; }
+        }
+
+        /* Divider */
+        .divider {
+            height: 1px;
+            background: rgba(255,255,255,0.07);
+            margin: 0 0 32px;
+        }
+
+        /* Contact */
+        .contact {
+            font-size: 13px;
+            color: rgba(255,255,255,0.3);
+        }
+
+        .contact a {
+            color: #4ade80;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .contact a:hover {
+            color: #86efac;
+        }
+
+        /* Bottom glow */
+        .glow {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #22c55e, transparent);
+            filter: blur(2px);
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg">
+    <div class="bg-gradient"></div>
+    <div class="grid"></div>
+    <div class="particles" id="particles"></div>
+</div>
+
+<div class="card">
+
+    <div class="logo">
+        <div class="logo-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.85 7h10.29l1.08 3.11H5.77L6.85 7zM19 17H5v-5h14v5z"/>
+                <circle cx="7.5" cy="14.5" r="1.5"/>
+                <circle cx="16.5" cy="14.5" r="1.5"/>
+            </svg>
+        </div>
+        <span class="logo-text">CARSPECTOR</span>
+    </div>
+
+    <div class="gear-wrap">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- Gear 1 (large) -->
+            <g class="gear-1" transform="translate(35,50)">
+                <path d="M0-22 L4-18 L8-20 L10-16 L14-16 L14-12 L18-10 L16-6 L18-2 L14,0 L14,4 L10,4 L8,8 L4,6 L0,8 L-4,6 L-8,8 L-10,4 L-14,4 L-14,0 L-18,-2 L-16,-6 L-18,-10 L-14,-12 L-14,-16 L-10,-16 L-8,-20 L-4,-18 Z"
+                    fill="rgba(34,197,94,0.15)" stroke="#22c55e" stroke-width="1.5"/>
+                <circle r="8" fill="rgba(34,197,94,0.1)" stroke="#22c55e" stroke-width="1.5"/>
+                <circle r="3" fill="#22c55e"/>
+            </g>
+            <!-- Gear 2 (small) -->
+            <g class="gear-2" transform="translate(68,32)">
+                <path d="M0-14 L3-11 L6-13 L7-10 L10-9 L9-6 L12-4 L10-1 L12,2 L9,3 L9,6 L6,6 L5,10 L2,8 L0,10 L-2,8 L-5,10 L-6,6 L-9,6 L-9,3 L-12,2 L-10,-1 L-12,-4 L-9,-6 L-10,-9 L-7,-10 L-6,-13 L-3,-11 Z"
+                    fill="rgba(34,197,94,0.1)" stroke="rgba(34,197,94,0.5)" stroke-width="1.5"/>
+                <circle r="5" fill="rgba(34,197,94,0.08)" stroke="rgba(34,197,94,0.4)" stroke-width="1.5"/>
+                <circle r="2" fill="rgba(34,197,94,0.5)"/>
+            </g>
+        </svg>
+    </div>
+
+    <div class="badge">
+        <span class="badge-dot"></span>
+        Scheduled Maintenance
+    </div>
+
+    <h1>We'll be back shortly</h1>
+
+    <p>We're upgrading Carspector to make it faster and better for you. This will only take a moment. Thank you for your patience.</p>
+
+    <div class="progress-wrap">
+        <div class="progress-label">
+            <span>Update in progress</span>
+            <span>72%</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="contact">
+        Questions? Contact us at <a href="mailto:info@carspector.de">info@carspector.de</a>
+    </div>
+
+    <div class="glow"></div>
+</div>
+
+<script>
+    // Generate floating particles
+    const container = document.getElementById('particles');
+    for (let i = 0; i < 25; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = Math.random() * 100 + 'vw';
+        p.style.width = (Math.random() * 2 + 1) + 'px';
+        p.style.height = p.style.width;
+        p.style.animationDuration = (Math.random() * 15 + 10) + 's';
+        p.style.animationDelay = (Math.random() * 10) + 's';
+        p.style.opacity = Math.random() * 0.5;
+        container.appendChild(p);
+    }
+</script>
+
+</body>
+</html>
