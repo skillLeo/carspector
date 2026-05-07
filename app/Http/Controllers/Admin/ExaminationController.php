@@ -25,13 +25,15 @@ class ExaminationController extends Controller
         if (!auth()->check() || auth()->user()->type !== 'admin') {
             abort(403);
         }
-        $bookings = OrderExamination::select('*')->with('user', 'examiner','order')
-        ->whereNotNull('order_id');
+        $bookings = OrderExamination::select('order_examinations.*')
+        ->leftJoin('orders', 'order_examinations.order_id', '=', 'orders.id')
+        ->with('user', 'examiner', 'order')
+        ->whereNotNull('order_examinations.order_id');
         $bookings = $bookings->when($request->date_range != '', function ($q) {
             $dates = explode('-', \request('date_range'));
             $from = Carbon::parse($dates[0]);
             $to = Carbon::parse($dates[1]);
-            return $q->whereBetween('order_examinations.created_at', [$from->toDateTimeString(), $to->toDateString()]);
+            return $q->whereBetween('order_examinations.created_at', [$from->toDateTimeString(), $to->toDateTimeString()]);
         });
         return DataTables::of($bookings)->editColumn('examiner_id',function ($row){
             if($row->order->examiner){
