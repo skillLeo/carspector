@@ -19,9 +19,40 @@
   /* Schäden */
   .damage-row { margin-bottom:.5rem; }
   .damage-line { display:flex; align-items:center; gap:.5rem; }
-  .damage-line .damage-select { flex:1 1 auto; }   /* Select nimmt Breite */
+  .damage-line .damage-select { flex:1 1 auto; }
   .btn-remove-dmg { white-space:nowrap; }
-  .damage-other { margin-top:.5rem; }              /* steht darunter */
+  .damage-other { margin-top:.5rem; }
+
+  /* Damage entry = row + photo section */
+  .damage-entry { border:1px solid #e5e7eb; border-radius:10px; padding:.65rem .75rem; background:#fff; margin-bottom:.5rem; }
+  .damage-photo-section { margin-top:.6rem; padding:.65rem .75rem; background:#fff8f0; border:1px solid #fed7aa; border-radius:8px; }
+  .damage-photo-thumbs { display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:.5rem; }
+  .damage-photo-thumb { position:relative; width:80px; height:80px; border-radius:8px; overflow:hidden; border:1px solid #e5e7eb; }
+  .damage-photo-thumb img { width:100%; height:100%; object-fit:cover; }
+  .damage-photo-thumb .rm-photo { position:absolute; top:2px; right:2px; background:rgba(220,38,38,.85); color:#fff; border:none; border-radius:50%; width:20px; height:20px; font-size:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0; line-height:1; }
+  .damage-photo-upload-btn { font-size:.85rem; }
+  .damage-photo-uploading { font-size:.8rem; color:#6b7280; }
+
+  @media (max-width: 767px) {
+
+    .container-fluid.page-bg {
+        padding-left: 0px;
+        padding-right: 0px;
+    }
+
+    .card-modern {
+        border: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        background: transparent;
+    }
+
+    .card-modern > .card-header,
+    .card-modern > .card-body {
+        background: #fff;
+        border-radius: 12px;
+    }
+}
 </style>
 
 <div class="container-fluid page-bg py-5 py-md-5">
@@ -117,35 +148,63 @@
                         $dVal = $savedDamages[$i] ?? '';
                         $oVal = $savedOthers[$i]  ?? '';
                         $showOther = ($dVal === 'Sonstiges');
+                        $entryId = $k . ':' . $i;
+                        $domId   = $k . '-' . $i;
+                        $entryPhotos = ($examination->id ?? null)
+                          ? \App\Models\ExaminationImage::where('examination_id', $examination->id)
+                              ->where('damage_component', $entryId)->get()
+                          : collect();
                       @endphp
-                      <div class="damage-row">
-                        <div class="damage-line">
-                          <select name="{{ $dmgKey }}[]" class="form-select damage-select js-dmg-select">
-                            <option value="">-- auswählen --</option>
-                            @foreach($damageOptions as $opt)
-                              <option value="{{ $opt }}" {{ $dVal===$opt ? 'selected' : '' }}>{{ $opt }}</option>
-                            @endforeach
-                          </select>
-                          <button type="button" class="btn btn-danger btn-sm btn-remove-dmg" title="Entfernen">
-                            <i class="fa-solid fa-trash-can"></i>
-                          </button>
+                      <div class="damage-entry" data-entry-id="{{ $entryId }}">
+                        <div class="damage-row">
+                          <div class="damage-line">
+                            <select name="{{ $dmgKey }}[]" class="form-select damage-select js-dmg-select">
+                              <option value="">-- auswählen --</option>
+                              @foreach($damageOptions as $opt)
+                                <option value="{{ $opt }}" {{ $dVal===$opt ? 'selected' : '' }}>{{ $opt }}</option>
+                              @endforeach
+                            </select>
+                            <button type="button" class="btn btn-danger btn-sm btn-remove-dmg" title="Entfernen">
+                              <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                          </div>
+                          <input type="text"
+                                 name="{{ $otherKey }}[]"
+                                 class="form-control input-compact damage-other {{ $showOther ? '' : 'hidden' }}"
+                                 value="{{ $oVal }}"
+                                 placeholder="Bitte beschreiben (Sonstiges)">
                         </div>
-
-                        <input type="text"
-                               name="{{ $otherKey }}[]"
-                               class="form-control input-compact damage-other {{ $showOther ? '' : 'hidden' }}"
-                               value="{{ $oVal }}"
-                               placeholder="Bitte beschreiben (Sonstiges)">
-                        
+                        <div class="damage-photo-section {{ $dVal !== '' ? '' : 'hidden' }}">
+                          <div class="small fw-semibold mb-1"><i class="fa-solid fa-camera me-1 text-warning"></i> Schadensfotos</div>
+                          <div class="damage-photo-thumbs" id="photo-thumbs-{{ $domId }}">
+                            @foreach($entryPhotos as $photo)
+                              <div class="damage-photo-thumb" id="dmg-thumb-{{ $photo->id }}">
+                                <img src="{{ asset('storage/' . $photo->image) }}" alt="">
+                                <button type="button" class="rm-photo" data-id="{{ $photo->id }}" title="Entfernen">×</button>
+                              </div>
+                            @endforeach
+                          </div>
+                          <label class="btn btn-outline-secondary btn-sm damage-photo-upload-btn mb-0 mt-1" style="cursor:pointer;">
+                            <i class="fa-solid fa-plus me-1"></i> Foto
+                            <input type="file" accept="image/*" multiple class="d-none js-damage-photo-input"
+                                   data-entry-id="{{ $entryId }}" data-part-label="{{ $it['label'] }}"
+                                   data-order-id="{{ $id }}" data-upload-url="{{ route('examination.store.images') }}" data-csrf="{{ csrf_token() }}">
+                          </label>
+                          <span class="damage-photo-uploading d-none ms-2" id="uploading-{{ $domId }}"><i class="fa-solid fa-spinner fa-spin me-1"></i></span>
+                        </div>
                       </div>
                     @endfor
                   </div>
 
                   <button type="button" style="color: gray; border: 1px solid gray"
                           class="btn add-more-btn mt-1 js-add-dmg"
-                          data-target="#damage-container-{{ $k }}"
+                          data-part="{{ $k }}"
+                          data-part-label="{{ $it['label'] }}"
                           data-name="{{ $dmgKey }}[]"
-                          data-name-other="{{ $otherKey }}[]">
+                          data-name-other="{{ $otherKey }}[]"
+                          data-order-id="{{ $id }}"
+                          data-upload-url="{{ route('examination.store.images') }}"
+                          data-csrf="{{ csrf_token() }}">
                     + weitere Beschädigung
                   </button>
                 </div>
@@ -174,120 +233,207 @@
 @section('scripts')
 <script>
 (function(){
-  const normalize = (v) => (v||'').toString().toLowerCase()
-    .normalize('NFD').replace(/\p{Diacritic}/gu,'');
+  var partCounters = {};
+  function mkIcon(cls) { var i = document.createElement('i'); i.className = cls; return i; }
 
-  // Status -> Schadenbereich ein/aus
-  document.querySelectorAll('.js-status').forEach(sel=>{
-    const targetSel = sel.dataset.target;
-    const whenVal   = sel.dataset.when || 'beschaedigt';
-    const targetEl  = document.querySelector(targetSel);
-    const apply = ()=>{ if(targetEl) targetEl.classList.toggle('hidden', normalize(sel.value)!==whenVal); };
-    sel.addEventListener('change', apply); apply();
-  });
-
-  // Schaden-Zeile erzeugen (Select + löschen in einer Zeile; Textfeld darunter)
-  const isAdmin = false;
-  function createDamageRow(name, nameOther, nameOtherEn){
-    const row = document.createElement('div');
-    row.className = 'damage-row';
-
-    const line = document.createElement('div');
-    line.className = 'damage-line';
-
-    const sel = document.createElement('select');
-    sel.name = name;
-    sel.className = 'form-select damage-select js-dmg-select';
-    const opts = ['', 'Kratzer','Riss','Wassereintritt','Streuscheibe matt','Halterung gebrochen','Gehäuse locker','Kabel/Stecker beschädigt','Sonstiges'];
-    opts.forEach((t,i)=>{
-      const o = document.createElement('option');
-      o.value = t;
-      o.textContent = i===0 ? '-- auswählen --' : t;
-      sel.appendChild(o);
+  function makeDamageThumb(id, src) {
+    var wrap = document.createElement('div'); wrap.className='damage-photo-thumb'; wrap.id='dmg-thumb-'+id;
+    var img = document.createElement('img'); img.src=src; img.alt='';
+    var btn = document.createElement('button'); btn.type='button'; btn.className='rm-photo';
+    btn.setAttribute('data-id', id); btn.title='Entfernen'; btn.textContent='×';
+    bindRemovePhoto(btn); wrap.appendChild(img); wrap.appendChild(btn); return wrap;
+  }
+  function bindRemovePhoto(btn) {
+    btn.addEventListener('click', function(){
+      var id=this.getAttribute('data-id'); var thumb=document.getElementById('dmg-thumb-'+id);
+      if(!confirm('Foto entfernen?')) return;
+      fetch('{{ url("examination-delete-image") }}/'+id,{method:'GET',headers:{'X-Requested-With':'XMLHttpRequest'}})
+        .finally(function(){ if(thumb) thumb.remove(); });
     });
+  }
 
-    const rm = document.createElement('button');
-    rm.type = 'button';
-    rm.className = 'btn btn-danger btn-sm btn-remove-dmg';
-    rm.title = 'Entfernen';
-    rm.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
 
-    const other = document.createElement('input');
-    other.type  = 'text';
-    other.name  = nameOther;
-    other.className = 'form-control input-compact damage-other hidden';
-    other.placeholder = 'Bitte beschreiben (Sonstiges)';
+function uploadDamagePhoto(input, file) {
+  return new Promise(function(resolve){
 
-    sel.addEventListener('change', ()=>{
-      const isOther = sel.value === 'Sonstiges';
-      other.classList.toggle('hidden', !isOther);
-      other.required = isOther;
-      if(!isOther) other.value = '';
-      if (isAdmin && otherEn){
-        otherEn.classList.toggle('hidden', !isOther);
-        if(!isOther) otherEn.value = '';
+    var entryId=input.getAttribute('data-entry-id'),
+        partLabel=input.getAttribute('data-part-label');
+
+    var orderId=input.getAttribute('data-order-id'),
+        url=input.getAttribute('data-upload-url'),
+        csrf=input.getAttribute('data-csrf');
+
+    if(!entryId||!orderId||!url||!csrf){
+      resolve();
+      return;
+    }
+
+    var domId=entryId.replace(':','-');
+    var thumbWrap=document.getElementById('photo-thumbs-'+domId),
+        spinner=document.getElementById('uploading-'+domId);
+
+    var entry=input.closest('.damage-entry');
+    var sel=entry?entry.querySelector('.js-dmg-select'):null;
+    var dmgType=(sel&&sel.value)?sel.value:'';
+
+    if(dmgType==='Sonstiges'){
+      var oi=entry?entry.querySelector('.damage-other'):null;
+      dmgType=(oi&&oi.value.trim())?oi.value.trim():'Sonstiges';
+    }
+
+    var caption=partLabel+(dmgType?' - '+dmgType:'');
+
+    if(spinner) spinner.classList.remove('d-none');
+
+    var fd=new FormData();
+    fd.append('photos[]',file);
+    fd.append('id',orderId);
+    fd.append('form','vehicle-light');
+    fd.append('document_type','Schadensfoto');
+    fd.append('damage_component',entryId);
+    fd.append('caption',caption);
+    fd.append('_token',csrf);
+
+    fetch(url,{
+      method:'POST',
+      body:fd,
+      headers:{'X-Requested-With':'XMLHttpRequest'}
+    })
+    .then(function(r){
+      return r.json();
+    })
+    .then(function(data){
+      if(data.success&&data.items&&thumbWrap){
+        data.items.forEach(function(item){
+          if(item.image1){
+            thumbWrap.appendChild(
+              makeDamageThumb(item.id,item.image1)
+            );
+          }
+        });
       }
+    })
+    .catch(function(err){
+      console.error(err);
+    })
+    .finally(function(){
+      if(spinner) spinner.classList.add('d-none');
+      resolve();
     });
 
-    rm.addEventListener('click', ()=>{
-      const container = row.parentElement;
-      const selectName = sel.name;
-      const otherName  = other.name;
-      row.remove();
-      ensureAtLeastOne(container, selectName, otherName);
-    });
+  });
+}
 
-    line.appendChild(sel);
-    line.appendChild(rm);
-    row.appendChild(line);
-    row.appendChild(other);
-    // no EN input for Other
-    return row;
-  }
+function bindPhotoInput(input){
+  input.addEventListener('change', async function(){
 
-  function ensureAtLeastOne(container, name, nameOther){
-    if (!container) return;
-    if (container.querySelectorAll('.damage-row').length === 0){
-      container.appendChild(createDamageRow(name, nameOther));
+    const files = Array.from(this.files);
+
+    for(const file of files){
+      await uploadDamagePhoto(input, file);
     }
+
+    this.value = '';
+  });
+}
+  function bindPhotoToggle(select){
+    var entry=select.closest('.damage-entry'); if(!entry) return;
+    var ps=entry.querySelector('.damage-photo-section'); if(!ps) return;
+    var apply=function(){ps.classList.toggle('hidden',!select.value||select.value==='');};
+    select.addEventListener('change',apply); apply();
+  }
+  function bindOtherToggle(sel){
+    var entry=sel.closest('.damage-entry'); if(!entry) return;
+    var other=entry.querySelector('.damage-other'); if(!other) return;
+    var apply=function(){var show=sel.value==='Sonstiges'; other.classList.toggle('hidden',!show); if(!show) other.value='';};
+    sel.addEventListener('change',apply); apply();
   }
 
-  // + weitere Beschädigung
-  document.querySelectorAll('.js-add-dmg').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const target = document.querySelector(btn.getAttribute('data-target'));
-      const name   = btn.getAttribute('data-name');
-      const nameOther = btn.getAttribute('data-name-other');
-      const nameOtherEn = btn.getAttribute('data-name-other-en');
-      if(!target || !name || !nameOther) return;
-      target.appendChild(createDamageRow(name, nameOther, nameOtherEn));
+  var dmgOpts=['','Kratzer','Riss','Wassereintritt','Streuscheibe matt','Halterung gebrochen','Gehäuse locker','Kabel/Stecker beschädigt','Sonstiges'];
+  function createDamageEntry(partKey, partLabel, entryId, name, nameOther, orderId, uploadUrl, csrf) {
+    var domId=entryId.replace(':','-');
+    var wrap=document.createElement('div'); wrap.className='damage-entry'; wrap.setAttribute('data-entry-id',entryId);
+
+    var rowWrap=document.createElement('div'); rowWrap.className='damage-row';
+    var line=document.createElement('div'); line.className='damage-line';
+    var sel=document.createElement('select'); sel.name=name; sel.className='form-select damage-select js-dmg-select';
+    dmgOpts.forEach(function(o,i){var opt=document.createElement('option'); opt.value=o; opt.textContent=i===0?'-- auswählen --':o; sel.appendChild(opt);});
+    var rmBtn=document.createElement('button'); rmBtn.type='button'; rmBtn.className='btn btn-danger btn-sm btn-remove-dmg'; rmBtn.title='Entfernen';
+    rmBtn.appendChild(mkIcon('fa-solid fa-trash-can'));
+    rmBtn.addEventListener('click',function(){
+      var container=wrap.parentElement; wrap.remove();
+      if(!container||container.querySelectorAll('.damage-entry').length>0) return;
+      container.appendChild(createDamageEntry(partKey,partLabel,partKey+':0',name,nameOther,orderId,uploadUrl,csrf));
+    });
+    line.appendChild(sel); line.appendChild(rmBtn);
+    var other=document.createElement('input'); other.type='text'; other.name=nameOther; other.className='form-control input-compact damage-other hidden'; other.placeholder='Bitte beschreiben (Sonstiges)';
+    rowWrap.appendChild(line); rowWrap.appendChild(other);
+
+    var ps=document.createElement('div'); ps.className='damage-photo-section hidden';
+    var pLbl=document.createElement('div'); pLbl.className='small fw-semibold mb-1';
+    pLbl.appendChild(mkIcon('fa-solid fa-camera me-1 text-warning')); pLbl.appendChild(document.createTextNode(' Schadensfotos'));
+    var thumbs=document.createElement('div'); thumbs.className='damage-photo-thumbs'; thumbs.id='photo-thumbs-'+domId;
+    var fLabel=document.createElement('label'); fLabel.className='btn btn-outline-secondary btn-sm damage-photo-upload-btn mb-0 mt-1'; fLabel.style.cursor='pointer';
+    fLabel.appendChild(mkIcon('fa-solid fa-plus me-1')); fLabel.appendChild(document.createTextNode(' Foto'));
+    var fi=document.createElement('input'); fi.type='file'; fi.accept='image/*'; fi.multiple=true; fi.className='d-none js-damage-photo-input';
+    fi.setAttribute('data-entry-id',entryId); fi.setAttribute('data-part-label',partLabel);
+    fi.setAttribute('data-order-id',orderId); fi.setAttribute('data-upload-url',uploadUrl); fi.setAttribute('data-csrf',csrf);
+    bindPhotoInput(fi); fLabel.appendChild(fi);
+    var spn=document.createElement('span'); spn.className='damage-photo-uploading d-none ms-2'; spn.id='uploading-'+domId; spn.appendChild(mkIcon('fa-solid fa-spinner fa-spin'));
+    ps.appendChild(pLbl); ps.appendChild(thumbs); ps.appendChild(fLabel); ps.appendChild(spn);
+
+    wrap.appendChild(rowWrap); wrap.appendChild(ps);
+    bindOtherToggle(sel); bindPhotoToggle(sel);
+    return wrap;
+  }
+
+  // Init existing entries
+  document.querySelectorAll('.damage-entry').forEach(function(entry){
+    var sel=entry.querySelector('.js-dmg-select');
+    if(sel){bindOtherToggle(sel); bindPhotoToggle(sel);}
+    entry.querySelectorAll('.js-damage-photo-input').forEach(bindPhotoInput);
+    entry.querySelectorAll('.rm-photo').forEach(bindRemovePhoto);
+    var rmBtn=entry.querySelector('.btn-remove-dmg');
+    if(rmBtn) rmBtn.addEventListener('click',function(){
+      var container=entry.parentElement;
+      var sel2=entry.querySelector('select');
+      var addBtn=document.querySelector('.js-add-dmg[data-name="'+(sel2?sel2.name:'')+'"]');
+      var pKey=addBtn?addBtn.getAttribute('data-part'):'';
+      var pLbl=addBtn?addBtn.getAttribute('data-part-label'):'';
+      var oId=addBtn?addBtn.getAttribute('data-order-id'):'';
+      var uUrl=addBtn?addBtn.getAttribute('data-upload-url'):'';
+      var c=addBtn?addBtn.getAttribute('data-csrf'):'';
+      var nameOther=addBtn?addBtn.getAttribute('data-name-other'):'';
+      entry.remove();
+      if(!container||container.querySelectorAll('.damage-entry').length>0) return;
+      container.appendChild(createDamageEntry(pKey,pLbl,pKey+':0',sel2?sel2.name:'',nameOther,oId,uUrl,c));
     });
   });
 
-  // Vorhandene Rows binden
-  document.querySelectorAll('.damage-row').forEach(row=>{
-    const sel = row.querySelector('.js-dmg-select');
-    const other = row.querySelector('.damage-other');
-    const rm = row.querySelector('.btn-remove-dmg');
+  // Status -> damage section toggle
+  var normalize=function(v){return(v||'').toString().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu,'');};
+  document.querySelectorAll('.js-status').forEach(function(sel){
+    var targetEl=document.querySelector(sel.dataset.target);
+    var whenVal=sel.dataset.when||'beschaedigt';
+    var apply=function(){if(targetEl) targetEl.classList.toggle('hidden',normalize(sel.value)!==whenVal);};
+    sel.addEventListener('change',apply); apply();
+  });
 
-    if(sel){
-      const apply = ()=>{
-        const isOther = sel.value === 'Sonstiges';
-        other && other.classList.toggle('hidden', !isOther);
-        if(other) other.required = isOther;
-      };
-      sel.addEventListener('change', apply); apply();
-    }
-    if(rm){
-      rm.addEventListener('click', ()=>{
-        const container = row.parentElement;
-        const selEl = row.querySelector('select');
-        const name = selEl ? selEl.name : '';
-        const otherName = (other && other.name) ? other.name : '';
-        row.remove();
-        ensureAtLeastOne(container, name, otherName);
-      });
-    }
+  // Add damage button
+  document.querySelectorAll('.js-add-dmg').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var partKey=this.getAttribute('data-part');
+      var partLabel=this.getAttribute('data-part-label');
+      var name=this.getAttribute('data-name');
+      var nameOther=this.getAttribute('data-name-other');
+      var orderId=this.getAttribute('data-order-id');
+      var uploadUrl=this.getAttribute('data-upload-url');
+      var csrf=this.getAttribute('data-csrf');
+      var container=document.getElementById('damage-container-'+partKey);
+      if(!container) return;
+      var countBefore=container.querySelectorAll('.damage-entry').length;
+      container.appendChild(createDamageEntry(partKey,partLabel,partKey+':'+countBefore,name,nameOther,orderId,uploadUrl,csrf));
+    });
   });
 })();
 </script>

@@ -83,7 +83,7 @@ if (!function_exists('check_2hour_availability')){
 }
 if (!function_exists('stripe_secrete')){
     function stripe_secrete(){
-
+        return env('STRIPE_SECRET');
     }
 }
 
@@ -119,12 +119,12 @@ if (!function_exists('booking_amount_calculator')){
             if($booking['option']==1) {
 
                 $amount = 349;
-                $title = 'Transporter-Check XL';
+                $title = 'Transporter XL';
                 $description = "Wir fahren zu deinem gewünschten Transporter, prüfen ihn vor Ort nach TÜV-Vorgaben, erstellen einen umfassenden Transporter-Zustandsbericht und dokumentieren den Zustand mit Fotos.";
 
             }else{
                 $amount = 399;
-                $title = 'Transporter-Check XXL';
+                $title = 'Transporter XXL';
                 $description = "Wir fahren zu deinem gewünschten Transporter, prüfen ihn vor Ort nach TÜV-Vorgaben, erstellen einen umfassenden Transporter-Zustandsbericht und dokumentieren den Zustand mit Fotos. Zusätzlich erhältst du eine Marktwertanalyse, eine Kostenübersicht, eine FIN-Abfrage und weitere relevante Dokumente.";
 
             }
@@ -136,14 +136,14 @@ if (!function_exists('booking_amount_calculator')){
                 $amount=349;
 
 
-            $title='Oldtimer-Check XL';
+            $title='Oldtimer XL';
             $description = "Wir fahren zu deinem gewünschten Oldtimer, prüfen ihn vor Ort nach TÜV-Vorgaben, erstellen einen umfassenden Oldtimer-Zustandsbericht und dokumentieren den Zustand mit Fotos.";
 
                 }else{
                 $amount=399;
 
 
-                $title='Oldtimer-Check XXL';
+                $title='Oldtimer XXL';
                 $description = "Wir fahren zu deinem gewünschten Oldtimer, prüfen ihn vor Ort nach TÜV-Vorgaben, erstellen einen umfassenden Oldtimer-Zustandsbericht und dokumentieren den Zustand mit Fotos. Zusätzlich erhältst du eine Marktwertanalyse, eine Kostenübersicht, eine FIN-Abfrage und weitere relevante Dokumente.";
 
 
@@ -154,12 +154,12 @@ if (!function_exists('booking_amount_calculator')){
 
             if ($booking['option']==1) {
                 $amount=349;
-                $title='Sportwagen-Check XL';
+                $title='Sportwagen XL';
                 $description = "Wir fahren zu deinem gewünschten Sportwagen, prüfen ihn vor Ort nach TÜV-Vorgaben, erstellen einen umfassenden Sportwagen-Zustandsbericht und dokumentieren den Zustand mit Fotos.";
 
             }else{
                 $amount=399;
-                $title='Sportwagen-Check XXL';
+                $title='Sportwagen XXL';
                 $description = "Wir fahren zu deinem gewünschten Sportwagen, prüfen ihn vor Ort nach TÜV-Vorgaben, erstellen einen umfassenden Sportwagen-Zustandsbericht und dokumentieren den Zustand mit Fotos. Zusätzlich erhältst du eine Marktwertanalyse, eine Kostenübersicht, eine FIN-Abfrage und weitere relevante Dokumente.";
 
             }
@@ -170,12 +170,12 @@ if (!function_exists('booking_amount_calculator')){
 
             if ($booking['option']==1) {
                 $amount=349;
-                $title='Elektro-Check XL';
+                $title='Elektro XL';
                 $description = "Wir fahren zu deinem gewünschten Elektrofahrzeug, prüfen es vor Ort nach TÜV-Vorgaben inkl. Sichtprüfung des Hochvoltsystems, erstellen einen umfassenden Elektrofahrzeug-Zustandsbericht und dokumentieren den Zustand mit Fotos.";
 
             }else{
                 $amount=399;
-                $title='Elektro-Check XXL';
+                $title='Elektro XXL';
                 $description = "Wir fahren zu deinem gewünschten Elektrofahrzeug, prüfen es vor Ort nach TÜV-Vorgaben inkl. Sichtprüfung des Hochvoltsystems, erstellen einen umfassenden Elektrofahrzeug-Zustandsbericht und dokumentieren den Zustand mit Fotos. Zusätzlich erhältst du eine Marktwertanalyse, eine Kostenübersicht, eine FIN-Abfrage und weitere relevante Dokumente.";
 
             }
@@ -183,12 +183,12 @@ if (!function_exists('booking_amount_calculator')){
         }else if($booking['vehicle_type']=='wohnmobil'){
             if ($booking['option']==1) {
                 $amount=399;
-                $title='Wohnmobil-Check XL';
+                $title='Wohnmobil XL';
                 $description = "Wir fahren zu deinem gewünschten Wohnmobil, prüfen es vor Ort nach TÜV-Vorgaben, erstellen einen umfassenden Wohnmobil-Zustandsbericht und dokumentieren den Zustand mit Fotos.";
 
             }else{
                 $amount=449;
-                $title='Wohnmobil-Check XXL';
+                $title='Wohnmobil XXL';
                 $description = "Wir fahren zu deinem gewünschten Wohnmobil, prüfen es vor Ort nach TÜV-Vorgaben, erstellen einen umfassenden Wohnmobil-Zustandsbericht und dokumentieren den Zustand mit Fotos. Zusätzlich erhältst du eine Marktwertanalyse, eine Kostenübersicht, eine FIN-Abfrage und weitere relevante Dokumente.";
 
             }
@@ -227,11 +227,11 @@ if (!function_exists('booking_amount_calculator')){
 
             if ($booking['option']==1) {
                 $amount=299;
-                $title='Auto/ PKW Check XL';
+                $title='Auto/ PKW XL';
                 $description = "Wir fahren zu deinem gewünschten Fahrzeug, prüfen es vor Ort nach TÜV-Vorgaben, erstellen einen umfassenden Gebrauchtwagen-Zustandsbericht und dokumentieren den Zustand mit Fotos.";
             }else{
                 $amount=349;
-                $title='Auto/ PKW Check XXL';
+                $title='Auto/ PKW XXL';
                 $description = "Wir fahren zu deinem gewünschten Fahrzeug, prüfen es vor Ort nach TÜV-Vorgaben, erstellen einen umfassenden Gebrauchtwagen-Zustandsbericht und dokumentieren den Zustand mit Fotos. Zusätzlich erhältst du eine Marktwertanalyse, eine Kostenübersicht, eine FIN-Abfrage und weitere relevante Dokumente.";
             }
 

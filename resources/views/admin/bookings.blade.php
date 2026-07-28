@@ -87,7 +87,6 @@
         }
         #kt_table_users {
             min-width: 1270px;
-            table-layout: fixed;
         }
         #kt_table_users th,
         #kt_table_users td {
@@ -98,7 +97,7 @@
         }
         #kt_table_users th {
             white-space: nowrap;
-            font-size: .55rem !important;
+            font-size: .9rem !important;
             letter-spacing: 0;
         }
         #kt_table_users .booking-actions {
@@ -111,6 +110,18 @@
         #kt_table_users .booking-actions .btn {
             white-space: nowrap;
         }
+        /* B2B indicator dot next to order ID */
+        .b2b-indicator {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #6f42c1;
+            margin-right: 5px;
+            vertical-align: middle;
+            flex-shrink: 0;
+        }
+
         #kt_table_users .compact-cell {
             display: flex;
             flex-direction: column;
@@ -123,12 +134,15 @@
         }
         #kt_table_users .compact-cell .secondary {
             color: #6c757d;
-            font-size: .875rem;
-            overflow-wrap: anywhere;
+            font-size: .8rem;
+            max-width: 175px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         #kt_table_users .text-column {
             white-space: normal;
-            overflow-wrap: anywhere;
+            word-break: break-word;
         }
         #kt_table_users .badge {
             white-space: nowrap;
@@ -287,17 +301,49 @@
             font-size: 1rem;
             font-weight: 700;
         }
+       .dataTables_scrollBody #kt_table_users tbody td:nth-child(3) {
+    padding-left: 20px !important;
+}
+.dataTables_scrollBody #kt_table_users tbody td:nth-child(4) {
+    padding-left: 28px !important;
+}
+
+/* Status */
+.dataTables_scrollBody #kt_table_users tbody td:nth-child(5) {
+    padding-left: 35px !important;
+}
+
+/* Fahrzeug */
+.dataTables_scrollBody #kt_table_users tbody td:nth-child(6) {
+    padding-left: 40px !important;
+}
+
+/* Kunde */
+.dataTables_scrollBody #kt_table_users tbody td:nth-child(7) {
+    padding-left: 35px !important;
+}
+
+/* Gutachter */
+.dataTables_scrollBody #kt_table_users tbody td:nth-child(8) {
+    padding-left: 20px !important;
+}
+@media (min-width: 992px) {
+    #assign_examiner .modal-content{
+        max-height: 85vh;
+    }
+}
+
     </style>
 @endsection
 @section('breadcrumb')
 <div class="row mb-2">
     <div class="col-sm-6">
-        <h1 class="m-0">All Bookings</h1>
+        <h1 class="m-0">Alle Aufträge</h1>
     </div>
     <div class="col-sm-6">
         <ol class="breadcrumb float-sm-right">
             <li class="breadcrumb-item"><a href="{{ route('admin') }}">Dashboard</a></li>
-            <li class="breadcrumb-item active">Bookings</li>
+            <li class="breadcrumb-item active">Alle Aufträge</li>
         </ol>
     </div>
 </div>
@@ -310,9 +356,11 @@
                         <!--begin::Card title: scope tabs + search-->
                         <div class="card-title d-flex flex-column align-items-start gap-0">
                             <div class="d-flex booking-scope-tabs mb-3" role="group" aria-label="Booking filters">
-                                <button type="button" class="btn btn-sm btn-outline-primary active" data-booking-scope="all">All Bookings</button>
-                                <button type="button" class="btn btn-sm btn-outline-primary" data-booking-scope="active">Active Bookings</button>
-                                <button type="button" class="btn btn-sm btn-outline-primary" data-booking-scope="ready">Fertigstellung</button>
+                                <button type="button" class="btn btn-sm btn-outline-primary active" data-booking-scope="all">Alle ({{ $tabCounts['all'] }})</button>
+                                <button type="button" class="btn btn-sm btn-outline-primary" data-booking-scope="new">Neu ({{ $tabCounts['new'] }})</button>
+                                <button type="button" class="btn btn-sm btn-outline-primary" data-booking-scope="active">Aktive Aufträge ({{ $tabCounts['active'] }})</button>
+                                <button type="button" class="btn btn-sm btn-outline-primary" data-booking-scope="ready">Fertigstellung ({{ $tabCounts['ready'] }})</button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-booking-scope="storno">Problem ({{ $tabCounts['storno'] }})</button>
                             </div>
                             <input type="text" data-admin-table-filter="search" class="form-control w-200px" placeholder="Search..." />
                         </div>
@@ -360,7 +408,7 @@
                                 </div>
                                 {{-- Create Booking --}}
                                 <button type="button" data-bs-target="#kt_add_booking" data-bs-toggle="modal" class="btn btn-primary" id="add-user">
-                                    <i class="fas fa-plus me-1"></i> Create Booking
+                                    <i class="fas fa-plus me-1"></i> Auftrag erstellen
                                 </button>
                             </div>
                             <!--end::Toolbar-->
@@ -396,15 +444,15 @@
 {{--                                    </div>--}}
 {{--                                </th>--}}
 
-                                <th style="width: 130px;">Datum</th>
-                                <th style="width: 60px;">ID</th>
-                                <th style="width: 155px;">Fahrzeugtyp</th>
-                                <th style="width: 70px;">Status</th>
-                                <th style="width: 220px;">Fahrzeug</th>
-                                <th style="width: 240px;">Kunde</th>
-                                <th style="width: 190px;">Gutachter</th>
-                                <th style="width: 150px;">Abschluss am</th>
-                                <th style="width: 150px;">Bezahlt am</th>
+                                <th>Datum</th>
+                                <th>ID</th>
+                                <th>Detail</th>
+                                <th>Fahrzeugtyp</th>
+                                <th>Status</th>
+                                <th>Fahrzeug</th>
+                                <th>Kunde</th>
+                                <th>Gutachter</th>
+                                <th>Termin</th>
                             </tr>
                             <!--end::Table row-->
                             </thead>
@@ -428,39 +476,98 @@
             </div>
         </div>
     </div>
+    {{-- ─── Combined: Inspector Request + Manual Assignment ─── --}}
     <div class="modal fade" tabindex="-1" id="assign_examiner">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3 class="modal-title">Assign Examiner</h3>
-
+                    <h5 class="modal-title"><i class="fas fa-search-location me-2 text-warning"></i> Gutachter anfragen & zuweisen</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-
                 <div class="modal-body">
-                   <div class="row mb-3">
-                       <div class="col-md-12 form-group">
-{{--                           <select class="form-select form-select-solid" id="select-examiner" data-placeholder="Select an option">--}}
-{{--                               <option></option>--}}
 
-{{--                           </select>--}}
-                       </div>
-                   </div>
-
-                    <div class="row">
-                        <div class="col-md-12 form-group">
-                           <input type="email" placeholder="Examiner Emmail" name="email" id="examiner_email" class="form-control form-control-solid">
+                    {{-- Section 1: Inspector requests --}}
+                    <!-- <p class="fw-semibold text-muted mb-2" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;">Gutachter anfragen</p> -->
+                    <div id="ae-loading" class="text-center py-3">
+                        <span class="spinner-border spinner-border-sm text-primary"></span>
+                        <span class="text-muted ms-2" style="font-size:13px;">Wird geladen…</span>
+                    </div>
+                    <div id="ae-content" style="display:none;">
+                        {{-- Previous statuses --}}
+                        <div id="ae-status-panel" class="mb-3" style="display:none;">
+                            <label class="form-label fw-semibold text-muted" style="font-size:12px;">Bisherige Anfragen</label>
+                            <div id="ae-status-list"></div>
+                            <hr class="my-2">
+                        </div>
+                        {{-- Inspector recipient list --}}
+                        <div class="mb-2">
+                            <label class="form-label fw-semibold mb-1" style="font-size:13px;">Anfrage senden an</label>
+                            <div id="ae-list" class="border rounded p-2 mb-2" style="min-height:38px;max-height:140px;overflow-y:auto;"></div>
+                            {{-- Select from DB --}}
+                            <div class="d-flex gap-2 mb-2">
+                                <select id="ae-extra-select" class="form-select form-select-sm" style="flex:1;"></select>
+                                <button class="btn btn-sm btn-outline-secondary" id="ae-extra-add" title="Aus Liste hinzufügen"><i class="fas fa-plus"></i></button>
+                            </div>
+                            {{-- Free email input --}}
+                            <div class="d-flex gap-2">
+                                <input type="email" id="ae-custom-email" class="form-control form-control-sm" placeholder="Beliebige E-Mail eingeben…" style="flex:1;">
+                                <button class="btn btn-sm btn-outline-primary" id="ae-custom-add" title="E-Mail hinzufügen"><i class="fas fa-envelope-plus"></i> Hinzufügen</button>
+                            </div>
+                        </div>
+                        {{-- Email body --}}
+                        <div class="pt-3 mb-2">
+                            <label class="form-label fw-semibold mb-1" style="font-size:13px;">E-Mail-Text</label>
+                            <textarea id="ae-email-body" class="form-control" rows="15" style="font-size:13px;"></textarea>
                         </div>
                     </div>
-                </div>
+                    <div id="ae-error" class="alert alert-danger py-2" style="display:none;font-size:13px;"></div>
 
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary btn-assign-examiner-now">Assign Examiner</button>
+                    <hr class="my-3">
+
+                    {{-- Section 2: Direct manual assignment --}}
+                    <p class="fw-semibold text-muted mb-2" style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;">Direkt zuweisen</p>
+                    <div class="pb-3 row g-1">
+                        <div class="col-md-7">
+                            <label class="form-label fw-semibold mb-1" style="font-size:13px;">E-Mail-Adresse</label>
+                            <input type="email" name="email" id="examiner_email" class="form-control form-control-solid form-control-sm" placeholder="name@example.com">
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label fw-semibold mb-1" style="font-size:13px;">Name</label>
+                            <input type="text" id="examiner_name_assign" class="form-control form-control-solid form-control-sm" placeholder="Max Müller">
+                        </div>
+                    </div>
+                    <button type="button" style="width: 200px; height: 37px" class="btn btn-primary btn-sm btn-assign-examiner-now float-end">
+                        <i class="fas fa-user-check me-1"></i> Direkt zuweisen
+                    </button>
+                </div>
+                <div class="modal-footer gap-2">
+                    <button type="button" style="width: 200px; height: 37px" class="btn btn-light btn-sm" data-bs-dismiss="modal">Abbrechen</button>
+                    <button type="button" style="width: 200px; height: 37px" class="btn btn-warning btn-sm fw-semibold" id="ae-send-btn" style="display:none;">
+                        <i class="fas fa-paper-plane me-1"></i> Anfrage senden
+                    </button>
                 </div>
             </div>
         </div>
     </div>
+
+    {{-- Assignment Email Preview Modal --}}
+    <div class="modal fade" id="assignEmailPreviewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-envelope-open-text me-2 text-success"></i> Vorschau: Zuteilungs-E-Mail</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div id="assign-preview-loading" class="text-center py-4">
+                        <span class="spinner-border text-primary"></span>
+                    </div>
+                    <iframe id="assign-preview-frame" style="width:100%;height:60vh;border:0;display:none;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" tabindex="-1" id="email_examiner" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -556,7 +663,7 @@
             <form class="modal-content" id="statusConfirmForm" method="POST">
                 @csrf
                 <div class="modal-header">
-                    <h3 class="modal-title">Change booking status</h3>
+                    <h3 class="modal-title">Status ändern</h3>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -566,16 +673,16 @@
                         <option value="Zuweisung">Zuweisung</option>
                         <option value="Pruefung">Pr&uuml;fung</option>
                         <option value="Fertigstellung">Fertigstellung</option>
-                        <option value="Completed">Completed</option>
+                        <option value="Completed">Abgeschlossen</option>
                         <option value="Problem">Problem</option>
                     </select>
-                    <div class="form-text mt-3">
+                    <!-- <div class="form-text mt-3">
                         Confirming specific statuses can send the same customer emails used by the existing status workflow.
-                    </div>
+                    </div> -->
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Confirm status</button>
+                <div class="mt-3 modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Abbrechen</button>
+                    <button type="submit" class="btn btn-primary">Speichern</button>
                 </div>
             </form>
         </div>
@@ -659,7 +766,7 @@
                 <!--begin::Modal header-->
                 <div class="modal-header" id="kt_modal_add_user_header">
                     <!--begin::Modal title-->
-                    <h2 class="fw-bold" id="booking-modal-title">Create Booking</h2>
+                    <h2 class="fw-bold" id="booking-modal-title">Auftrag erstellen</h2>
                     <!--end::Modal title-->
                     <!--begin::Close-->
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -677,7 +784,7 @@
                                 <div class="col-lg-12 ">
                                     <div class="bg-white rounded-1 shadow-1 position-relative">
                                         <div>
-                                            <div class="admin-sheet-section">
+                                            <div style="display:none;" class="admin-sheet-section">
                                             <h5>Order Management</h5>
                                             <div class="row">
                                                 <div class="col-md-6">
@@ -709,7 +816,7 @@
                                                         <p class="mb-0 text-black fs-6">Status</p>
                                                         <div class="input-box">
                                                             <select class="form-select" name="admin_status">
-                                                                <option value="">Select status</option>
+                                                                <option value="">Status wählen</option>
                                                                 <option value="New" {{ old('admin_status') === 'New' ? 'selected' : '' }}>New</option>
                                                                 <option value="Zuweisung" {{ old('admin_status') === 'Zuweisung' ? 'selected' : '' }}>Zuweisung</option>
                                                                 <option value="Pruefung" {{ old('admin_status') === 'Pruefung' ? 'selected' : '' }}>Pr&uuml;fung</option>
@@ -775,214 +882,326 @@
                                                             1 => 'Wohnmobil XL',
                                                             2 => 'Wohnmobil XXL'
                                                         ],
-                                                        'sonstiges' => [
-                                                            1 => 'Sonstiges-Check',
-                                                            2 => 'Sonstiges-Check'
-                                                        ],
+                                                        // 'sonstiges' => [
+                                                        //     1 => 'Sonstiges-Check',
+                                                        //     2 => 'Sonstiges-Check'
+                                                        // ],
                                                         'kaufbegleitung' => [
                                                             1 => 'Kaufbegleitung XL',
                                                             2 => 'Kaufbegleitung XXL'
                                                         ]
                                                     ];
                                                     ?>
-                                                <div class="row mb-5 mb-md-4">
-                                                    <div class="">
-                                                        <div class="mb-3  mb-lg-4">
-                                                            <p class="mb-0 text-black fs-6">Fahrzeugtyp<sup class="text-primary">*</sup></p>
-                                                            <div class="input-box">
-{{--                                                                <input name="vehicle_type" placeholder="Vehicle type" type="text" value="{{old('vehicle_type')}}" class="form-control form-control-sm shadow">--}}
-                                                                <select class="form-select " name="vehicle_type">
-                                                                    @foreach($vehicle_types as $key=>$types)
-                                                                        <optgroup label="{{$key}}">
-                                                                            @foreach($types as $mytype)
-                                                                                <option value="{{$mytype}}">{{$mytype}}</option>
-                                                                            @endforeach
 
-                                                                        </optgroup>
+                                               <div class="row g-3 mb-4">
 
-                                                                    @endforeach
-                                                                </select>
-                                                                @error('vehicle_type')
-                                                                <div class="invalid-feedback d-block">Dies ist ein Pflichtfeld.</div>
-                                                                @enderror
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="">
-                                                        <div class="mb-3  mb-lg-4">
-                                                            <p class="mb-0 text-black fs-6">E-Mail<sup class="text-primary">*</sup></p>
-                                                            <div class="input-box">
-                                                                <input name="email" placeholder="User Email" type="text" value="{{old('email')}}" class="form-control form-control-sm shadow">
-                                                                @error('email')
-                                                                <div class="invalid-feedback d-block">Dies ist ein Pflichtfeld.</div>
-                                                                @enderror
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="">
-                                                        <div class="mb-3  mb-lg-4">
-                                                            <p class="mb-0 text-black fs-6">Fahrzeug<sup class="text-primary">*</sup></p>
-                                                            <div class="input-box">
-                                                                <input name="vehicle_make_model" type="text" value="{{old('vehicle_make_model')}}" class="form-control form-control-sm shadow">
-                                                                @error('vehicle_make_model')
-                                                                <div class="invalid-feedback d-block">Dies ist ein Pflichtfeld.</div>
-                                                                @enderror
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="">
-                                                        <div class="mb-3 mb-lg-4">
-                                                            <p class="mb-0 text-black fs-6">Verkäufer Tel<sup class="text-primary">*</sup></p>
-                                                            <div class="input-box">
-                                                                <input name="phone" type="text" value="{{old('phone')}}" class="form-control form-control-sm shadow">
-                                                                @error('phone')
-                                                                <div class="invalid-feedback d-block">Dies ist ein Pflichtfeld.</div>
-                                                                @enderror
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <p class="text-black fs-6 m-0">Inserat-Link</p>
-                                                        <div class="input-box">
-                                                            <input name="advertisement_link"  value="{{old('advertisement_link')}}" type="text" class="form-control form-control-sm shadow">
-                                                            @error('advertisement_link')
-                                                            <div class="invalid-feedback d-block">Dies ist ein Pflichtfeld.</div>
-                                                            @enderror
-                                                        </div>
-                                                    </div>
-                                                </div>
+    <!-- Status -->
+    <div class="col-md-6">
+        <p class="mb-1 text-black fs-6">Status</p>
+        <div class="input-box">
+            <select class="form-select" name="admin_status">
+                <option value="">Status wählen</option>
+                <option value="New" {{ old('admin_status') === 'New' ? 'selected' : '' }}>Neu</option>
+                <option value="Zuweisung" {{ old('admin_status') === 'Zuweisung' ? 'selected' : '' }}>Zuweisung</option>
+                <option value="Pruefung" {{ old('admin_status') === 'Pruefung' ? 'selected' : '' }}>Pr&uuml;fung</option>
+                <option value="Fertigstellung" {{ old('admin_status') === 'Fertigstellung' ? 'selected' : '' }}>Fertigstellung</option>
+                <option value="Completed" {{ old('admin_status') === 'Completed' ? 'selected' : '' }}>Abgeschlossen</option>
+                <option value="Problem" {{ old('admin_status') === 'Problem' ? 'selected' : '' }}>Problem</option>
+            </select>
+        </div>
+    </div>
 
-                                            <div class="row">
-                                                <div class="">
-                                                    <div class="mb-3">
-                                                        <p class="mb-0 text-black fs-6">Adresse<sup class="text-primary">*</sup></p>
-                                                        <div class="input-box">
-                                                            <input name="address" value="{{old('address')}}" type="text" class="form-control form-control-sm shadow">
-                                                            @error('address')
-                                                            <div class="invalid-feedback d-block">Dies ist ein Pflichtfeld.</div>
-                                                            @enderror
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="">
-                                                    <div class="mb-3">
-                                                        <p class="mb-0 text-black fs-6">Stadt<sup class="text-primary">*</sup></p>
-                                                        <div class="input-box">
-                                                            <input name="city" value="{{request('city')}}" style="text-transform: capitalize"  type="text" class="form-control form-control-sm shadow">
-                                                            @error('city')
-                                                            <div class="invalid-feedback d-block">{{$message}}</div>
-                                                            @enderror
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="">
-                                                    <div class="mb-3">
-                                                        <p class="mb-0 text-black fs-6">Price<sup class="text-primary">*</sup></p>
-                                                        <div class="input-box">
-                                                            <input name="price" value="{{request('price')}}" style="text-transform: capitalize"  type="text" class="form-control form-control-sm shadow">
-                                                            @error('price')
-                                                            <div class="invalid-feedback d-block">{{$message}}</div>
-                                                            @enderror
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="pt-3 col-md-12">
-                                                    <div class="mb-3 mb-lg-4">
-                                                    <div class="form-check form-check-custom form-check-sm form-check-solid">
-                                                        <input class="form-check-input" type="checkbox" value="1" name="negotiation_checklist" id="negotiation_checklist" />
-                                                        <label class="form-check-label" for="negotiation_checklist">
-                                                            Verhandlungs-Checkliste (+19 €)
-                                                        </label>
-                                                    </div>
-                                                    </div>
+    <!-- Fahrzeugtyp -->
+    <div class="col-md-6">
+        <p class="mb-1 text-black fs-6">
+            Fahrzeugtyp<sup class="text-primary">*</sup>
+        </p>
 
-                                                </div>
-                                                <div class="col-md-12">
-                                                    <div class="mb-3 mb-lg-4">
-                                                        <div class="form-check form-check-custom form-check-sm  form-check-solid">
-                                                            <input class="form-check-input" type="checkbox" value="1" name="document_in_english" id="document_in_english"  />
-                                                            <label class="form-check-label" for="document_in_english">
-                                                                Dokumente auf Englisch (+9 €)
-                                                            </label>
-                                                        </div>
-                                                    </div>
+        <div class="input-box">
+            <select class="form-select" name="vehicle_type">
+                @foreach($vehicle_types as $key=>$types)
+                    <optgroup label="{{$key}}">
+                        @foreach($types as $mytype)
+                            <option value="{{$mytype}}">
+                                {{$mytype}}
+                            </option>
+                        @endforeach
+                    </optgroup>
+                @endforeach
+            </select>
 
-                                                </div>
-                                                <div class="col-md-12">
-                                                    <div class="mb-3 mb-lg-4">
-                                                        <div class="form-check form-check-custom form-check-sm  form-check-solid">
-                                                            <input class="form-check-input" type="checkbox" value="1" name="pdf_with_partner_logo" id="pdf_with_partner_logo" {{ old('pdf_with_partner_logo') ? 'checked' : '' }} />
-                                                            <label class="form-check-label" for="pdf_with_partner_logo">
-                                                                PDF with partner logo
-                                                            </label>
-                                                        </div>
-                                                    </div>
+            @error('vehicle_type')
+            <div class="invalid-feedback d-block">
+                Dies ist ein Pflichtfeld.
+            </div>
+            @enderror
+        </div>
+    </div>
 
-                                                </div>
-                                                <div class="col-md-12 partner-logo-field d-none" id="partner_logo_wrapper">
-                                                    <div class="mb-3 mb-lg-4">
-                                                        <label class="form-label mb-1">Select partner logo</label>
-                                                        @if(($partnerLogos ?? collect())->isEmpty())
-                                                            <div class="text-muted">
-                                                                No partner logos available yet.
-                                                                @if(auth()->check() && auth()->user()->type === 'admin')
-                                                                    <a href="{{ route('admin.partner-logos.index') }}" target="_blank">Add one here</a>.
-                                                                @endif
-                                                            </div>
-                                                        @else
-                                                            <select name="partner_logo_id" id="partner_logo_id" class="form-select form-select-sm shadow">
-                                                                <option value="">Choose partner</option>
-                                                                @foreach($partnerLogos as $logo)
-                                                                    <option value="{{ $logo->id }}" {{ (string)old('partner_logo_id') === (string)$logo->id ? 'selected' : '' }}>{{ $logo->name }}</option>
-                                                                @endforeach
-                                                            </select>
-                                                            @error('partner_logo_id')
-                                                            <div class="invalid-feedback d-block">{{ $message }}</div>
-                                                            @enderror
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                                <br>
-                                                <div class="pt-3 col-md-12">
-                                                    <div class="mb-3 mb-lg-4">
-                                                        <p class="mb-0 text-black fs-6">Wünsche</p>
-                                                        <div class="input-box">
-                                                            <textarea name="desc" style="height: 150px; font-size:15px" class="form-control shadow" id="" cols="30" rows="20">{{old('desc')}}</textarea>
-                                                            @error('desc')
-                                                            <div class="invalid-feedback d-block">{{$message}}</div>
-                                                            @enderror
-                                                        </div>
-                                                    </div>
-                                                </div>
+    <!-- E-Mail -->
+    <div class="col-md-6">
+        <p class="mb-1 text-black fs-6">
+            E-Mail<sup class="text-primary">*</sup>
+        </p>
 
-                                                <!-- <div style="padding-top: 25px" class="col-md-12">
-                                                    <div class="mb-0">
+        <div class="input-box">
+            <input
+                name="email"
+                placeholder=""
+                type="text"
+                value="{{old('email')}}"
+                class="form-control form-control-sm shadow"
+            >
 
-                                                        <div class="form-check">
-                                                            <input required style="margin-top: 2px; border-color: #01449A" class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                                                            <label class="form-check-label mb-0 text-black fs-6" for="flexCheckDefault">
-                                                                Ich bestätige, dass der Autoverkäufer mit der Prüfung einverstanden ist.<sup class="text-primary">*</sup>
-                                                            </label>
-                                                        </div>
-                                                    </div>
-                                                </div>-->
-                                            </div>
+            @error('email')
+            <div class="invalid-feedback d-block">
+                Dies ist ein Pflichtfeld.
+            </div>
+            @enderror
+        </div>
+    </div>
 
+    <!-- Fahrzeug -->
+    <div class="col-md-6">
+        <p class="mb-1 text-black fs-6">
+            Fahrzeug<sup class="text-primary">*</sup>
+        </p>
 
+        <div class="input-box">
+            <input
+                name="vehicle_make_model"
+                type="text"
+                value="{{old('vehicle_make_model')}}"
+                class="form-control form-control-sm shadow"
+            >
 
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+            @error('vehicle_make_model')
+            <div class="invalid-feedback d-block">
+                Dies ist ein Pflichtfeld.
+            </div>
+            @enderror
+        </div>
+    </div>
 
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" href="" class="btn-next btn btn-primary btn-further px-5 py-2 fs-5 shadow-1">save</button>
+    <!-- Verkäufer Tel -->
+    <!-- <div class="col-md-6">
+        <p class="mb-1 text-black fs-6">
+            Verkäufer Tel<sup class="text-primary">*</sup>
+        </p>
 
+        <div class="input-box">
+            <input
+                name="phone"
+                type="text"
+                value="{{old('phone')}}"
+                class="form-control form-control-sm shadow"
+            >
 
+            @error('phone')
+            <div class="invalid-feedback d-block">
+                Dies ist ein Pflichtfeld.
+            </div>
+            @enderror
+        </div>
+    </div> -->
 
-                </div>
+    <!-- Inserat-Link -->
+    <div class="col-md-6">
+        <p class="mb-1 text-black fs-6">Inserat-Link</p>
+
+        <div class="input-box">
+            <input
+                name="advertisement_link"
+                value="{{old('advertisement_link')}}"
+                type="text"
+                class="form-control form-control-sm shadow"
+            >
+
+            @error('advertisement_link')
+            <div class="invalid-feedback d-block">
+                Dies ist ein Pflichtfeld.
+            </div>
+            @enderror
+        </div>
+    </div>
+
+    <!-- Adresse -->
+    <!-- <div class="col-md-6">
+        <p class="mb-1 text-black fs-6">
+            Adresse<sup class="text-primary">*</sup>
+        </p>
+
+        <div class="input-box">
+            <input
+                name="address"
+                value="{{old('address')}}"
+                type="text"
+                class="form-control form-control-sm shadow"
+            >
+
+            @error('address')
+            <div class="invalid-feedback d-block">
+                Dies ist ein Pflichtfeld.
+            </div>
+            @enderror
+        </div>
+    </div> -->
+
+    <!-- Stadt -->
+    <!-- <div class="col-md-6">
+        <p class="mb-1 text-black fs-6">
+            Stadt<sup class="text-primary">*</sup>
+        </p>
+
+        <div class="input-box">
+            <input
+                name="city"
+                value="{{request('city')}}"
+                type="text"
+                class="form-control form-control-sm shadow"
+            >
+
+            @error('city')
+            <div class="invalid-feedback d-block">
+                {{$message}}
+            </div>
+            @enderror
+        </div>
+    </div> -->
+
+    <!-- Price -->
+    <!-- <div class="col-md-6">
+        <p class="mb-1 text-black fs-6">
+            Price<sup class="text-primary">*</sup>
+        </p>
+
+        <div class="input-box">
+            <input
+                name="price"
+                value="{{request('price')}}"
+                type="text"
+                class="form-control form-control-sm shadow"
+            >
+
+            @error('price')
+            <div class="invalid-feedback d-block">
+                {{$message}}
+            </div>
+            @enderror
+        </div>
+    </div> -->
+
+    <!-- Checkboxes -->
+    <div class="col-12 pt-2">
+<!-- 
+        <div class="form-check form-check-custom form-check-sm form-check-solid mb-3">
+            <input class="form-check-input" type="checkbox" value="1"
+                   name="negotiation_checklist"
+                   id="negotiation_checklist" />
+
+            <label class="form-check-label" for="negotiation_checklist">
+                Verhandlungs-Checkliste (+19 €)
+            </label>
+        </div> -->
+
+        <div class="form-check form-check-custom form-check-sm form-check-solid mb-3">
+            <input class="form-check-input"
+                   type="checkbox"
+                   value="1"
+                   name="document_in_english"
+                   id="document_in_english" />
+
+            <label class="form-check-label" for="document_in_english">
+                Dokumente auf Englisch
+            </label>
+        </div>
+
+        <div class="form-check form-check-custom form-check-sm form-check-solid mb-3">
+            <input class="form-check-input"
+                   type="checkbox"
+                   value="1"
+                   name="pdf_with_partner_logo"
+                   id="pdf_with_partner_logo"
+                   {{ old('pdf_with_partner_logo') ? 'checked' : '' }} />
+
+            <label class="form-check-label" for="pdf_with_partner_logo">
+                Partner Logo
+            </label>
+        </div>
+
+    </div>
+
+    <!-- Partner Logo -->
+    <div class="col-12 partner-logo-field d-none" id="partner_logo_wrapper">
+        <label class="form-label mb-1">
+            Partner wählen
+        </label>
+
+        @if(($partnerLogos ?? collect())->isEmpty())
+            <div class="text-muted">
+                No partner logos available yet.
+
+                @if(auth()->check() && auth()->user()->type === 'admin')
+                    <a href="{{ route('admin.partner-logos.index') }}" target="_blank">
+                        Add one here
+                    </a>.
+                @endif
+            </div>
+        @else
+            <select name="partner_logo_id"
+                    id="partner_logo_id"
+                    class="form-select form-select-sm shadow">
+
+                <option value="">Partner wählen</option>
+
+                @foreach($partnerLogos as $logo)
+                    <option value="{{ $logo->id }}"
+                        {{ (string)old('partner_logo_id') === (string)$logo->id ? 'selected' : '' }}>
+                        {{ $logo->name }}
+                    </option>
+                @endforeach
+            </select>
+
+            @error('partner_logo_id')
+            <div class="invalid-feedback d-block">
+                {{ $message }}
+            </div>
+            @enderror
+        @endif
+    </div>
+
+    <!-- Wünsche -->
+    <div class="col-12">
+        <p class="mb-1 text-black fs-6">Wünsche an die Prüfung</p>
+
+        <div class="input-box">
+            <textarea
+                name="desc"
+                style="height:75px; font-size:15px"
+                class="form-control shadow"
+                cols="230"
+                rows="20"
+            >{{old('desc')}}</textarea>
+
+            @error('desc')
+            <div class="invalid-feedback d-block">
+                {{$message}}
+            </div>
+            @enderror
+        </div>
+    </div>
+
+</div>
+
+<!-- Footer -->
+<div class="modal-footer pt-2">
+    <button
+        type="submit"
+        class="btn-next btn btn-primary btn-further px-5 py-2 fs-6 shadow-1"
+    >
+        Speichern
+    </button>
+</div>
                 <!--end::Modal body-->
             </div>
             <!--end::Modal content-->
@@ -1149,4 +1368,342 @@
 
     </script>
     {{--    <script src="{{ asset('asset/js/custom/apps/user-management/users/list/add.js') }}"></script>--}}
+
+    <script>
+    // Inspector Request section inside #assign_examiner modal
+    (function () {
+        var csrf = document.querySelector('meta[name="csrf-token"]').content;
+        var currentOrderId = null;
+        var selectedInspectors = [];
+        var allInspectors = [];
+        var badgesMap = { accepted: 'bg-success', pending: 'bg-warning text-dark', declined: 'bg-danger' };
+        var labelsMap = { accepted: '✓', pending: '◴', declined: 'X' };
+
+        function previewUrl(id) { return '/admin/orders/' + id + '/inspector-request-preview'; }
+        function sendUrl(id)    { return '/admin/orders/' + id + '/inspector-request-send'; }
+        function assignUrl(id)  { return '/admin/orders/' + id + '/inspector-assign'; }
+        function assignPreviewUrl(id) { return '/admin/orders/' + id + '/inspector-assign-preview'; }
+
+        function makeAssignEmailPreviewButton(payload) {
+            var btn = document.createElement('button');
+            btn.className = 'btn btn-sm btn-outline-secondary py-0 px-2';
+            btn.innerHTML = '<i class="fas fa-eye"></i>';
+            btn.addEventListener('click', function () {
+                var modal = new bootstrap.Modal(document.getElementById('assignEmailPreviewModal'));
+                var loading = document.getElementById('assign-preview-loading');
+                var frame   = document.getElementById('assign-preview-frame');
+                loading.style.display = '';
+                frame.style.display   = 'none';
+                modal.show();
+
+                var qs = Object.keys(payload).map(function(k){ return k + '=' + encodeURIComponent(payload[k]); }).join('&');
+                fetch(assignPreviewUrl(currentOrderId) + '?' + qs, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(function(r){ return r.json(); })
+                    .then(function(data) {
+                        frame.srcdoc = data.html;
+                        loading.style.display = 'none';
+                        frame.style.display   = '';
+                    })
+                    .catch(function() {
+                        loading.style.display = 'none';
+                        if (window.toastr) toastr.error('Vorschau konnte nicht geladen werden.');
+                    });
+            });
+            return btn;
+        }
+
+        function makeBadge(status) {
+            var b = document.createElement('span');
+            b.className = 'badge ms-1 ' + (badgesMap[status] || 'bg-secondary');
+            b.textContent = labelsMap[status] || status;
+            return b;
+        }
+
+        function renderList() {
+            var c = document.getElementById('ae-list');
+            while (c.firstChild) { c.removeChild(c.firstChild); }
+            if (selectedInspectors.length === 0) {
+                var msg = document.createElement('span');
+                msg.className = 'text-muted'; msg.style.fontSize = '13px';
+                msg.textContent = 'Keine Inspektoren ausgewählt.';
+                c.appendChild(msg); return;
+            }
+            selectedInspectors.forEach(function (insp) {
+                var row = document.createElement('div');
+                row.className = 'd-flex align-items-center justify-content-between py-1 border-bottom';
+                var lbl = document.createElement('span');
+                var ic = document.createElement('i'); ic.className = 'fas fa-user-circle me-2 text-muted';
+                var nm = document.createElement('strong'); nm.textContent = insp.name || insp.email;
+                var em = document.createElement('span'); em.className = 'text-muted ms-1'; em.style.fontSize = '12px';
+                em.textContent = insp.name ? '<' + insp.email + '>' : '';
+                lbl.appendChild(ic); lbl.appendChild(nm); lbl.appendChild(em);
+                if (insp.status) { lbl.appendChild(makeBadge(insp.status)); }
+                var rm = document.createElement('button');
+                rm.className = 'btn btn-sm btn-outline-danger py-0 px-1';
+                rm.appendChild(Object.assign(document.createElement('i'), { className: 'fas fa-times' }));
+                (function(key){ rm.addEventListener('click', function () {
+                    selectedInspectors = selectedInspectors.filter(function(x){ return (x.id || x.email) !== key; });
+                    renderList(); updateSelect();
+                }); })(insp.id || insp.email);
+                row.appendChild(lbl); row.appendChild(rm);
+                c.appendChild(row);
+            });
+        }
+
+        function updateSelect() {
+            var sel = document.getElementById('ae-extra-select');
+            while (sel.firstChild) { sel.removeChild(sel.firstChild); }
+            var def = document.createElement('option'); def.value = ''; def.textContent = '— Inspektor aus Liste wählen —';
+            sel.appendChild(def);
+            var ids = selectedInspectors.map(function(x){ return x.id; });
+            allInspectors.forEach(function (i) {
+                if (ids.indexOf(i.id) === -1) {
+                    var opt = document.createElement('option');
+                    opt.value = i.id; opt.dataset.name = i.name; opt.dataset.email = i.email; opt.dataset.status = i.status || '';
+                    opt.textContent = i.name + ' <' + i.email + '>';
+                    sel.appendChild(opt);
+                }
+            });
+        }
+
+        function renderStatusPanel(withStatus, externalReqs) {
+            externalReqs = externalReqs || [];
+            var panel = document.getElementById('ae-status-panel');
+            var list  = document.getElementById('ae-status-list');
+            while (list.firstChild) { list.removeChild(list.firstChild); }
+            if (!withStatus.length && !externalReqs.length) { panel.style.display = 'none'; return; }
+            // Render external (free-email) requests first
+            externalReqs.forEach(function(r) {
+                var row = document.createElement('div');
+                row.className = 'd-flex align-items-center gap-2 py-1 border-bottom';
+                var nw = document.createElement('span'); nw.className = 'flex-grow-1';
+                var ic = document.createElement('i'); ic.className = 'fas fa-envelope me-2 text-muted';
+                var em = document.createElement('strong'); em.textContent = r.email;
+                var tag = document.createElement('small'); tag.className = 'text-muted ms-1'; tag.textContent = '(extern)';
+                nw.appendChild(ic); nw.appendChild(em); nw.appendChild(tag);
+                row.appendChild(nw); row.appendChild(makeBadge(r.status));
+                var aeb = document.createElement('button');
+                aeb.className = 'btn btn-sm btn-success py-0 px-2';
+                aeb.textContent = 'Zuweisen';
+                var extCheckboxDiv = document.createElement('div');
+                extCheckboxDiv.className = 'form-check form-check-inline ms-2';
+                var extCheckbox = document.createElement('input');
+                extCheckbox.type = 'checkbox';
+                extCheckbox.className = 'form-check-input';
+                extCheckbox.id = 'auto_assign_ext_' + r.email.replace(/[^a-z0-9]/gi, '_');
+                if (r.mark_for_auto_assign) extCheckbox.checked = true;
+                var extCheckboxLabel = document.createElement('label');
+                extCheckboxLabel.className = 'form-check-label';
+                extCheckboxLabel.setAttribute('for', 'auto_assign_ext_' + r.email.replace(/[^a-z0-9]/gi, '_'));
+                extCheckboxLabel.style.fontSize = '12px';
+                extCheckboxLabel.textContent = 'Auto';
+                extCheckboxDiv.appendChild(extCheckbox);
+                extCheckboxDiv.appendChild(extCheckboxLabel);
+                (function(email){
+                    extCheckbox.addEventListener('change', function() {
+                        fetch('/admin/orders/' + currentOrderId + '/inspector-auto-assign-update', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
+                            body: JSON.stringify({ external_email: email, mark_for_auto_assign: this.checked }),
+                        })
+                        .then(function(r){ return r.json(); })
+                        .then(function(d){ if(window.toastr) toastr.success('Auto-assign updated'); })
+                        .catch(function(){ if(window.toastr) toastr.error('Fehler beim Aktualisieren'); });
+                    });
+                    aeb.addEventListener('click', function() {
+                    if (!confirm('Externen Prüfer ' + email + ' zuweisen und Zuteilungs-E-Mail senden?')) return;
+                    aeb.disabled = true; aeb.textContent = '…';
+                    var markAuto = extCheckbox && extCheckbox.checked ? true : false;
+                    fetch(assignUrl(currentOrderId), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
+                        body: JSON.stringify({ external_email: email, mark_for_auto_assign: markAuto }),
+                    })
+                    .then(function(r){ return r.json(); })
+                    .then(function(d){ bootstrap.Modal.getOrCreateInstance(document.getElementById('assign_examiner')).hide(); if(window.toastr) toastr.success(d.message||'Zugewiesen!'); setTimeout(function(){ window.location.reload(); }, 500); })
+                    .catch(function(){ if(window.toastr) toastr.error('Fehler beim Zuweisen.'); })
+                    .finally(function(){ aeb.disabled=false; aeb.textContent='Zuweisen'; });
+                }); })(r.email);
+                row.appendChild(extCheckboxDiv);
+                row.appendChild(makeAssignEmailPreviewButton({ external_email: r.email }));
+                row.appendChild(aeb);
+                list.appendChild(row);
+            });
+            withStatus.forEach(function(i) {
+                var row = document.createElement('div');
+                row.className = 'd-flex align-items-center gap-2 py-1 border-bottom';
+                var nw = document.createElement('span'); nw.className = 'flex-grow-1';
+                var ic = document.createElement('i'); ic.className = 'fas fa-user-circle me-2 text-muted';
+                var nm = document.createElement('strong'); nm.textContent = i.name;
+                var em = document.createElement('small'); em.className = 'text-muted ms-1'; em.textContent = '<' + i.email + '>';
+                nw.appendChild(ic); nw.appendChild(nm); nw.appendChild(em);
+                row.appendChild(nw); row.appendChild(makeBadge(i.status));
+                var ab = document.createElement('button');
+                ab.className = 'btn btn-sm btn-success py-0 px-2';
+                ab.textContent = 'Zuweisen';
+                var intCheckboxDiv = document.createElement('div');
+                intCheckboxDiv.className = 'form-check form-check-inline ms-2';
+                var intCheckbox = document.createElement('input');
+                intCheckbox.type = 'checkbox';
+                intCheckbox.className = 'form-check-input';
+                intCheckbox.id = 'auto_assign_' + i.id;
+                if (i.mark_for_auto_assign) intCheckbox.checked = true;
+                var intCheckboxLabel = document.createElement('label');
+                intCheckboxLabel.className = 'form-check-label';
+                intCheckboxLabel.setAttribute('for', 'auto_assign_' + i.id);
+                intCheckboxLabel.style.fontSize = '12px';
+                intCheckboxLabel.textContent = 'Auto';
+                intCheckboxDiv.appendChild(intCheckbox);
+                intCheckboxDiv.appendChild(intCheckboxLabel);
+                (function(iid, iname){
+                    intCheckbox.addEventListener('change', function() {
+                        fetch('/admin/orders/' + currentOrderId + '/inspector-auto-assign-update', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
+                            body: JSON.stringify({ inspector_id: iid, mark_for_auto_assign: this.checked }),
+                        })
+                        .then(function(r){ return r.json(); })
+                        .then(function(d){ if(window.toastr) toastr.success('Auto-assign updated'); })
+                        .catch(function(){ if(window.toastr) toastr.error('Fehler beim Aktualisieren'); });
+                    });
+                    ab.addEventListener('click', function() {
+                    if (!confirm('Inspector ' + iname + ' zuweisen und Zuteilungs-E-Mail senden?')) return;
+                    ab.disabled = true; ab.textContent = '…';
+                    var markAuto = intCheckbox && intCheckbox.checked ? true : false;
+                    fetch(assignUrl(currentOrderId), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
+                        body: JSON.stringify({ inspector_id: iid, mark_for_auto_assign: markAuto }),
+                    })
+                    .then(function(r){ return r.json(); })
+                    .then(function(d){ bootstrap.Modal.getOrCreateInstance(document.getElementById('assign_examiner')).hide(); if(window.toastr) toastr.success(d.message||'Zugewiesen!'); setTimeout(function(){ window.location.reload(); }, 500); })
+                    .catch(function(){ if(window.toastr) toastr.error('Fehler beim Zuweisen.'); })
+                    .finally(function(){ ab.disabled=false; ab.textContent='Zuweisen'; });
+                }); })(i.id, i.name);
+                row.appendChild(intCheckboxDiv);
+                row.appendChild(makeAssignEmailPreviewButton({ inspector_id: i.id }));
+                row.appendChild(ab);
+                list.appendChild(row);
+            });
+            panel.style.display = '';
+        }
+
+        function loadInspectorPreview(orderId) {
+            document.getElementById('ae-loading').style.display = '';
+            document.getElementById('ae-content').style.display = 'none';
+            document.getElementById('ae-error').style.display   = 'none';
+            document.getElementById('ae-send-btn').style.display = 'none';
+            selectedInspectors = []; allInspectors = [];
+            fetch(previewUrl(orderId), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function(r){ return r.json(); })
+                .then(function(data) {
+                    allInspectors      = data.all_inspectors || [];
+                    selectedInspectors = (data.matched_inspectors || []).slice();
+                    // Combine DB inspector statuses + external request statuses for the panel
+                    var withStatus = allInspectors.filter(function(i){ return i.status; });
+                    var external   = (data.external_requests || []);
+                    renderStatusPanel(withStatus, external);
+                    document.getElementById('ae-email-body').value = data.email_body || '';
+                    renderList(); updateSelect();
+                    document.getElementById('ae-loading').style.display  = 'none';
+                    document.getElementById('ae-content').style.display  = '';
+                    document.getElementById('ae-send-btn').style.display = '';
+                })
+                .catch(function() {
+                    document.getElementById('ae-loading').style.display = 'none';
+                    var err = document.getElementById('ae-error');
+                    err.style.display = ''; err.textContent = 'Fehler beim Laden der Inspektoren.';
+                });
+        }
+
+        // Capture order ID when assign-examiner button is clicked (fallback)
+        $(document).on('click', '.btn-assign-examiner', function () {
+            window._currentOrderId = $(this).data('id') || $(this).attr('data-id');
+        });
+
+        // Load inspector preview when modal opens — relatedTarget is most reliable
+        document.getElementById('assign_examiner').addEventListener('show.bs.modal', function (event) {
+            var trigger = event.relatedTarget;
+            currentOrderId = (trigger ? (trigger.getAttribute('data-id') || null) : null)
+                             || window._currentOrderId
+                             || null;
+            if (currentOrderId) { loadInspectorPreview(currentOrderId); }
+        });
+
+        // Add from DB dropdown
+        document.getElementById('ae-extra-add').addEventListener('click', function () {
+            var sel = document.getElementById('ae-extra-select');
+            var opt = sel.options[sel.selectedIndex];
+            if (!opt || !opt.value) return;
+            selectedInspectors.push({ id: parseInt(opt.value, 10), name: opt.dataset.name, email: opt.dataset.email, status: opt.dataset.status || null });
+            renderList(); updateSelect();
+        });
+
+        // Add custom email
+        document.getElementById('ae-custom-add').addEventListener('click', function () {
+            var input = document.getElementById('ae-custom-email');
+            var email = input.value.trim();
+            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                if (window.toastr) toastr.warning('Bitte eine gültige E-Mail eingeben.');
+                return;
+            }
+            var alreadyIn = selectedInspectors.some(function(x){ return x.email === email; });
+            if (alreadyIn) { if(window.toastr) toastr.info('Diese E-Mail ist bereits in der Liste.'); return; }
+            selectedInspectors.push({ id: null, name: null, email: email, status: null });
+            input.value = '';
+            renderList();
+        });
+
+        // Send request
+        document.getElementById('ae-send-btn').addEventListener('click', function () {
+            var dbIds    = selectedInspectors.filter(function(i){ return i.id; }).map(function(i){ return i.id; });
+            var extEmails= selectedInspectors.filter(function(i){ return !i.id; }).map(function(i){ return i.email; });
+            var body     = document.getElementById('ae-email-body').value.trim();
+            if (dbIds.length === 0 && extEmails.length === 0) { if(window.toastr) toastr.warning('Bitte mindestens einen Empfänger auswählen.'); return; }
+            if (!body) { if(window.toastr) toastr.warning('E-Mail-Text darf nicht leer sein.'); return; }
+            var btn = this; btn.disabled = true; btn.textContent = 'Wird gesendet…';
+            fetch(sendUrl(currentOrderId), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
+                body: JSON.stringify({ inspector_ids: dbIds, extra_emails: extEmails, email_body: body }),
+            })
+            .then(function(r){ return r.json(); })
+            .then(function(data) {
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('assign_examiner')).hide();
+                if(window.toastr) toastr.success(data.message || 'Anfrage gesendet.');
+            })
+            .catch(function() { if(window.toastr) toastr.error('Fehler beim Senden.'); })
+            .finally(function() { btn.disabled = false; btn.textContent = 'Anfrage senden'; });
+        });
+    })();
+    </script>
+
+    <script>
+    // Appointment reminder button in TERMIN column
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.js-appt-reminder');
+        if (!btn) return;
+        e.preventDefault();
+        if (btn.disabled) return;
+        if (!confirm('Termin-Anfrage per E-Mail an den Prüfer senden?')) return;
+        btn.disabled = true;
+        var orig = btn.textContent;
+        btn.textContent = '…';
+        var csrf = document.querySelector('meta[name="csrf-token"]').content;
+        fetch('/admin/bookings/' + btn.dataset.id + '/appointment-reminder', {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrf }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            if (data.success) {
+                if (window.toastr) toastr.success(data.message || 'Erinnerung gesendet.');
+            } else {
+                if (window.toastr) toastr.error(data.message || 'Fehler.');
+            }
+        })
+        .catch(function () { if (window.toastr) toastr.error('Fehler beim Senden.'); })
+        .finally(function () { btn.disabled = false; btn.textContent = orig; });
+    });
+    </script>
 @endsection

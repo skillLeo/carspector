@@ -247,7 +247,18 @@ in Bearbeitung
     ];
 
     $orderMap = array_column($steps, 'key');
-    $currentIndex = array_search($order->status, $orderMap);
+
+    $currentStatus = $order->admin_status;
+    if (in_array($currentStatus, ['Prüfung', 'Pruefung'])) {
+        $currentIndex = 0;
+    } elseif ($currentStatus === 'Fertigstellung') {
+        $currentIndex = 1;
+    } elseif (in_array($currentStatus, ['Completed', 'Abgeschlossen'])) {
+        $currentIndex = 2;
+    } else {
+        $currentIndex = 0;
+    }
+
     if ($currentIndex === false) $currentIndex = 0;
 
     $progressPercent = (($currentIndex + 1) / count($steps)) * 100;
@@ -315,6 +326,42 @@ in Bearbeitung
     </div>
   </div>
 </li>
+
+<!-- {{-- === Dokumente aus Storage === --}}
+@php
+    $customerDocs = collect();
+    if ($order->examination) {
+        $customerDocs = $order->examination->images->filter(fn($img) => !empty($img->document_type));
+    }
+@endphp
+
+@if($customerDocs->isNotEmpty())
+<li class="pb-2 pt-2">
+  <div class="order-collapse" style="border-radius:12px; border:1px solid #e5e7eb; overflow:hidden;">
+    <div class="order-collapse__head" style="padding:12px 16px; background:linear-gradient(180deg,#f8fafc,#f3f4f6); border-bottom:1px solid #e5e7eb; font-weight:700; color:#0d47a1;">
+      Dokumente
+    </div>
+    <div style="padding:14px 16px; display:flex; flex-direction:column; gap:10px;">
+      @foreach($customerDocs as $doc)
+        @php
+          $docName = $doc->filename ?? $doc->original_name ?? basename(parse_url($doc->image1, PHP_URL_PATH));
+          $dtype = strtoupper($doc->document_type ?? 'Datei');
+        @endphp
+        <div style="display:flex; align-items:center; justify-content:space-between; border:1px solid #e5e7eb; border-radius:10px; padding:10px 14px; background:#fafafa;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <i class="fa-solid fa-file-lines" style="color:#2563eb;"></i>
+            <span class="badge" style="background:#e5e7eb; color:#374151; font-size:12px; padding:4px 8px; border-radius:6px;">{{ $dtype }}</span>
+            <span style="font-size:13px; color:#374151; word-break:break-all;">{{ $docName }}</span>
+          </div>
+          <a href="{{ $doc->image1 }}" target="_blank" rel="noopener" style="font-size:13px; white-space:nowrap; margin-left:10px; text-decoration:none; color:#2563eb;">
+            <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Öffnen
+          </a>
+        </div>
+      @endforeach
+    </div>
+  </div>
+</li>
+@endif -->
 
 {{-- === Toggle-Button AUSSERHALB der Status-Card === --}}
 <div class="mt-2">

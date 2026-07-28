@@ -18,7 +18,7 @@
     </p>
 
     <p>
-        Um Ihr Widerrufsrecht auszuüben, müssen Sie uns (Carspector – Reisholzer Werftstraße 76, 40589 Düsseldorf, E-Mail: kontakt@carspector.de) 
+        Um Ihr Widerrufsrecht auszuüben, müssen Sie uns (Carspector GmbH– Reisholzer Werftstraße 76, 40589 Düsseldorf, E-Mail: kontakt@carspector.de) 
         mittels einer eindeutigen Erklärung (z. B. per E-Mail oder mit einem postalischen Schreiben) über Ihren Entschluss informieren, diesen Vertrag zu widerrufen. 
         Sie können dafür das nachstehende Muster-Widerrufsformular verwenden, das jedoch nicht vorgeschrieben ist.
     </p>
@@ -50,7 +50,7 @@
 
     <div style="border: 1px solid #ccc; padding: 15px; margin: 20px 0; font-size: 14px; background: #f9f9f9;">
         <p>
-            An: Carspector - Reisholzer Werftstraße 76, 40589 Düsseldorf - Deutschland<br>
+            An: Carspector GmbH - Reisholzer Werftstraße 76, 40589 Düsseldorf - Deutschland<br>
             E-Mail: kontakt@carspector.de
         </p>
         <p>

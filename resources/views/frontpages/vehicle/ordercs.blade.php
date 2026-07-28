@@ -26,6 +26,27 @@
     pointer-events: none;
     opacity: .6;
   }
+
+  @media (max-width: 767px) {
+
+    .container-fluid.page-bg {
+        padding-left: 0px;
+        padding-right: 0px;
+    }
+
+    .card-modern {
+        border: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        background: transparent;
+    }
+
+    .card-modern > .card-header,
+    .card-modern > .card-body {
+        background: #fff;
+        border-radius: 12px;
+    }
+}
 </style>
 
 <div class="container-fluid page-bg py-5 py-md-5">
@@ -52,7 +73,7 @@
 {{--                  </a>--}}
               </div>
 
-              <div class="mt-1 mx-3 d-flex  gap-2">
+              <!-- <div class="mt-1 mx-3 d-flex  gap-2">
         <a
             href="https://tools.pdf24.org/de/bilder-in-pdf"
             target="_blank"
@@ -72,7 +93,7 @@
         >
             PDF 2
         </a>
-    </div>
+    </div> -->
                       
             @php
               $summary = \App\Models\OrderDamageSummary::where('order_id', $id)->first();
@@ -288,17 +309,17 @@
           <input type="hidden" name="id" value="{{ $id }}">
           <div class="modal-body">
             <div class="mb-3">
-              <label class="form-label">Prüfer (Name)</label>
-              <input
+              <label class="form-label">KFZ-Sachverständiger</label>
+              <input 
                 type="text"
                 class="form-control"
                 name="examiner_name"
-                value="{{ old('examiner_name', $examination->examiner_name ?? 'Carspector / ') }}"
-                placeholder="Prüfername für PDF">
+                value="{{ old('examiner_name', $examination->examiner_name ?? '') }}"
+                placeholder="">
             </div>
-            <div class="mb-0">
-              <label class="form-label">Auftraggeber (Name)</label>
-              <input type="text" class="form-control" name="client_name" value="{{ old('client_name', $examination->client_name ?? '') }}" placeholder="Kundenname für PDF">
+            <div class="d-none  mb-0">
+              <label class="form-label">KFZ-Sachverständiger</label>
+              <input type="text" class="form-control" name="client_name" value="{{ old('client_name', $examination->client_name ?? '') }}" placeholder="">
             </div>
             
           </div>
@@ -322,16 +343,35 @@
           @csrf
           <input type="hidden" name="id" value="{{ $id }}">
           <div class="modal-body">
+
+            <!-- {{-- PDF Auto-Extract --}}
+            <div class="card bg-light border mb-3">
+              <div class="card-body py-2 px-3">
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                  <div>
+                    <div class="fw-semibold" style="font-size:13px;">PDF Ausstattungsliste hochladen</div>
+                    <div class="text-muted" style="font-size:12px;">Lade eine Ausstattungs-PDF hoch — die Daten werden automatisch in die Felder unten eingetragen.</div>
+                  </div>
+                  <div class="d-flex align-items-center gap-2 ms-auto flex-shrink-0">
+                    <input type="file" id="equipmentPdfInput" accept=".pdf" style="display:none;">
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="equipmentPdfBtn">
+                      <i class="fas fa-file-pdf me-1"></i> PDF auswählen
+                    </button>
+                    <span id="equipmentPdfStatus" style="font-size:12px;"></span>
+                  </div>
+                </div>
+              </div>
+            </div> -->
+
             <div class="row g-3">
               <div class="col-md-6">
                 <label class="form-label">Serienausstattung</label>
-                <textarea name="serienausstattung" class="form-control" rows="10" placeholder="Serienausstattung eintragen...">{{ old('serienausstattung', $examination->serienausstattung ?? '') }}</textarea>
+                <textarea name="serienausstattung" id="ta_serienausstattung" class="form-control" rows="10" placeholder="Serienausstattung eintragen...">{{ old('serienausstattung', $examination->serienausstattung ?? '') }}</textarea>
               </div>
               <div class="col-md-6">
                 <label class="form-label">Sonderausstattung</label>
-                <textarea name="sonderausstattung" class="form-control" rows="10" placeholder="Sonderausstattung eintragen...">{{ old('sonderausstattung', $examination->sonderausstattung ?? '') }}</textarea>
+                <textarea name="sonderausstattung" id="ta_sonderausstattung" class="form-control" rows="10" placeholder="Sonderausstattung eintragen...">{{ old('sonderausstattung', $examination->sonderausstattung ?? '') }}</textarea>
               </div>
-              
             </div>
           </div>
           <div class="modal-footer">
@@ -345,8 +385,110 @@
 
   
 @endif
+
+{{-- Update Hinweis Modal --}}
+<div id="updateNoticeModal" class="cs-modal" aria-hidden="true" role="dialog" aria-modal="true" hidden>
+    <div class="cs-modal__backdrop"></div>
+
+    <div class="cs-modal__dialog" role="document">
+        <div class="cs-modal__body">
+
+          <div class="alert alert-warning mb-3" style="border-radius:12px;">
+              <b>📢 Hinweis</b> Mit dem aktuellen Update wurde die Fotodokumentation angepasst.
+          </div>
+
+
+          <div class="border rounded p-2 mb-2 bg-light">
+              <strong>Neuer Ablauf: (falls Schaden vorhanden)</strong><br>
+
+              Stoßstange vorne<br>
+              ⬇️<br>
+              Schaden vorhanden: <strong>Ja</strong><br>
+              ⬇️<br>
+              Schaden auswählen (z. B. Kratzer)<br>
+              ⬇️<br>
+              <strong>Foto direkt hochladen</strong><br><br>
+              Fotos bitte nur im <span style="color: green"><b>QUERFORMAT</b></span> aufnehmen und hochladen.
+          </div>
+
+
+          <p style="font-size: 13px">
+              Bilder müssen direkt beim jeweiligen Schaden hochgeladen werden. Am Ende des Auftrags können die Standardbilder (z. B. Front, Heck, usw.) nach Vorlage hochgeladen werden. 
+              Der bisherige Massen-Upload von Bildern entfällt.
+          </p
+
+      </div>
+
+        <div class="cs-modal__footer">
+            <button type="button" class="btn btn-primary w-100" id="updateNoticeClose">
+                Verstanden
+            </button>
+        </div>
+        <div class="mt-2 text-center">
+    <p class="mb-0">
+        Vielen Dank für deine Unterstützung.
+    </p>
+</div>
+    </div>
+</div>
+
 @endsection
 @section('scripts')
+        <script>
+        // PDF equipment extractor
+        (function(){
+            var fileInput = document.getElementById('equipmentPdfInput');
+            var pickBtn   = document.getElementById('equipmentPdfBtn');
+            var status    = document.getElementById('equipmentPdfStatus');
+            if (!pickBtn) return;
+
+            pickBtn.addEventListener('click', function(){ fileInput.click(); });
+
+            fileInput.addEventListener('change', function(){
+                var file = fileInput.files[0];
+                if (!file) return;
+
+                status.textContent = 'Wird gelesen…';
+                status.style.color = '#6c757d';
+                pickBtn.disabled   = true;
+
+                var fd = new FormData();
+                fd.append('pdf', file);
+                fd.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+
+                fetch('{{ route("examination.extract.pdf") }}', { method: 'POST', body: fd })
+                .then(function(r){ return r.json(); })
+                .then(function(d){
+                    pickBtn.disabled = false;
+                    fileInput.value  = '';
+                    if (d.success) {
+
+                    var taS = document.getElementById('ta_serienausstattung');
+                    var taP = document.getElementById('ta_sonderausstattung');
+
+                    if (d.serienausstattung)
+                        taS.value = d.serienausstattung.replace(/\n/g, ', ');
+
+                    if (d.sonderausstattung)
+                        taP.value = d.sonderausstattung.replace(/\n/g, ', ');
+
+                    status.textContent = '✓ Daten erfolgreich eingelesen';
+                    status.style.color = '#198754';
+                }
+                    } else {
+                        status.textContent = d.message || 'Fehler beim Lesen';
+                        status.style.color = '#dc3545';
+                    }
+                })
+                .catch(function(){
+                    pickBtn.disabled = false;
+                    fileInput.value  = '';
+                    status.textContent = 'Fehler beim Hochladen';
+                    status.style.color = '#dc3545';
+                });
+            });
+        })();
+        </script>
         <script>
             (function(){
                 var $sw = $('#js-show-calcs');
@@ -364,4 +506,35 @@
                 }
             })();
         </script>
+        <script>
+(function () {
+
+    const orderId = "{{ $id }}";
+    const examinerId = "{{ auth()->id() }}";
+
+    // Versionsnummer erhöhen bei jedem neuen Update
+    const updateVersion = "2026_06_update_1";
+
+    const storageKey =
+        `update_notice_${updateVersion}_${examinerId}_${orderId}`;
+
+    const modal = document.getElementById('updateNoticeModal');
+    const closeBtn = document.getElementById('updateNoticeClose');
+
+    if (!modal || !closeBtn) return;
+
+    if (!localStorage.getItem(storageKey)) {
+
+        modal.hidden = false;
+        modal.setAttribute('aria-hidden', 'false');
+
+        closeBtn.addEventListener('click', function () {
+            localStorage.setItem(storageKey, '1');
+            modal.hidden = true;
+            modal.setAttribute('aria-hidden', 'true');
+        });
+    }
+
+})();
+</script>
 @endsection

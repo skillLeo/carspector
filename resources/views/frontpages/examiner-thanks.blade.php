@@ -55,24 +55,44 @@
 @endsection
 @section('content')
 
-    <div style="padding-top: 25px" class="container pb-5  px-3" style="margin-top: -15px">
-        <div class="row justify-content-center">
-            <div class="col-12 col-md-12 col-lg-10 col-xl-10" >
+    <div style="padding-top: 25px" class="container pb-5 px-3">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-12 col-lg-10 col-xl-10">
 
-                <div style="display: flex; justify-content: center; align-items: center; margin: 0 auto; height: 450px; max-width: 550px" class="ct-w payment-success-container">
-                    <div style="border: none; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1)" class="card">
-                        <div style="background-color: #01449a; color: #ffffff; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px; padding: 15px" class="card-header">
-                            <h2 style="color: white; font-size: 35px">Vielen Dank!</h2>
-                        </div>
-                        <div style="text-align: center; padding: 30px" class="card-body">   
-                                <p>Danke, dass du den CarCheck durchgeführt und eingereicht hast. Bitte sende deine Rechnung an <a href="mailto:partner@carspector.de">partner@carspector.de</a>.
-                                </p>
-                        </div>
+            <div style="display: flex; justify-content: center; align-items: center; margin: 0 auto; height: 450px; max-width: 550px" class="ct-w payment-success-container">
+                <div style="border: none; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1)" class="card">
+                    
+                    <div style="background-color: #01449a; color: #ffffff; text-align: center; border-top-left-radius: 10px; border-top-right-radius: 10px; padding: 15px" class="card-header">
+                        <h2 style="color: white; font-size: 35px">Vielen Dank!</h2>
                     </div>
+
+                    <div style="text-align: center; padding: 30px" class="card-body">   
+                        <p>
+                            Vielen Dank, dass du den CarCheck durchgeführt und eingereicht hast. 
+                        </p>
+
+                        <p style="margin-top: 20px; font-weight: bold; color: #c0392b;">
+                            ACHTUNG: Rechnungsempfänger beachten:
+                        </p>
+
+                        <p>
+                            Carspector GmbH<br>
+                            Reisholzer Werftstraße 76<br>
+                            40589 Düsseldorf - Deutschland
+                        </p>
+
+                        <hr><p style="margin-top: 15px;">
+                            Bitte auf der Rechnung oder in der E-Mail die Auftragsnummer hinterlegen. 
+                            Rechnung an: <a href="mailto:partner@carspector.de">partner@carspector.de</a>
+                        </p>
+                    </div>
+
                 </div>
             </div>
+
         </div>
     </div>
+</div>
 
     <section style="padding-top: 100px"></section>
 

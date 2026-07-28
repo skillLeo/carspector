@@ -9,6 +9,8 @@ use App\Mail\ExaminerBookingMail;
 use App\Mail\PdfOrder;
 use App\Services\OrderPdfService;
 use App\Mail\StatusMail;
+use App\Models\AdminNotification;
+use App\Models\B2bPartner;
 use App\Models\City;
 use App\Models\NewBooking;
 use App\Models\Order;
@@ -23,9 +25,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Throwable;
 use Yajra\DataTables\Facades\DataTables;
+
 
 class BookingController extends Controller
 {
@@ -35,7 +39,19 @@ class BookingController extends Controller
     {
         $cities = City::all();
         $partnerLogos = PartnerLogo::orderBy('name')->get();
-        return view('admin.bookings', compact('cities', 'partnerLogos'));
+
+        $tabCounts = [
+            'all'    => Order::count(),
+            'new'    => Order::where('admin_status', 'New')->whereDate('created_at', '>=', '2026-05-09')->count(),
+            'active' => Order::where(function ($q) {
+                            $q->whereNull('admin_status')
+                              ->orWhereNotIn('admin_status', ['Completed', 'Abgeschlossen', 'New', 'Problem', 'Storniert']);
+                        })->count(),
+            'ready'  => Order::where('admin_status', 'Fertigstellung')->count(),
+            'storno' => Order::where('admin_status', 'Problem')->count(),
+        ];
+
+        return view('admin.bookings', compact('cities', 'partnerLogos', 'tabCounts'));
     }
 
     public function editBooking(Request $request)
@@ -91,9 +107,7 @@ class BookingController extends Controller
                 ]);
             }
 
-//            $order->examiner_id = $examiner->id;
-            $order->admin_status = 'Prüfung';
-            $order->status = 'inspecting';
+            $order->examiner_id = $examiner->id;
             $order->save();
 
             $customMessage = trim((string) ($data['message'] ?? '')) ?: null;
@@ -144,21 +158,24 @@ class BookingController extends Controller
             $hideUpsell = (bool) $request->boolean('no_upsell');
             // Choose language by booking option (Dokumente auf Englisch)
             $isEnglish = (bool) ($order->document_in_english ?? false);
+
+            // Generate and store customer PDF (can be modified/resent)
             $pdf = $isEnglish
                 ? app(OrderPdfService::class)->generateAndStoreEn($order)
                 : app(OrderPdfService::class)->generateAndStore($order);
 
+            $recipient = $this->resolveEmailRecipient($order);
             try {
                 if ($isEnglish) {
-                    Mail::to($order->email)->send(new \App\Mail\PdfOrderEn($order, $examination, $order->user, $hideUpsell));
+                    Mail::to($recipient)->send(new \App\Mail\PdfOrderEn($order, $examination, $order->user, $hideUpsell));
                 } else {
-                    Mail::to($order->email)->send(new PdfOrder($order, $examination, $order->user, $hideUpsell));
+                    Mail::to($recipient)->send(new PdfOrder($order, $examination, $order->user, $hideUpsell));
                 }
             } catch (Throwable $e) {
                 $mailFailed = true;
                 Log::warning('Customer PDF mail send failed', [
                     'order_id' => $order->id,
-                    'email' => $order->email,
+                    'email' => $recipient,
                     'error' => $e->getMessage(),
                 ]);
             }
@@ -171,7 +188,7 @@ class BookingController extends Controller
                 return redirect()->back()->with('error', 'PDF processed, but email sending failed. Please try sending again.');
             }
 
-            return redirect()->back()->with('success', 'PDF Sent Successfully...');
+            return redirect()->back()->with('success', 'Prüfbericht wurde erfolgreich versendet.');
         }
         return redirect()->back()->with('error', 'Something went wrong...');
 
@@ -198,13 +215,14 @@ class BookingController extends Controller
 
             $hideUpsell = (bool) $request->boolean('no_upsell');
             $pdf = app(OrderPdfService::class)->generateAndStoreEn($order);
+            $recipient = $this->resolveEmailRecipient($order);
             try {
-                Mail::to($order->email)->send(new \App\Mail\PdfOrderEn($order, $examination, $order->user, $hideUpsell));
+                Mail::to($recipient)->send(new \App\Mail\PdfOrderEn($order, $examination, $order->user, $hideUpsell));
             } catch (Throwable $e) {
                 $mailFailed = true;
                 Log::warning('Customer English PDF mail send failed', [
                     'order_id' => $order->id,
-                    'email' => $order->email,
+                    'email' => $recipient,
                     'error' => $e->getMessage(),
                 ]);
             }
@@ -217,9 +235,18 @@ class BookingController extends Controller
                 return redirect()->back()->with('error', 'English PDF processed, but email sending failed. Please try sending again.');
             }
 
-            return redirect()->back()->with('success', 'English PDF Sent Successfully...');
+            return redirect()->back()->with('success', 'Prüfbericht (E) wurde erfolgreich versendet.');
         }
         return redirect()->back()->with('error', 'Something went wrong...');
+    }
+
+    private function resolveEmailRecipient(Order $order): ?string
+    {
+        if ($order->order_source === 'b2b' && $order->b2b_partner_id) {
+            $partner = B2bPartner::find($order->b2b_partner_id);
+            return ($partner && $partner->email) ? $partner->email : ($order->email ?: null);
+        }
+        return $order->email ?: null;
     }
 
     private function addContactToBrevoReviewList(?string $email, ?string $name = null): void
@@ -282,7 +309,7 @@ class BookingController extends Controller
 
         }
 
-        $order->brand = isset($request['brand']) ? $request['brand'] : '';
+        $order->brand = $request->has('brand') ? $request->brand : $order->brand;
         $order->admin_order_date = $this->parseOptionalDate($request->admin_order_date);
         $order->customer_name = trim((string) $request->customer_name) ?: null;
         $order->examiner_name = trim((string) $request->examiner_name) ?: null;
@@ -296,28 +323,25 @@ class BookingController extends Controller
             $order->paid_at = $this->parseOptionalDate($request->paid_at);
             $order->paid_at_status = null;
         }
-        $order->make_year = isset($request['make_year']) ? $request['make_year'] : '';
-        $order->link = isset($request['link']) ? $request['link'] : '';
-        $order->desc = isset($request['desc']) ? $request['desc'] : '';
-        $order->street = isset($request['address']) ? $request['address'] : '';
-//        $order->address=isset($request['address'])?$request['address']:'';
+        // Only update fields that are actually present in the edit form — never wipe fields not submitted
+        $order->make_year        = $request->has('make_year') ? $request->make_year : $order->make_year;
+        $order->link             = $request->has('link') ? $request->link : $order->link;
+        $order->desc             = isset($request['desc']) ? $request['desc'] : '';
+        $order->street           = isset($request['address']) ? $request['address'] : '';
         $order->vehicle_make_model = isset($request['vehicle_make_model']) ? $request['vehicle_make_model'] : '';
-//        $order->house_no=$request['house_no'];
-//            $order->postal_code=$request['postal_code'];
-        $order->city = isset($request['city']) ? $request['city'] : '';
-//            $order->addition=$booking['addition'];
-        $order->phone = $request->phone;
-        $order->date = Carbon::now()->addDays(7)->toDateString();
-        $order->time = Carbon::now()->addDays(7)->toTimeString();
+        $order->city             = isset($request['city']) ? $request['city'] : '';
+        $order->phone            = $request->phone;
+        // seller_phone is a separate field — never overwrite it with the customer phone field
+        if ($request->has('seller_phone')) {
+            $order->seller_phone = $request->seller_phone;
+        }
         $order->negotiation_checklist = $request->negotiation_checklist == 1 ? 1 : 0;
         $order->document_in_english = $request->document_in_english == 1 ? 1 : 0;
         $order->pdf_with_partner_logo = $request->pdf_with_partner_logo == 1 ? 1 : 0;
         $order->partner_logo_id = $request->pdf_with_partner_logo == 1 ? $request->partner_logo_id : null;
-        $order->payment_type = Session::get('payment_type') ?? '';
-        $order->commission = 20;
-        $order->order_type = $order->order_type ?: 'B2C';
-
-        $order->seller_phone = isset($request['phone']) ? $request['phone'] : '';
+        $order->payment_type    = $order->payment_type ?: (Session::get('payment_type') ?? '');
+        $order->commission      = $order->commission ?: 20;
+        $order->order_type      = $order->order_type ?: 'B2C';
         $order->advertisement_link = isset($request['advertisement_link']) ? $request['advertisement_link'] : '';
 
         $order->price = $request->price;
@@ -332,10 +356,11 @@ class BookingController extends Controller
         $order->save();
 
         if ($request->id) {
-            return redirect()->route('admin.bookings.show', $order->id)->with('success', 'Booking saved successfully.');
+            return redirect()->route('admin.bookings.show', $order->id)->with('success', 'Auftragsstatus wurde erfolgreich aktualisiert');
         }
-        return redirect()->route('admin.bookings')->with('success', 'Booking saved successfully.');
+        return redirect()->route('admin.bookings')->with('success', 'Auftragsstatus wurde erfolgreich aktualisiert');
     }
+    
 
     public function fetchBookings(Request $request)
     {
@@ -343,6 +368,7 @@ class BookingController extends Controller
         // and keep Eloquent mode so rows are proper models (no id shadowing by related models)
         $bookings = Order::query()
             ->select('orders.*')
+            ->selectRaw('(SELECT COUNT(*) FROM inspector_requests WHERE inspector_requests.order_id = orders.id AND inspector_requests.status = "accepted") as accepted_inspector_count')
             ->with(['examiner','user','b2bPartner'])
             ->orderByRaw('COALESCE(orders.admin_order_date, DATE(orders.created_at)) DESC, orders.created_at DESC');
 //        dd($bookings);
@@ -358,13 +384,18 @@ class BookingController extends Controller
             return $q->whereHas('examiner', function($qq) use ($request){
                 $qq->where('email', 'like', '%'.$request->examiner_email.'%');
             });
+            })->when(($request->booking_scope ?? '') === 'new', function ($q) {
+    return $q->where('orders.admin_status', 'New')
+             ->whereDate('orders.created_at', '>=', '2026-05-09');
         })->when(($request->booking_scope ?? '') === 'active', function ($q) {
             return $q->where(function ($qq) {
                 $qq->whereNull('orders.admin_status')
-                    ->orWhereNotIn('orders.admin_status', ['Completed', 'Abgeschlossen']);
+                    ->orWhereNotIn('orders.admin_status', ['Completed', 'Abgeschlossen', 'New', 'Problem', 'Storniert']);
             });
         })->when(($request->booking_scope ?? '') === 'ready', function ($q) {
             return $q->where('orders.admin_status', 'Fertigstellung');
+        })->when(($request->booking_scope ?? '') === 'storno', function ($q) {
+            return $q->where('orders.admin_status', 'Problem');
         })->when(($request->status ?? '') !== '', function($q) use ($request){
             $status = $request->status === 'Pruefung' ? 'Prüfung' : $request->status;
             return $q->where(function ($qq) use ($status) {
@@ -385,61 +416,104 @@ class BookingController extends Controller
                     ->orWhere('orders.id', 'like', "%{$keyword}%")
                     ->orWhere('orders.pdf_number', 'like', "%{$keyword}%");
             });
-        })->addColumn('order_number', function ($booking) {
-            $orderNumber = $booking->display_order_number;
-            return '<a href="' . route('admin.bookings.show', $booking->id) . '" class="fw-semibold text-nowrap text-primary">' . e($orderNumber) . '</a>';
-        })->addColumn('admin_order_date_display', function ($booking) {
+        })// ->addColumn('order_number', function ($booking) {
+        //     $orderNumber = $booking->display_order_number;
+        //     return '<a href="' . route('admin.bookings.show', $booking->id) . '" class="fw-semibold text-nowrap text-primary">' . e($orderNumber) . '</a>';
+        // })
+        ->addColumn('order_number', function ($booking) {
+            $dot = ($booking->order_source === 'b2b')
+                ? '<span class="b2b-indicator" title="B2B Order"></span>'
+                : '';
+            return $dot . '<span class="fw-semibold text-nowrap">' . e($booking->display_order_number) . '</span>';
+        })
+        ->addColumn('admin_order_date_display', function ($booking) {
             $date = $booking->admin_order_date ? $booking->admin_order_date->format('d.m.Y') : $booking->created_at->format('d.m.Y');
             return '<span class="text-nowrap">' . e($date) . '</span>';
         })->addColumn('price_display', function ($booking) {
             return $booking->price !== null && $booking->price !== '' ? '<span class="text-nowrap">' . e($booking->price) . ' €</span>' : '-';
-        })->addColumn('order_type_display', function ($booking) {
-            $type = strtoupper($booking->order_type ?: 'B2C');
-            $badgeClass = $type === 'B2B' ? 'source-badge-b2b' : 'source-badge-b2c';
-            $partnerName = null;
-
-            if ($type === 'B2B') {
-                $partnerName = $booking->b2bPartner->name
-                    ?? $booking->b2bPartner->email
-                    ?? null;
-            }
-
-            return '<div class="compact-cell">'
-                . '<span class="source-badge ' . $badgeClass . '">' . e($type) . '</span>'
-                . ($partnerName ? '<span class="secondary">' . e($partnerName) . '</span>' : '')
-                . '</div>';
         })->addColumn('vehicle_display', function ($booking) {
             return '<div class="compact-cell">'
                 . '<span class="primary">' . e($booking->vehicle_make_model ?: '-') . '</span>'
                 . ($booking->brand ? '<span class="secondary">' . e($booking->brand) . '</span>' : '')
                 . '</div>';
         })->addColumn('customer_display', function ($booking) {
-            $name = $booking->customer_name ?: ($booking->user->name ?? 'No User');
-            $email = $booking->email ?: ($booking->user->email ?? '');
+            if ($booking->order_source === 'b2b' && $booking->b2bPartner) {
+                $name  = $booking->b2bPartner->company_name;
+                $email = $booking->b2bPartner->email;
+            } else {
+                $name  = $booking->customer_name ?: ($booking->user->name ?? 'No User');
+                $email = $booking->email ?: ($booking->user->email ?? '');
+            }
             return '<div class="compact-cell">'
                 . '<span class="primary">' . e($name) . '</span>'
                 . ($email ? '<span class="text-muted fs-8">' . e($email) . '</span>' : '')
                 . '</div>';
-        })->addColumn('examiner_display', function ($booking) {
-            if ($booking->examiner_name) {
-                return e($booking->examiner_name);
-            }
+        })
+        ->addColumn('examiner_display', function ($booking) {
+            $deleteBtn = '<a href="' . route('examination.delete', $booking->id) . '" '
+                . 'class="btn btn-xs btn-outline-danger btn-sm ms-1 js-confirm-delete" style="padding:1px 5px;font-size:11px;" '
+                . 'data-message="Remove examiner and reset examination for order ' . e($booking->display_order_number) . '?">'
+                . '<i class="fas fa-times"></i></a>';
+
+          if ($booking->examiner_name) {
+    return '<div class="d-flex align-items-center justify-content-between w-100">'
+        . '<div class="compact-cell">'
+            . '<span class="primary">' . e($booking->examiner_name) . '</span>'
+            . ($booking->examiner && $booking->examiner->email
+                ? '<span class="text-muted fs-8">' . e($booking->examiner->email) . '</span>'
+                : '')
+        . '</div>'
+        . $deleteBtn
+        . '</div>';
+}
             if ($booking->examiner) {
-                return '<a class="btn-assign-examiner" href="#assign_examiner" data-id="'.$booking->id.'" data-bs-target="#assign_examiner" data-bs-toggle="modal">'.e($booking->examiner->email).'</a>';
+    return '<div class="d-flex align-items-center justify-content-between w-100">'
+        . '<a class="btn-assign-examiner" href="#assign_examiner" data-id="'.$booking->id.'" data-bs-target="#assign_examiner" data-bs-toggle="modal">'
+        . e($booking->examiner->email)
+        . '</a>'
+        . $deleteBtn
+        . '</div>';
+}
+            $acceptedCount = (int) ($booking->accepted_inspector_count ?? 0);
+            $subtext = $acceptedCount > 0
+                ? '<br><small class="text-success" style="font-size:11px;">✓ '.$acceptedCount.' accepted</small>'
+                : '';
+            return '<a class="btn-assign-examiner" href="#assign_examiner" data-id="'.$booking->id.'" data-bs-target="#assign_examiner" data-bs-toggle="modal">Assign Examiner</a>'.$subtext;
+        })
+        ->addColumn('appointment_display', function ($booking) {
+    if ($booking->appointment_date) {
+        $appointmentDate = \Carbon\Carbon::parse($booking->appointment_date)->startOfDay();
+        $today = now()->startOfDay();
+
+        $date = ['So.', 'Mo.', 'Di.', 'Mi.', 'Do.', 'Fr.', 'Sa.'][$appointmentDate->dayOfWeek]
+            . ' ' . $appointmentDate->format('d.m.Y');
+
+        $time = $booking->appointment_time
+            ? ' • ' . substr($booking->appointment_time, 0, 5) . ' Uhr'
+            : '';
+
+            if (in_array($booking->admin_status, ['Completed', 'Abgeschlossen'])) {
+            $badgeClass = 'badge-success';      
+            } elseif ($appointmentDate->lt($today)) {
+                $badgeClass = 'badge-warning';     
+            } elseif ($appointmentDate->equalTo($today)) {
+                $badgeClass = 'badge-info';      
+            } else {
+                $badgeClass = 'badge-secondary';       
             }
-            return '<a class="btn-assign-examiner" href="#assign_examiner" data-id="'.$booking->id.'" data-bs-target="#assign_examiner" data-bs-toggle="modal">Assign Examiner</a>';
-        })->addColumn('completed_at_display', function ($booking) {
-            $value = $booking->completed_at ? $booking->completed_at->format('Y-m-d') : '';
-            return '<input type="date" class="form-control form-control-sm inline-admin-field inline-date-field js-inline-booking-field" data-id="' . $booking->id . '" data-field="completed_at" value="' . e($value) . '">';
-        })->addColumn('paid_at_display', function ($booking) {
-            if ($booking->paid_at_status === 'error') {
-                return '<span class="badge badge-danger px-2 py-1">Error</span>';
+                return '<span class="badge ' . $badgeClass . ' px-2 py-1">' . e($date . $time) . '</span>';
             }
-            if ($booking->paid_at_status === 'missing') {
-                return '<span class="badge badge-warning px-2 py-1">Missing</span>';
+
+            $btn = '';
+            if ($booking->examiner_name || $booking->examiner_id) {
+                $btn = '<br><a href="#" class="js-appt-reminder" data-id="' . $booking->id . '" style="font-size:12px;text-decoration:none;">Termin anfragen</a>';
             }
-            $value = $booking->paid_at ? $booking->paid_at->format('Y-m-d') : '';
-            return '<input type="date" class="form-control form-control-sm inline-admin-field inline-date-field js-inline-booking-field" data-id="' . $booking->id . '" data-field="paid_at" value="' . e($value) . '">';
+
+            return '<span class="text-muted" style="font-size:12px;">Kein Termin</span>' . $btn;
+        })
+
+        ->addColumn('actions', function ($booking) {
+            return '<a href="' . route('admin.bookings.show', $booking->id) . '" style="width:50px;height:31px;display:flex;align-items:center;justify-content:center;" class="btn btn-light-primary" title="Detail"><i class="fas fa-eye"></i></a>';
         })->editColumn('examiner_id',function ($row){
             if($row->examiner){
                 return '<a class="btn-assign-examiner" href="#assign_examiner" data-id="'.$row->id.'" data-bs-target="#assign_examiner" data-bs-toggle="modal">'.$row->examiner->email.'</a>';
@@ -529,14 +603,14 @@ class BookingController extends Controller
 
             }
             return '';
-        })->rawColumns(['status','examiner_id', 'order_number', 'admin_order_date_display', 'completed_at_display', 'paid_at_display', 'customer_display', 'vehicle_display', 'examiner_display'])->make(true);
+        })->rawColumns(['status','examiner_id', 'order_number', 'admin_order_date_display', 'appointment_display', 'actions', 'customer_display', 'vehicle_display', 'examiner_display', 'price_display'])->make(true);
     }
 
     public function updateInline(Request $request)
     {
         $data = $request->validate([
             'id' => ['required', 'exists:orders,id'],
-            'field' => ['required', 'in:admin_status,completed_at,paid_at'],
+            'field' => ['required', 'in:admin_status,completed_at,paid_at,paid_at_status'],
             'value' => ['nullable', 'string', 'max:190'],
         ]);
 
@@ -571,9 +645,30 @@ class BookingController extends Controller
             $order->completed_at = $this->parseOptionalDate($value);
         } elseif ($data['field'] === 'paid_at') {
             $order->paid_at = $this->parseOptionalDate($value);
+            if ($order->paid_at) { $order->paid_at_status = null; }
+        } elseif ($data['field'] === 'paid_at_status') {
+            $allowed = ['error', 'missing', ''];
+            abort_unless(in_array($value, $allowed, true), 422, 'Invalid status.');
+            $order->paid_at_status = $value ?: null;
+            if ($value) { $order->paid_at = null; }
         }
 
         $order->save();
+
+        if ($data['field'] === 'admin_status'
+            && $value === 'Fertigstellung'
+            && $order->order_source === 'b2b'
+            && $order->b2b_partner_id) {
+            try {
+                $partner = B2bPartner::find($order->b2b_partner_id);
+                if ($partner && $partner->email) {
+                    $examination = OrderExamination::where('order_id', $order->id)->first();
+                    Mail::to($partner->email)->send(new ExaminationStatusMail($order, $examination, null));
+                }
+            } catch (\Throwable $e) {
+                Log::warning('B2B status email failed', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+            }
+        }
 
         return response()->json([
             'success' => true,
@@ -587,16 +682,26 @@ class BookingController extends Controller
             abort(403);
         }
 
+        if ($request->has('remove_appointment')) {
+            $order->appointment_date = null;
+            $order->appointment_time = null;
+            $order->save();
+
+            return redirect()->back()->with('success', 'Termin wurde entfernt.');
+        }
+
         $data = $request->validate([
             'appointment_date' => ['required', 'date'],
             'appointment_time' => ['nullable', 'date_format:H:i'],
         ]);
 
+        // Only send email if the date actually changed
+        $dateChanged = $order->appointment_date !== $data['appointment_date'];
         $order->appointment_date = $data['appointment_date'];
         $order->appointment_time = $data['appointment_time'] ?? null;
         $order->save();
 
-        $recipient = $order->email ?: ($order->user->email ?? null);
+        $recipient = $dateChanged ? ($order->email ?: ($order->user->email ?? null)) : null;
         if ($recipient) {
             try {
                 Mail::to($recipient)->send(new AppointmentSetMail($order));
@@ -606,7 +711,44 @@ class BookingController extends Controller
             }
         }
 
-        return redirect()->back()->with('success', 'Appointment set and customer notified.');
+        if ($dateChanged && $order->order_source === 'b2b' && $order->b2b_partner_id) {
+            try {
+                $partner = B2bPartner::find($order->b2b_partner_id);
+                if ($partner && $partner->email) {
+                    Mail::to($partner->email)->send(new AppointmentSetMail($order));
+                }
+            } catch (\Throwable $e) {
+                Log::warning('B2B appointment email failed', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+            }
+        }
+
+        return redirect()->back()->with('success', $dateChanged ? 'Termin wurde gesetzt und der Kunde benachrichtigt.' : 'Termin gespeichert (keine Änderung, kein E-Mail gesendet).');
+    }
+
+    public function saveVehicleDetails(Request $request, int $orderId)
+    {
+        $order = Order::findOrFail($orderId);
+
+        $data = $request->validate([
+            'vehicle_make_model'     => 'nullable|string|max:255',
+            'make_year'              => 'nullable|string|max:50',
+            'mileage'                => 'nullable|string|max:50',
+            'listing_seller_name'    => 'nullable|string|max:255',
+            'listing_seller_address' => 'nullable|string|max:255',
+            'seller_phone'           => 'nullable|string|max:100',
+        ]);
+
+        $order->vehicle_make_model     = $data['vehicle_make_model']     ?? $order->vehicle_make_model;
+        $order->make_year              = $data['make_year']              ?? $order->make_year;
+        $order->mileage                = $data['mileage']                ?? $order->mileage;
+        $order->listing_seller_name    = $data['listing_seller_name']    ?? $order->listing_seller_name;
+        $order->listing_seller_address = $data['listing_seller_address'] ?? $order->listing_seller_address;
+        $order->seller_phone           = $data['seller_phone']           ?? $order->seller_phone;
+        $order->private_seller         = $request->boolean('private_seller');
+        $order->vehicle_details_confirmed = 1;
+        $order->save();
+
+        return redirect()->back()->with('success', 'Fahrzeug- und Verkäuferdaten gespeichert.');
     }
 
     public function confirmStatus(Request $request, Order $order)
@@ -637,16 +779,17 @@ class BookingController extends Controller
                     ? app(OrderPdfService::class)->generateAndStoreEn($order)
                     : app(OrderPdfService::class)->generateAndStore($order);
 
+                $pdfRecipient = $this->resolveEmailRecipient($order);
                 try {
                     if ($isEnglish) {
-                        Mail::to($order->email)->send(new \App\Mail\PdfOrderEn($order, $examination, $order->user));
+                        Mail::to($pdfRecipient)->send(new \App\Mail\PdfOrderEn($order, $examination, $order->user));
                     } else {
-                        Mail::to($order->email)->send(new PdfOrder($order, $examination, $order->user));
+                        Mail::to($pdfRecipient)->send(new PdfOrder($order, $examination, $order->user));
                     }
                 } catch (Throwable $e) {
                     Log::warning('Manual status PDF mail send failed', [
                         'order_id' => $order->id,
-                        'email' => $order->email,
+                        'email' => $pdfRecipient,
                         'error' => $e->getMessage(),
                     ]);
                 }
@@ -657,21 +800,21 @@ class BookingController extends Controller
             $order->admin_status = $status;
             $order->status = in_array($status, ['Prüfung', 'Fertigstellung'], true) ? 'inspecting' : 'processing';
 
-            if ($status === 'Prüfung') {
-                try {
-                    $examination = OrderExamination::where('order_id', $order->id)->first();
-                    if ($examination) {
-                        $examination->status = 'inspecting';
-                        $examination->update();
-                    }
-                    $recipient = $order->user->email ?? $order->email;
-                    if ($recipient) {
-                        Mail::to($recipient)->send(new ExaminationStatusMail($order, $examination, $order->user));
-                    }
-                } catch (Throwable $e) {
-                    Log::debug($e->getMessage());
-                }
-            }
+            // if ($status === 'Prüfung') {
+            //     try {
+            //         $examination = OrderExamination::where('order_id', $order->id)->first();
+            //         if ($examination) {
+            //             $examination->status = 'inspecting';
+            //             $examination->update();
+            //         }
+            //         $recipient = $order->user->email ?? $order->email;
+            //         if ($recipient) {
+            //             Mail::to($recipient)->send(new ExaminationStatusMail($order, $examination, $order->user));
+            //         }
+            //     } catch (Throwable $e) {
+            //         Log::debug($e->getMessage());
+            //     }
+            // }
 
             if ($status === 'Fertigstellung') {
                 try {
@@ -680,7 +823,7 @@ class BookingController extends Controller
                         $examination->status = 'finishing';
                         $examination->update();
                     }
-                    $recipient = $order->user->email ?? $order->email;
+                    $recipient = $this->resolveEmailRecipient($order);
                     if ($recipient) {
                         Mail::to($recipient)->send(new ExaminationStatusMail($order, $examination, $order->user));
                     }
@@ -725,16 +868,17 @@ class BookingController extends Controller
                 ? app(OrderPdfService::class)->generateAndStoreEn($order)
                 : app(OrderPdfService::class)->generateAndStore($order);
 
+            $pdfRecipient = $this->resolveEmailRecipient($order);
             try {
                 if ($isEnglish) {
-                    Mail::to($order->email)->send(new \App\Mail\PdfOrderEn($order, $examination, $order->user));
+                    Mail::to($pdfRecipient)->send(new \App\Mail\PdfOrderEn($order, $examination, $order->user));
                 } else {
-                    Mail::to($order->email)->send(new PdfOrder($order, $examination, $order->user));
+                    Mail::to($pdfRecipient)->send(new PdfOrder($order, $examination, $order->user));
                 }
             } catch (Throwable $e) {
                 Log::warning('Manual status PDF mail send failed', [
                     'order_id' => $order->id,
-                    'email' => $order->email,
+                    'email' => $pdfRecipient,
                     'error' => $e->getMessage(),
                 ]);
             }
@@ -754,7 +898,7 @@ class BookingController extends Controller
                 }
                 $recipient = $order->user->email ?? $order->email;
                 if ($recipient) {
-                    Mail::to($recipient)->send(new ExaminationStatusMail($order, $examination, $order->user));
+                    // Mail::to($recipient)->send(new ExaminationStatusMail($order, $examination, $order->user));
                 }
             } catch (Throwable $e) {
                 Log::debug($e->getMessage());
@@ -792,10 +936,11 @@ class BookingController extends Controller
                     $pdf = $isEnglish
                         ? app(OrderPdfService::class)->generateAndStoreEn($order)
                         : app(OrderPdfService::class)->generateAndStore($order);
+                    $pdfRecipient = $this->resolveEmailRecipient($order);
                     if ($isEnglish) {
-                        Mail::to($order->email)->send(new \App\Mail\PdfOrderEn($order, $examination, $order->user));
+                        Mail::to($pdfRecipient)->send(new \App\Mail\PdfOrderEn($order, $examination, $order->user));
                     } else {
-                        Mail::to($order->email)->send(new PdfOrder($order, $examination, $order->user));
+                        Mail::to($pdfRecipient)->send(new PdfOrder($order, $examination, $order->user));
                     }
                     return redirect()->back()->with('success', 'PDF Sent Successfully...');
                 }
@@ -809,7 +954,7 @@ class BookingController extends Controller
                             $examination->status=$request->status;
                             $examination->update();
                         }
-                        Mail::to($order->user->email)->send(new ExaminationStatusMail($order,$examination,$order->user));
+                        // Mail::to($order->user->email)->send(new ExaminationStatusMail($order,$examination,$order->user));
                     } catch (\Exception $e) {
                         Log::debug($e->getMessage());
                     }
@@ -1029,5 +1174,327 @@ class BookingController extends Controller
     {
         $newBooking->delete();
         return response()->json(['success' => true, 'message' => 'Neue Buchung gelöscht.']);
+    }
+
+    public function billing()
+    {
+        return view('admin.billing');
+    }
+
+    public function notifications()
+    {
+        $notifications = AdminNotification::orderByDesc('created_at')->limit(30)->get();
+        return response()->json([
+            'unread_count' => AdminNotification::whereNull('read_at')->count(),
+            'notifications' => $notifications->map(fn($n) => [
+                'id'         => $n->id,
+                'type'       => $n->type,
+                'title'      => $n->title,
+                'message'    => $n->message,
+                'link'       => $n->link,
+                'read'       => $n->read_at !== null,
+                'created_at' => $n->created_at->diffForHumans(),
+            ]),
+        ]);
+    }
+
+    public function markNotificationsRead()
+    {
+        AdminNotification::whereNull('read_at')->update(['read_at' => now()]);
+        return response()->json(['success' => true]);
+    }
+
+    public function sendAppointmentReminder(int $orderId)
+    {
+        $order = \App\Models\Order::with('examiner')->findOrFail($orderId);
+
+        // Determine recipient email — examiner User first, then accepted InspectorRequest
+        $toEmail = null;
+        $toName  = null;
+        if ($order->examiner_id && $order->examiner) {
+            $toEmail = $order->examiner->email;
+            $toName  = $order->examiner_name ?: $order->examiner->name;
+        } else {
+            $accepted = \App\Models\InspectorRequest::where('order_id', $orderId)
+                ->where('status', 'accepted')
+                ->first();
+            if ($accepted) {
+                $toEmail = $accepted->external_email ?? optional($accepted->inspector)->email;
+                $toName  = $accepted->external_email ?? optional($accepted->inspector)->name;
+            }
+        }
+
+        if (!$toEmail) {
+            return response()->json(['success' => false, 'message' => 'Kein Prüfer zugewiesen.'], 422);
+        }
+
+        $orderno  = $order->orderno ?? ('#' . $order->id);
+        $vehicle  = trim(($order->brand ?? '') . ' ' . ($order->vehicle_make_model ?? '')) ?: '—';
+        $location = trim($order->listing_seller_address ?? $order->postal_code . ' ' . $order->city) ?: '—';
+        $seller   = trim($order->listing_seller_name ?? '') ?: '—';
+        $phone    = trim($order->seller_phone ?? $order->phone ?? '') ?: '—';
+
+        $confirmUrl = \Illuminate\Support\Facades\URL::signedRoute(
+            'appointment.confirm.show', ['order' => $orderId], now()->addDays(7)
+        );
+
+        $subject = "Termin vereinbart? | Auftrag {$orderno}";
+        $html = '<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"></head><body style="font-family:Arial,sans-serif;font-size:14px;color:#212529;line-height:1.7;">'
+            . '<p>Sehr geehrte Damen und Herren,</p>'
+            . '<p>konnten Sie bereits einen Termin für den folgenden Auftrag mit dem Verkäufer vereinbaren?</p>'
+            . '<p><strong>Auftrags-Nr.:</strong> ' . e($orderno) . '<br>'
+            . '<strong>Fahrzeug:</strong> ' . e($vehicle) . '<br>'
+            . '<strong>Standort:</strong> ' . e($location) . '<br>'
+            . '<strong>Verkäufer:</strong> ' . e($seller) . '<br>'
+            . '<strong>Telefon:</strong> ' . e($phone) . '</p>'
+            . '<p>Falls ja, bitten wir Sie, den Termin kurz über den nachfolgenden Button zu bestätigen.<br>Vielen Dank für Ihre Unterstützung!</p>'
+            . '<p style="margin:24px 0;">'
+            . '<a href="' . $confirmUrl . '" style="display:inline-block;background:#0d6efd;color:#fff;text-decoration:none;padding:12px 24px;border-radius:5px;font-weight:bold;">Termin bestätigen</a>'
+            . '</p>'
+            // . '<p style="font-size:12px;color:#6c757d;">Dieser Link ist 7 Tage gültig.</p>'
+            . '<p>Mit freundlichen Grüßen<br>Carspector Support Team</p>'
+            . '</body></html>';
+
+        try {
+            \Illuminate\Support\Facades\Mail::html($html, function ($m) use ($toEmail, $toName, $subject) {
+                $m->to($toEmail, $toName)->cc('partner@carspector.de')->subject($subject);
+            });
+            return response()->json(['success' => true, 'message' => 'Erinnerung gesendet an ' . $toEmail]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Appointment reminder failed: ' . $e->getMessage(), ['order_id' => $orderId]);
+            return response()->json(['success' => false, 'message' => 'E-Mail konnte nicht gesendet werden.'], 500);
+        }
+    }
+
+    public function appointmentConfirmShow(\Illuminate\Http\Request $request, int $order)
+    {
+        if (!$request->hasValidSignature()) {
+            abort(403, 'Dieser Link ist ungültig oder abgelaufen.');
+        }
+        $o = \App\Models\Order::findOrFail($order);
+        return view('appointment.confirm', ['order' => $o]);
+    }
+
+    public function appointmentConfirmSave(\Illuminate\Http\Request $request, int $order)
+    {
+        if (!$request->hasValidSignature()) {
+            abort(403, 'Dieser Link ist ungültig oder abgelaufen.');
+        }
+        $o = \App\Models\Order::findOrFail($order);
+        $request->validate(['appointment_date' => 'required|date', 'appointment_time' => 'nullable|date_format:H:i']);
+
+        $wasAlreadySet = !empty($o->appointment_date);
+        $o->appointment_date = $request->appointment_date;
+        $o->appointment_time = $request->appointment_time ?? null;
+        $o->save();
+
+        AdminNotification::notify(
+            'appointment_confirmed',
+            'Termin bestätigt',
+            'Termin für Auftrag ' . ($o->orderno ?? '#' . $o->id) . ' wurde bestätigt: ' . \Carbon\Carbon::parse($request->appointment_date)->format('d.m.Y') . ($request->appointment_time ? ' ' . $request->appointment_time . ' Uhr' : ''),
+            '/admin/bookings/' . $o->id,
+            $o->id
+        );
+
+        // Only send to customer if this is the first time the date is being set
+        $o->load('user');
+        $recipient = !$wasAlreadySet ? ($o->email ?: ($o->user->email ?? null)) : null;
+        if ($recipient) {
+            try {
+                Mail::to($recipient)->send(new AppointmentSetMail($o));
+            } catch (\Throwable $e) {
+                Log::warning('Appointment confirm email to customer failed', ['order_id' => $o->id, 'error' => $e->getMessage()]);
+            }
+        }
+
+        // Also notify B2B partner if applicable (only on first set)
+        if (!$wasAlreadySet && ($o->order_source ?? '') === 'b2b' && $o->b2b_partner_id) {
+            try {
+                $partner = B2bPartner::find($o->b2b_partner_id);
+                if ($partner && $partner->email) {
+                    Mail::to($partner->email)->send(new AppointmentSetMail($o));
+                }
+            } catch (\Throwable $e) {
+                Log::warning('Appointment confirm email to B2B partner failed', ['order_id' => $o->id, 'error' => $e->getMessage()]);
+            }
+        }
+
+        // PRG pattern — redirect to GET so browser refresh doesn't resubmit the form
+        return redirect()->route('appointment.confirm.show', ['order' => $o->id] + request()->query());
+    }
+
+    public function fetchBillingBookings(Request $request)
+    {
+        $tab = $request->billing_tab ?? 'open_recent';
+        $threeWeeksAgo = \Carbon\Carbon::now()->subWeeks(3);
+
+        $query = \App\Models\Order::query()
+            ->leftJoin('users', 'orders.user_id', '=', 'users.id')
+            ->leftJoin('users as examiners', 'orders.examiner_id', '=', 'examiners.id')
+            ->select([
+                'orders.id',
+                'orders.orderno',
+                'orders.created_at',
+                'orders.updated_at',
+                'orders.vehicle_make_model',
+                'orders.customer_name',
+                'orders.examiner_name',
+                'orders.completed_at',
+                'orders.paid_at',
+                'orders.paid_at_status',
+                'orders.admin_order_date',
+                'orders.vehicle_type',
+                'users.name as user_name',
+                'users.email as user_email',
+                'examiners.name as examiner_user_name',
+                'examiners.email as examiner_user_email',
+            ])
+            ->whereIn('orders.admin_status', ['Completed', 'Abgeschlossen'])
+            ->orderBy(\DB::raw('COALESCE(orders.completed_at, orders.created_at)'), 'desc');
+
+        if ($tab === 'payed') {
+            $query->whereNotNull('orders.paid_at')->whereNull('orders.paid_at_status');
+        } elseif ($tab === 'open_recent') {
+            $query->whereNull('orders.paid_at')->whereNull('orders.paid_at_status')
+                  ->where(\DB::raw('COALESCE(orders.completed_at, orders.created_at)'), '>=', $threeWeeksAgo);
+        } elseif ($tab === 'open_old') {
+            $query->whereNull('orders.paid_at')->whereNull('orders.paid_at_status')
+                  ->where(\DB::raw('COALESCE(orders.completed_at, orders.created_at)'), '<', $threeWeeksAgo);
+        } elseif ($tab === 'error') {
+            $query->where('orders.paid_at_status', 'error');
+        } elseif ($tab === 'missing') {
+            $query->where('orders.paid_at_status', 'missing');
+        }
+
+        return \Yajra\DataTables\Facades\DataTables::of($query)
+            ->addColumn('datum_display', function ($row) {
+                return $row->admin_order_date
+                    ? \Carbon\Carbon::parse($row->admin_order_date)->format('d.m.Y')
+                    : ($row->created_at ? $row->created_at->format('d.m.Y') : '');
+            })
+            ->addColumn('order_number_display', function ($row) {
+                return $row->display_order_number;
+            })
+            ->addColumn('vehicle_display', function ($row) {
+                //$parts = array_filter([$row->vehicle_type, $row->vehicle_make_model]);
+                $parts = array_filter([$row->vehicle_make_model]);
+                return e(implode(' – ', $parts));
+            })
+            ->addColumn('customer_display', function ($row) {
+                $name = $row->customer_name ?: $row->user_name ?: $row->user_email ?? '–';
+                return e($name);
+            })
+            ->addColumn('examiner_display', function ($row) {
+    return '<div style="display:flex;flex-direction:column;line-height:1.2;">'
+        . '<span style="font-size: 15px; font-weight:500;">'
+        . e($row->examiner_name ?: $row->examiner_user_name ?: '–')
+        . '</span>'
+        . ($row->examiner_user_email
+            ? '<small class="text-muted">' . e($row->examiner_user_email) . '</small>'
+            : '')
+        . '</div>';
+})
+            ->addColumn('completed_at_display', function ($row) {
+                $date = $row->completed_at ?: $row->admin_order_date ?: null;
+                return $date ? \Carbon\Carbon::parse($date)->format('d.m.Y') : '–';
+            })
+            ->addColumn('paid_at_display', function ($row) {
+                if ($row->paid_at_status === 'error') {
+                    return '<div class="d-flex align-items-center gap-1">'
+                        . '<span class="badge badge-danger px-2 py-1">Error</span>'
+                        . '<button class="btn btn-xs btn-outline-secondary js-billing-clear-status ml-1" data-id="' . $row->id . '" title="Zurücksetzen" style="font-size:11px;padding:1px 5px;">×</button>'
+                        . '</div>';
+                }
+                if ($row->paid_at_status === 'missing') {
+                    return '<div class="d-flex align-items-center gap-1">'
+                        . '<span class="badge badge-warning px-2 py-1">Missing</span>'
+                        . '<button class="btn btn-xs btn-outline-secondary js-billing-clear-status ml-1" data-id="' . $row->id . '" title="Zurücksetzen" style="font-size:11px;padding:1px 5px;">×</button>'
+                        . '</div>';
+                }
+                $value = $row->paid_at ? \Carbon\Carbon::parse($row->paid_at)->format('Y-m-d') : '';
+                return '<div class="d-flex align-items-center" style="min-width:210px;">'
+                    . '<input type="date" class="form-control form-control-sm js-inline-booking-field mr-1" data-id="' . $row->id . '" data-field="paid_at" value="' . e($value) . '" style="width:125px;">'
+                    . '<button class="btn btn-xs btn-outline-danger js-billing-set-status mr-1" data-id="' . $row->id . '" data-status="error" title="Error">E</button>'
+                    . '<button class="btn btn-xs btn-outline-warning js-billing-set-status" data-id="' . $row->id . '" data-status="missing" title="Missing">M</button>'
+                    . '</div>';
+            })
+            ->addColumn('actions', function ($row) {
+                return '<a href="' . route('admin.bookings.show', $row->id) . '" class="btn btn-sm btn-light-primary px-3 py-1"><i class="fas fa-eye"></i></a>';
+            })
+            ->rawColumns(['paid_at_display', 'actions', 'examiner_display'])
+            ->orderColumn('datum_display', 'orders.admin_order_date $1')
+            ->make(true);
+    }
+
+    /** Upload vehicle listing PDF for documentation */
+    public function uploadListingPdf(Request $request, int $orderId)
+    {
+        $order = Order::findOrFail($orderId);
+
+        try {
+            $validated = $request->validate([
+                'listing_pdf' => 'required|file|mimes:pdf|max:10240',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::warning('Listing PDF validation failed', ['order_id' => $orderId, 'errors' => $e->errors()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error: ' . collect($e->errors())->flatten()->first(),
+                'errors' => $e->errors(),
+            ], 422);
+        }
+
+        try {
+            $file = $request->file('listing_pdf');
+            if (!$file) {
+                throw new \Exception('No file received');
+            }
+
+            $fileName = 'listing-' . $order->id . '-' . time() . '.pdf';
+            $storagePath = $file->storeAs('listings', $fileName, 'public');
+
+            if (!$storagePath) {
+                throw new \Exception('File storage failed');
+            }
+
+            $order->update(['listing_pdf_path' => $storagePath]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Listing PDF uploaded successfully',
+                'file_path' => $storagePath,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Listing PDF upload failed', ['order_id' => $orderId, 'error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Upload error: ' . $e->getMessage(),
+            ], 422);
+        }
+    }
+
+    /** Delete the uploaded listing PDF */
+    public function deleteListingPdf(Request $request, int $orderId)
+    {
+        $order = Order::findOrFail($orderId);
+
+        try {
+            if ($order->listing_pdf_path && Storage::disk('public')->exists($order->listing_pdf_path)) {
+                Storage::disk('public')->delete($order->listing_pdf_path);
+            }
+
+            $order->update(['listing_pdf_path' => null]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Listing PDF deleted successfully',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Listing PDF deletion failed', ['order_id' => $orderId, 'error' => $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete PDF',
+            ], 422);
+        }
     }
 }

@@ -12,6 +12,80 @@ use Illuminate\Support\Str;
 
 class OrderPdfService
 {
+    /**
+     * Save the original inspector PDF (only once, never overwrite)
+     * This preserves the exact state of the report as submitted by the inspector
+     */
+    public function saveOriginalInspectorPdf(Order $order): array
+    {
+        $examination = OrderExamination::where('order_id', $order->id)->first();
+        $includes = [];
+        $images = collect();
+
+        if ($examination) {
+            $cacheDirRel = 'pdf-cache/' . $order->id;
+            $cacheDirAbs = storage_path('app/public/' . $cacheDirRel);
+            @mkdir($cacheDirAbs, 0775, true);
+
+            foreach (($examination->images ?? []) as $img) {
+                try {
+                    $raw = ltrim((string)($img->image ?? ''), '/');
+                    $rel = $raw !== '' ? $raw : ltrim(parse_url($img->image1 ?? '', PHP_URL_PATH) ?: '', '/');
+                    if ($rel === '') { continue; }
+                    if (strpos($rel, 'storage/') === 0) { $rel = substr($rel, 8); }
+                    $ext = strtolower(pathinfo($rel, PATHINFO_EXTENSION));
+                    $isImage = in_array($ext, ['jpg','jpeg','png','gif','webp']);
+
+                    if ($isImage) {
+                        $srcAbs = storage_path('app/public/' . $rel);
+                        $baseName = pathinfo($rel, PATHINFO_FILENAME);
+                        $dstRel = $cacheDirRel . '/' . $baseName . '-720p.jpg';
+                        $dstAbs = storage_path('app/public/' . $dstRel);
+                        if (!file_exists($dstAbs)) {
+                            $this->compressForPdf($srcAbs, $dstAbs, 1280, 720, 70);
+                        }
+                        $obj = (object) [
+                            'image' => $dstRel,
+                            'document_type' => null,
+                        ];
+                        $images->push($obj);
+                    } else {
+                        $images->push($img);
+                    }
+                } catch (\Throwable $e) {
+                    $images->push($img);
+                }
+            }
+        }
+
+        $damages = OrderDamage::where('order_id', $order->id)->orderBy('id')->get();
+        $damageSummary = OrderDamageSummary::where('order_id', $order->id)->first();
+        $chartDataUri = $this->chartDataUri($order, $damages, $damageSummary);
+
+        $pdf = PDF::loadView('frontpages.vehicle.pdf', compact('examination', 'includes', 'order', 'images', 'damages', 'damageSummary', 'chartDataUri'));
+        $pdf->set_option('dpi', 110);
+
+        $fileName = ($order->pdf_number ?: ('order-'.$order->id)) . '-inspector-original.pdf';
+        $relPath = 'reports/' . $fileName;
+        $absPath = storage_path('app/public/' . $relPath);
+        @mkdir(dirname($absPath), 0775, true);
+
+        // Only save if it doesn't exist yet (preserve original)
+        if (!file_exists($absPath)) {
+            try {
+                file_put_contents($absPath, $pdf->output());
+            } catch (\Throwable $e) {
+                Log::warning('Failed saving original inspector PDF', ['order_id' => $order->id, 'error' => $e->getMessage()]);
+            }
+        }
+
+        return [
+            'relative' => $relPath,
+            'absolute' => $absPath,
+            'url' => asset('storage/' . $relPath),
+        ];
+    }
+
     public function generateAndStore(Order $order): array
     {
         $examination = OrderExamination::where('order_id', $order->id)->first();
@@ -79,7 +153,7 @@ class OrderPdfService
         ];
     }
 
-    public function generateAndStoreEn(Order $order): array
+public function generateAndStoreEn(Order $order): array
     {
         $examination = OrderExamination::where('order_id', $order->id)->first();
         $includes = [];

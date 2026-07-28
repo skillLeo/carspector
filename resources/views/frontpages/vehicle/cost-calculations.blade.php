@@ -349,10 +349,51 @@
 
                             <div class="row g-3 justify-content-center">
                                 <div style="width: 800px">
-                <div class="panel">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div class="title-lg mb-0">Kalkulation</div>
-                  </div>
+                                    <div class="d-flex flex-wrap gap-2 mt-3 mb-3" id="preset-buttons">
+                                        <button type="button" class="btn btn-primary preset-btn"
+                                                data-title="HU/AU"
+                                                data-amount="150"
+                                                data-type="upcoming costs"
+                                                data-remarks="Erneuern">
+                                            HU/AU
+                                        </button>
+
+                                        <button type="button" class="btn btn-primary preset-btn"
+                                                data-title="Service / Wartung"
+                                                data-amount="350"
+                                                data-type="upcoming costs"
+                                                data-remarks="Fällig">
+                                            Service
+                                        </button>
+
+                                        <button type="button" class="btn btn-primary preset-btn"
+                                                data-title="Reifen"
+                                                data-amount="850"
+                                                data-type="upcoming costs"
+                                                data-remarks="Erneuern">
+                                            Reifen
+                                        </button>
+
+                                        <button type="button" class="btn btn-primary preset-btn"
+                                                data-title="Karosserie / Lackzustand"
+                                                data-amount="250"
+                                                data-type="inferior value"
+                                                data-remarks="Beschädigungen u. a. Steinschlag, Kratzer, ...">
+                                            Lackzustand
+                                        </button>
+
+                                        <button type="button" class="btn btn-primary preset-btn"
+                                                data-title="Innenraum"
+                                                data-amount="250"
+                                                data-type="inferior value"
+                                                data-remarks="Abnutzungsspuren u. a. leichte Kratzer, ...">
+                                            Innenraum
+                                        </button>
+                                    </div>
+
+                            <div class="panel">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                            </div>
                                         <div id="damagesRepeater">
                                             <div data-repeater-list="damages">
                                                 <div data-repeater-item class="dmg-card">
@@ -844,5 +885,56 @@
         new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(result)
     );
 }
+
+let presetInitialized = false;
+
+$(document).on('click', '.preset-btn', function () {
+
+    const title = $(this).data('title');
+    const amount = $(this).data('amount');
+    const type = $(this).data('type');
+    const remarks = $(this).data('remarks');
+
+    // Beim ersten Preset-Klick:
+    // leeren Standard-Eintrag entfernen
+    if (!presetInitialized) {
+
+        let $firstRow = $('#damagesRepeater [data-repeater-item]').first();
+
+        let emptyTitle = !$firstRow.find('input[name$="[title]"]').val();
+        let emptyAmount = !$firstRow.find('input[name$="[amount]"]').val();
+        let emptyRemarks = !$firstRow.find('textarea[name$="[remarks]"]').val();
+
+        if (emptyTitle && emptyAmount && emptyRemarks) {
+            $firstRow.remove();
+        }
+
+        presetInitialized = true;
+    }
+
+    // Neue Position hinzufügen
+    $('#damagesRepeater [data-repeater-create]').trigger('click');
+
+    setTimeout(() => {
+
+        let $row = $('#damagesRepeater [data-repeater-item]').last();
+
+        // Werte setzen
+        $row.find('input[name$="[title]"]').val(title);
+        $row.find('input[name$="[amount]"]').val(amount);
+        $row.find('textarea[name$="[remarks]"]').val(remarks);
+
+        // Typ setzen
+        $row.find('input[type="radio"][name$="[cost_type]"]')
+            .prop('checked', false);
+
+        $row.find(
+            'input[type="radio"][name$="[cost_type]"][value="' + type + '"]'
+        ).prop('checked', true);
+
+        updateTotals();
+
+    }, 120);
+});
     </script>
 @endsection

@@ -1,15 +1,15 @@
 @component('mail::message')
 <!-- Header -->
 <div style="text-align:center; font-family:Arial,Helvetica,sans-serif;">
-  <p style="margin:0 0 8px; color:#181C32; font-size:28px; font-weight:700; line-height:1.25;">
+  <p style="color:#000; font-size:24px; font-weight:700; line-height:1.4; margin:0 0 12px 0;">
     Dein Prüfergebnis ist bereit ✅
   </p>
 </div>
 
 <!-- Intro -->
-<div style="margin-bottom:23px; margin-top:18px; font-family:Arial,Helvetica,sans-serif; color:black; font-size:14px; line-height:1.75;">
-  <p style="margin:0 0 12px;">Hallo,</p>
-  <p style="margin:0 0 14px;">
+<div style="margin-bottom:23px; margin-top:18px; font-family:Arial,Helvetica,sans-serif; color:black; font-size:14px; line-height:1.6;">
+  <p style="margin:0 0 15px;">Hallo,</p>
+  <p style="margin:0 0 15px;">
   wir freuen uns, dir mitteilen zu können, dass die Prüfung des Fahrzeugs <b>{{ $order->vehicle_make_model }}</b> erfolgreich abgeschlossen wurde und das Prüfergebnis nun für dich bereitsteht.
 </p>
 

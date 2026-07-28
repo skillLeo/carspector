@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AdminNotification;
 use App\Mail\CityMail;
 use App\Mail\ContactMessage;
 use App\Mail\ExaminationMail;
@@ -261,9 +262,15 @@ class FrontPageController extends Controller
 
                 $image=new ExaminationImage();
                 $image->examination_id=$examination->id;
-                $image->image=$fileRel; // save relative storage path
+                $image->image=$fileRel;
                 $image->sort_order = $nextOrder++;
-                // document_type is only for non-image documents; leave null for photos
+                // Allow caller to tag image with a document_type, damage_component, and caption
+                $docType = trim((string) $request->input('document_type', ''));
+                if ($docType !== '') { $image->document_type = $docType; }
+                $damageComponent = trim((string) $request->input('damage_component', ''));
+                if ($damageComponent !== '') { $image->damage_component = $damageComponent; }
+                $caption = trim((string) $request->input('caption', ''));
+                if ($caption !== '') { $image->caption = $caption; }
                 $image->save();
                 $created[] = [
                     'id' => $image->id,
@@ -378,6 +385,7 @@ class FrontPageController extends Controller
                     $doc->document_type = $selType !== '' ? $selType : $autoType;
                     $doc->sort_order = $nextDocOrder++;
                     $doc->save();
+
                     $created[] = [
                         'id' => $doc->id,
                         'image1' => $doc->image1,
@@ -640,6 +648,25 @@ class FrontPageController extends Controller
             if ($request->filled('body_general_comment_en')) { $tr->body_general_comment_en = $request->body_general_comment_en; }
             $tr->examination_id = $examination->id; $tr->save();
 
+            // Sync photo captions with submitted damage values (fixes Sonstiges + multi-damage order)
+            $bodyCapMap = [
+                'front_bumper' => 'Stoßstange vorne',
+                'rear_bumper'  => 'Stoßstange hinten',
+                'grill'        => 'Grill',
+                'sill_left'    => 'Schweller links',
+                'sill_right'   => 'Schweller rechts',
+            ];
+            foreach ($bodyCapMap as $pk => $plabel) {
+                $dmgList = (array)($request->input($pk . '_damage', []));
+                foreach ($dmgList as $ri => $dmgVal) {
+                    $dmgVal = is_string($dmgVal) ? trim($dmgVal) : '';
+                    if ($dmgVal === '') continue;
+                    \App\Models\ExaminationImage::where('examination_id', $examination->id)
+                        ->where('damage_component', $pk . ':' . $ri)
+                        ->update(['caption' => $plabel . ' - ' . $dmgVal]);
+                }
+            }
+
         }
         if ($request->form=='paint-thickness-condition'){
 
@@ -729,6 +756,30 @@ class FrontPageController extends Controller
             if (!empty($paintMap)) { $tr->paint_damages_en = $paintMap; }
             $tr->examination_id = $examination->id; $tr->save();
 
+            // Sync photo captions with submitted damage values (fixes Sonstiges + multi-damage order)
+            $paintCapMap = [
+                'bonnet'     => 'Motorhaube',
+                'fender_vr'  => 'Kotflügel VR',
+                'fender_vl'  => 'Kotflügel VL',
+                'door_vl'    => 'Tür VL',
+                'door_hl'    => 'Tür HL',
+                'door_vr'    => 'Tür VR',
+                'door_hr'    => 'Tür HR',
+                'quarter_hl' => 'Seitenteil HL',
+                'quarter_hr' => 'Seitenteil HR',
+                'roof'       => 'Dach',
+                'tailgate'   => 'Heckklappe',
+            ];
+            foreach ($paintCapMap as $pk => $plabel) {
+                $dmgList = (array)($request->input($pk . '_damages', []));
+                foreach ($dmgList as $ri => $dmgVal) {
+                    $dmgVal = is_string($dmgVal) ? trim($dmgVal) : '';
+                    if ($dmgVal === '') continue;
+                    \App\Models\ExaminationImage::where('examination_id', $examination->id)
+                        ->where('damage_component', $pk . ':' . $ri)
+                        ->update(['caption' => $plabel . ' - ' . $dmgVal]);
+                }
+            }
 
         }
         if($request->form=='vehicle-light'){
@@ -878,6 +929,58 @@ class FrontPageController extends Controller
                 }
             }
             $tr->examination_id = $examination->id; $tr->save();
+
+            // Sync photo captions with submitted damage values (fixes Sonstiges + multi-damage order)
+            $extCapMap = [
+                'windshield'                 => 'Frontscheibe',
+                'window_glazing'             => 'Fensterverglasung',
+                'wipers'                     => 'Scheibenwischer',
+                'seals'                      => 'Dichtungen',
+                'central_locking'            => 'Zentralverriegelung',
+                'attachments'                => 'Anbauteile',
+                'exterior_mirrors'           => 'Außenspiegel',
+                'suspension'                 => 'Radaufhängung',
+                'shock_absorbers'            => 'Stoßdämpfer',
+                'springs'                    => 'Federn',
+                'brake_discs'                => 'Bremsscheiben',
+                'brake_pads'                 => 'Bremsbeläge',
+                'exhaust_system'             => 'Auspuffanlage',
+                'engine_oil_tightness'       => 'Motor Öldichtheit',
+                'gearbox_oil_tightness'      => 'Getriebe Öldichtheit',
+                'differential_oil_tightness' => 'Differential Öldichtheit',
+                'underbody_condition'        => 'Unterboden Zustand generell',
+                'other_findings'             => 'Sonstige Auffälligkeiten',
+            ];
+            foreach ($extCapMap as $pk => $plabel) {
+                $dList = (array)($request->input($pk . '_details', []));
+                $oList = (array)($request->input($pk . '_details_other', []));
+                foreach ($dList as $ri => $dType) {
+                    $dType = is_string($dType) ? trim($dType) : '';
+                    if ($dType === '') continue;
+                    $other = trim((string)($oList[$ri] ?? ''));
+                    $dmg   = ($dType === 'Sonstiges' && $other !== '') ? $other : $dType;
+                    \App\Models\ExaminationImage::where('examination_id', $examination->id)
+                        ->where('damage_component', $pk . ':' . $ri)
+                        ->update(['caption' => $plabel . ' - ' . $dmg]);
+                }
+            }
+            // Rim photo captions
+            $rimPositionLabels = ['Felge VL', 'Felge VR', 'Felge HL', 'Felge HR'];
+            $rims = (array)($request->input('rims', []));
+            foreach ($rims as $i => $rimData) {
+                $rimLabel = $rimPositionLabels[$i] ?? ('Felge ' . $i);
+                $dList = (array)(($rimData['details'] ?? []));
+                $oList = (array)(($rimData['details_other'] ?? []));
+                foreach ($dList as $ri => $dType) {
+                    $dType = is_string($dType) ? trim($dType) : '';
+                    if ($dType === '') continue;
+                    $other = trim((string)($oList[$ri] ?? ''));
+                    $dmg   = ($dType === 'Sonstiges' && $other !== '') ? $other : $dType;
+                    \App\Models\ExaminationImage::where('examination_id', $examination->id)
+                        ->where('damage_component', 'rim_' . $i . ':' . $ri)
+                        ->update(['caption' => $rimLabel . ' - ' . $dmg]);
+                }
+            }
 
         }
         if ($request->form=='technology'){
@@ -1335,20 +1438,38 @@ class FrontPageController extends Controller
             $examination=OrderExamination::where('order_id',$order->id)->first();
 
             if ($examination){
-                $examination->status='finishing';
+                // Check if already completing to prevent duplicate notifications
+                $alreadyCompleting = in_array($examination->status, ['finishing', 'finished', 'completed']);
 
+                $examination->status='finishing';
                 $examination->update();
 
                 $order->status='inspecting';
                 $order->admin_status='Fertigstellung';
+                $order->completed_at = now();
                 $order->update();
 
-                try {
-                    Mail::to($order->user->email)->send(new ExaminationStatusMail($order,$examination,$order->user));
-                } catch (\Exception $e) {
-                    Log::debug($e->getMessage());
-                }
+                // Save original German PDF when inspector finishes (only once, never overwrite)
+                app(\App\Services\OrderPdfService::class)->saveOriginalInspectorPdf($order);
 
+                // Only send notification and email if not already completed
+                if (!$alreadyCompleting) {
+                    $orderNo = $order->display_order_number ?? ('#' . $order->id);
+                    $examinerName = auth()->user()->name ?? 'Prüfer';
+                    AdminNotification::notify(
+                        'order_completed',
+                        'Prüfung abgeschlossen',
+                        "Auftrag {$orderNo} wurde von {$examinerName} abgeschlossen.",
+                        "/admin/bookings/{$order->id}",
+                        $order->id
+                    );
+
+                    try {
+                        Mail::to($order->user->email)->send(new ExaminationStatusMail($order,$examination,$order->user));
+                    } catch (\Exception $e) {
+                        Log::debug($e->getMessage());
+                    }
+                }
 
                 if(\auth()->user()->type!='admin') {
 
@@ -1611,6 +1732,464 @@ class FrontPageController extends Controller
     {
         return view('frontpages.pdf.index',compact('id'));
     }
+
+    public function generatePhotoPdf($id)
+    {
+        $examination = OrderExamination::where('order_id', $id)->firstOrFail();
+        $order = \App\Models\Order::findOrFail($id);
+
+        $isImageFile = function($path) {
+            $ext = strtolower(pathinfo((string)$path, PATHINFO_EXTENSION));
+            return in_array($ext, ['jpg','jpeg','png','gif','webp']);
+        };
+
+        $all = ExaminationImage::where('examination_id', $examination->id)
+            ->orderByRaw('COALESCE(sort_order, 1000000000) ASC')
+            ->orderBy('id', 'ASC')
+            ->get()
+            ->filter(fn($i) => $isImageFile($i->image ?? ''));
+
+        $isEn = in_array(strtolower($order->language ?? ''), ['english', 'en'])
+                || (bool)($order->document_in_english ?? false);
+
+        // English labels for damage components (keyed by damage_component prefix)
+        $componentEnMap = [
+            'front_bumper'              => 'Front Bumper',
+            'rear_bumper'               => 'Rear Bumper',
+            'headlights'                => 'Headlights',
+            'bonnet'                    => 'Bonnet / Hood',
+            'fender_vl'                 => 'Front Left Fender',
+            'fender_vr'                 => 'Front Right Fender',
+            'door_vl'                   => 'Front Left Door',
+            'door_vr'                   => 'Front Right Door',
+            'door_hl'                   => 'Rear Left Door',
+            'door_hr'                   => 'Rear Right Door',
+            'quarter_hl'                => 'Rear Left Quarter Panel',
+            'quarter_hr'                => 'Rear Right Quarter Panel',
+            'tailgate'                  => 'Tailgate',
+            'roof'                      => 'Roof',
+            'windshield'                => 'Windshield',
+            'window_glazing'            => 'Window Glazing',
+            'wipers'                    => 'Windshield Wipers',
+            'seals'                     => 'Seals',
+            'central_locking'           => 'Central Locking',
+            'attachments'               => 'Attachments',
+            'exterior_mirrors'          => 'Exterior Mirrors',
+            'suspension'                => 'Suspension',
+            'shock_absorbers'           => 'Shock Absorbers',
+            'springs'                   => 'Springs',
+            'brake_discs'               => 'Brake Discs',
+            'brake_pads'                => 'Brake Pads',
+            'exhaust_system'            => 'Exhaust System',
+            'engine_oil_tightness'      => 'Engine Oil Tightness',
+            'gearbox_oil_tightness'     => 'Gearbox Oil Tightness',
+            'differential_oil_tightness'=> 'Differential Oil Tightness',
+            'underbody_condition'       => 'Underbody Condition',
+            'other_findings'            => 'Other Findings',
+            'grill'                     => 'Grille',
+            'sill_left'                 => 'Left Sill',
+            'sill_right'                => 'Right Sill',
+            'rim_0'                     => 'Rim Front Left',
+            'rim_1'                     => 'Rim Front Right',
+            'rim_2'                     => 'Rim Rear Left',
+            'rim_3'                     => 'Rim Rear Right',
+            // vehiclelighting
+            'rear_lights'               => 'Rear Lights',
+            'brake_light'               => 'Brake Light',
+            'reverse_light'             => 'Reverse Light',
+            'indicator'                 => 'Indicator / Turn Signal',
+            'hazard_lights'             => 'Hazard Lights',
+            'fog_lights'                => 'Fog Lights',
+            'low_beam'                  => 'Low Beam',
+            'interior_light'            => 'Interior Light',
+            'daytime_running_light'     => 'Daytime Running Light',
+            // interior
+            'seat_belts'                => 'Seat Belts',
+            'steering_wheel'            => 'Steering Wheel',
+            'dashboard'                 => 'Dashboard',
+            'air_conditioning'          => 'Air Conditioning',
+            'heating_ventilation'       => 'Heating / Ventilation',
+            'sunroof'                   => 'Sunroof / Convertible Top',
+            'controls'                  => 'Controls',
+            'window_lifters'            => 'Window Lifters',
+            'rearview_mirror'           => 'Rearview Mirror',
+            'seats'                     => 'Seats',
+            'glove_box'                 => 'Glove Box',
+            'radio'                     => 'Radio / Infotainment',
+            'floor'                     => 'Floor',
+            'paneling'                  => 'Paneling',
+            'horn'                      => 'Horn',
+            'smell'                     => 'Odour',
+        ];
+
+        // English translations for German damage detail terms
+        $damageTypeEnMap = [
+            'Kratzer'                        => 'Scratch',
+            'Delle'                          => 'Dent',
+            'Kratzer/Delle'                  => 'Scratch / Dent',
+            'Kratzer / Bordsteinschaden'     => 'Scratch / Curb Damage',
+            'Kratzer/Sichtbehinderung'       => 'Scratch / Visibility Impaired',
+            'Spaltmaß abweichend'            => 'Gap Deviation',
+            'Steinschlag'                    => 'Stone Chip',
+            'Riss'                           => 'Crack',
+            'Rissig'                         => 'Cracked',
+            'Lackabplatzer'                  => 'Paint Chip',
+            'Lackschaden'                    => 'Paint Damage',
+            'Verzogen/Verbeult'              => 'Warped / Dented',
+            'Verformt'                       => 'Deformed',
+            'Verzogen'                       => 'Warped',
+            'Korrosion'                      => 'Corrosion',
+            'Korrosion stark'                => 'Heavy Corrosion',
+            'Oxidation'                      => 'Oxidation',
+            'Dichtung undicht'               => 'Seal Leaking',
+            'Dichtung defekt'                => 'Seal Defective',
+            'Undicht/Wassereintritt'         => 'Leaking / Water Ingress',
+            'Undicht (Ölaustritt)'           => 'Leaking (Oil Seepage)',
+            'Undicht'                        => 'Leaking',
+            'Porös'                          => 'Porous',
+            'Lose'                           => 'Loose',
+            'Lose Befestigung'               => 'Loose Mounting',
+            'Befestigung lose'               => 'Mounting Loose',
+            'Heizung ohne Funktion'          => 'Heating Not Working',
+            'Folie/Blendwirkung'             => 'Film / Glare Effect',
+            'Scheibe locker'                 => 'Glass Loose',
+            'Glas beschädigt'                => 'Glass Damaged',
+            'Gehäuse gerissen'               => 'Housing Cracked',
+            'Wischblatt verschlissen'        => 'Wiper Blade Worn',
+            'Wasserförderung ohne Funktion'  => 'Washer Fluid Not Working',
+            'Gestänge/Motor defekt'          => 'Linkage / Motor Defective',
+            'Rubbeln/Schlieren'              => 'Chattering / Streaking',
+            'Sporadische Funktion'           => 'Sporadic Function',
+            'Tür verriegelt nicht'           => 'Door Does Not Lock',
+            'Heckklappe ohne Funktion'       => 'Tailgate Not Working',
+            'Aktuator/Schloss defekt'        => 'Actuator / Lock Defective',
+            'Halter gebrochen'               => 'Bracket Broken',
+            'Anklappfunktion defekt'         => 'Folding Function Defective',
+            'Spiegelverstellung defekt'      => 'Mirror Adjustment Defective',
+            'Blinker/Heizung defekt'         => 'Indicator / Heating Defective',
+            'Spiel vorhanden'                => 'Play Present',
+            'Gelenk defekt'                  => 'Joint Defective',
+            'Lager ausgeschlagen'            => 'Bearing Worn',
+            'Verschleißgrenze erreicht'      => 'Wear Limit Reached',
+            'Riefen'                         => 'Grooves',
+            'Untermaß'                       => 'Undersize',
+            'Schlag/Seitenschlag'            => 'Run-out / Lateral Run-out',
+            'Ungleichmäßiger Abrieb'         => 'Uneven Wear',
+            'Belag gelöst'                   => 'Pad Detached',
+            'Quietsch-/Schleifgeräusch'      => 'Squealing / Grinding Noise',
+            'Aufhängung defekt'              => 'Mounting Defective',
+            'Katalysator/DPF Problem'        => 'Catalytic Converter / DPF Problem',
+            'Loch/Korrosion'                 => 'Hole / Corrosion',
+            'Ölfeucht'                       => 'Oil Moist',
+            'Ölleck deutlich'                => 'Significant Oil Leak',
+            'Simmerring defekt'              => 'Shaft Seal Defective',
+            'Verformung/Schaden'             => 'Deformation / Damage',
+            'Unterbodenschutz beschädigt'    => 'Underbody Coating Damaged',
+            'Leitungen beschädigt'           => 'Lines Damaged',
+            'Elektrik/Leitung beschädigt'    => 'Electrics / Lines Damaged',
+            'Flüssigkeitsaustritt'           => 'Fluid Leakage',
+            'Mechanisches Spiel'             => 'Mechanical Play',
+            'Akustische Auffälligkeit'       => 'Acoustic Anomaly',
+            'Gebrochen'                      => 'Broken',
+            'Setzung/Schiefstand'            => 'Settling / Misalignment',
+            'Unterschied links/rechts'                         => 'Difference Left/Right',
+            'Wirkung unzureichend'                             => 'Effect Insufficient',
+            'Sonstiges'                                        => 'Other',
+            'Deformation'                                      => 'Deformation',
+            'Rost'                                             => 'Rust',
+            'Polierrückstände'                                 => 'Polish Residues',
+            'Nachlackierung'                                   => 'Repaint',
+            'Unsachgemäße Nachlackierung / Instandsetzung'     => 'Improper Repaint / Repair',
+            'Halterung gebrochen'                              => 'Bracket Broken',
+            'Lackeinschlüsse'                                  => 'Paint Inclusions',
+            'Lackschlieren'                                    => 'Paint Streaks',
+            'Spachtelstellen'                                  => 'Filler Spots',
+            'Kante beschädigt'                                 => 'Edge Damaged',
+            'Kratzer / Bordsteinschaden'                       => 'Scratch / Curb Damage',
+            'Kratzer/Bordsteinschaden'                         => 'Scratch / Curb Damage',
+            // vehiclelighting-specific
+            'Wassereintritt'                                   => 'Water Ingress',
+            'Streuscheibe matt'                                => 'Lens Frosted / Opaque',
+            'Gehäuse locker'                                   => 'Housing Loose',
+            'Kabel/Stecker beschädigt'                         => 'Cable / Connector Damaged',
+            // interior — seat belts
+            'Verriegelung defekt'                              => 'Lock Defective',
+            'Gurt franst'                                      => 'Belt Fraying',
+            'Gurt strafft nicht'                               => 'Belt Does Not Tension',
+            'Gurtaufroller defekt'                             => 'Belt Retractor Defective',
+            'Verschmutzt'                                      => 'Soiled / Dirty',
+            // interior — steering wheel
+            'Abrieb'                                           => 'Abrasion / Wear',
+            'Locker'                                           => 'Loose',
+            'Schiefstand'                                      => 'Misalignment',
+            'Tasten defekt'                                    => 'Buttons Defective',
+            'Airbag-Abdeckung beschädigt'                      => 'Airbag Cover Damaged',
+            // interior — dashboard
+            'Riss/Bruch'                                       => 'Crack / Break',
+            'Verfärbung'                                       => 'Discolouration',
+            'Schalter defekt'                                  => 'Switch Defective',
+            'Anzeige defekt'                                   => 'Display / Gauge Defective',
+            // interior — air conditioning / heating
+            'Keine Kühlleistung'                               => 'No Cooling Output',
+            'Gebläse defekt'                                   => 'Blower Defective',
+            'Geruchsentwicklung'                               => 'Odour Development',
+            'Bedienung ohne Funktion'                          => 'Controls Not Working',
+            'Klappern'                                         => 'Rattling',
+            'Heizung ohne Leistung'                            => 'Heating No Output',
+            'Klappensteuerung defekt'                          => 'Flap Control Defective',
+            // interior — sunroof
+            'Mechanik klemmt'                                  => 'Mechanism Jammed',
+            'Motor defekt'                                     => 'Motor Defective',
+            'Kratzer/Glas'                                     => 'Scratch / Glass',
+            'Abläufe verstopft'                                => 'Drains Blocked',
+            // interior — controls / window lifters
+            'Abnutzungsspuren'                                 => 'Signs of Wear',
+            'Schalter klemmt'                                  => 'Switch Jammed',
+            'Taster ohne Funktion'                             => 'Button Not Working',
+            'Drehregler defekt'                                => 'Rotary Control Defective',
+            'Beleuchtung defekt'                               => 'Lighting Defective',
+            'Fährt nicht'                                      => 'Does Not Operate',
+            'Langsam/ruckelnd'                                 => 'Slow / Jerky',
+            'Klemmt'                                           => 'Jammed',
+            // interior — rearview mirror
+            'Glas lose/gerissen'                               => 'Glass Loose / Cracked',
+            'Verstellung defekt'                               => 'Adjustment Defective',
+            'Blendfunktion defekt'                             => 'Anti-Dazzle Function Defective',
+            'Halter locker'                                    => 'Bracket Loose',
+            // interior — seats
+            'Polster Riss'                                     => 'Upholstery Tear',
+            'Flecken'                                          => 'Stains',
+            'Naht offen'                                       => 'Seam Open',
+            'Sitzheizung defekt'                               => 'Seat Heating Defective',
+            // interior — glove box
+            'Schloss defekt'                                   => 'Lock Defective',
+            'Scharnier gebrochen'                              => 'Hinge Broken',
+            'Innenbeleuchtung defekt'                          => 'Interior Lighting Defective',
+            // interior — radio
+            'Kein Empfang'                                     => 'No Reception',
+            'Display defekt'                                   => 'Display Defective',
+            'Lautsprecher verzerren'                           => 'Speakers Distorting',
+            'Bluetooth defekt'                                 => 'Bluetooth Defective',
+            // interior — floor / paneling
+            'Teppich verschlissen'                             => 'Carpet Worn',
+            'Feuchtigkeit'                                     => 'Moisture',
+            'Befestigung lose'                                 => 'Mounting Loose',
+            'Clip/Befestigung lose'                            => 'Clip / Mounting Loose',
+            'Bruch/Riss'                                       => 'Break / Crack',
+            // interior — headliner
+            'Hängt durch'                                      => 'Sagging',
+            'Wasserfleck'                                      => 'Water Stain',
+            // interior — horn
+            'Ohne Funktion'                                    => 'Not Working',
+            'Taster defekt'                                    => 'Button Defective',
+            'Kontaktproblem'                                   => 'Contact Problem',
+            // interior — smell
+            'i.O. / neutral'                                   => 'OK / Neutral',
+            'Rauch'                                            => 'Smoke',
+            'Tiergeruch'                                       => 'Animal Odour',
+            'Feuchtigkeit / Schimmel'                          => 'Moisture / Mould',
+            'Kraftstoff'                                       => 'Fuel',
+            'Öl / Kühlmittel'                                  => 'Oil / Coolant',
+        ];
+
+        // Translate a stored German caption using component key + damage type map
+        $translateCaption = function(string $caption, ?string $damageComponent) use ($isEn, $componentEnMap, $damageTypeEnMap): string {
+            if (!$isEn || empty($caption)) return $caption;
+            // Handle both em-dash ( — ) and regular dash ( - ) separators
+            if (strpos($caption, ' — ') !== false) {
+                $parts = explode(' — ', $caption, 2);
+            } else {
+                $parts = explode(' - ', $caption, 2);
+            }
+            $compPart  = $parts[0] ?? $caption;
+            $dmgPart   = $parts[1] ?? '';
+            // Translate component using damage_component key
+            if ($damageComponent) {
+                $key = preg_replace('/:[^:]+$/', '', $damageComponent);
+                if (isset($componentEnMap[$key])) $compPart = $componentEnMap[$key];
+            }
+            // Translate damage detail term
+            if ($dmgPart !== '' && isset($damageTypeEnMap[$dmgPart])) {
+                $dmgPart = $damageTypeEnMap[$dmgPart];
+            }
+            return $dmgPart !== '' ? "$compPart - $dmgPart" : $compPart;
+        };
+
+        $toEntry = function($img, $caption = null) use ($isEn, $translateCaption) {
+            $rel = ltrim((string)($img->image ?? ''), '/');
+            if (str_starts_with($rel, 'storage/')) { $rel = substr($rel, 8); }
+            $rawCaption = $caption ?? $img->caption ?? '';
+            // For damage photos (no explicit caption passed), translate the stored German caption
+            if ($caption === null && $rawCaption !== '') {
+                $rawCaption = $translateCaption($rawCaption, $img->damage_component ?? null);
+            }
+            return [
+                'path'    => storage_path('app/public/' . $rel),
+                'caption' => $rawCaption,
+            ];
+        };
+
+        $slotLabels = $isEn ? [
+            'pflicht:front'          => 'Front View',
+            'pflicht:rear'           => 'Rear View',
+            'pflicht:left'           => 'Left Side',
+            'pflicht:right'          => 'Right Side',
+            'pflicht:front_left'     => 'Front Left (Diag.)',
+            'pflicht:front_right'    => 'Front Right (Diag.)',
+            'pflicht:rear_left'      => 'Rear Left (Diag.)',
+            'pflicht:rear_right'     => 'Rear Right (Diag.)',
+            'pflicht:roof'           => 'Roof',
+            'pflicht:underbody'      => 'Underbody',
+            'pflicht:cockpit'        => 'Cockpit / Dashboard',
+            'pflicht:driver_seat'    => 'Driver Seat',
+            'pflicht:passenger_seat' => 'Passenger Seat',
+            'pflicht:rear_seat_l'    => 'Rear Seat Left',
+            'pflicht:rear_seat_r'    => 'Rear Seat Right',
+            'pflicht:trunk'          => 'Trunk / Boot',
+            'pflicht:steering'       => 'Steering Wheel',
+            'pflicht:gear'           => 'Gearshift / Transmission',
+            'pflicht:headliner'      => 'Headliner',
+            'pflicht:footwell'       => 'Footwell',
+            'pflicht:tire_fl'        => 'Tyre Front Left',
+            'pflicht:tire_fr'        => 'Tyre Front Right',
+            'pflicht:tire_rl'        => 'Tyre Rear Left',
+            'pflicht:tire_rr'        => 'Tyre Rear Right',
+            'pflicht:vin'            => 'VIN / Chassis Number',
+            'pflicht:odometer'       => 'Odometer / Mileage',
+            'pflicht:engine'         => 'Engine Bay',
+        ] : [
+            'pflicht:front'          => 'Frontansicht',
+            'pflicht:rear'           => 'Heckansicht',
+            'pflicht:left'           => 'Linke Seite',
+            'pflicht:right'          => 'Rechte Seite',
+            'pflicht:front_left'     => 'Vorne Links (Diag.)',
+            'pflicht:front_right'    => 'Vorne Rechts (Diag.)',
+            'pflicht:rear_left'      => 'Hinten Links (Diag.)',
+            'pflicht:rear_right'     => 'Hinten Rechts (Diag.)',
+            'pflicht:roof'           => 'Dach',
+            'pflicht:underbody'      => 'Unterboden',
+            'pflicht:cockpit'        => 'Cockpit / Armaturenbrett',
+            'pflicht:driver_seat'    => 'Fahrersitz',
+            'pflicht:passenger_seat' => 'Beifahrersitz',
+            'pflicht:rear_seat_l'    => 'Rücksitzbank Links',
+            'pflicht:rear_seat_r'    => 'Rücksitzbank Rechts',
+            'pflicht:trunk'          => 'Kofferraum',
+            'pflicht:steering'       => 'Lenkrad',
+            'pflicht:gear'           => 'Schaltung / Getriebe',
+            'pflicht:headliner'      => 'Dachhimmel',
+            'pflicht:footwell'       => 'Fußraum',
+            'pflicht:tire_fl'        => 'Reifen Vorne Links',
+            'pflicht:tire_fr'        => 'Reifen Vorne Rechts',
+            'pflicht:tire_rl'        => 'Reifen Hinten Links',
+            'pflicht:tire_rr'        => 'Reifen Hinten Rechts',
+            'pflicht:vin'            => 'FIN / VIN Nummer',
+            'pflicht:odometer'       => 'Kilometerstand / Tacho',
+            'pflicht:engine'         => 'Motorraum',
+        ];
+
+        $pflichtBySlot = $all->where('document_type', 'Pflichtfoto')->groupBy('damage_component');
+        $pflichtEntries = collect();
+        foreach ($slotLabels as $key => $label) {
+            foreach ($pflichtBySlot->get($key, collect()) as $img) {
+                $pflichtEntries->push($toEntry($img, $label));
+            }
+        }
+
+        $damageEntries = $all->where('document_type', 'Schadensfoto')
+            ->map(fn($img) => $toEntry($img))->values();
+
+        $generalEntries = $all
+            ->filter(fn($i) => !in_array($i->document_type, ['Pflichtfoto', 'Schadensfoto']))
+            ->map(fn($img) => $toEntry($img))->values();
+
+        // Compress photos into a dedicated cache folder
+        $cacheDirRel = 'pdf-cache/' . $id . '/fotodoku';
+        $cacheDirAbs = storage_path('app/public/' . $cacheDirRel);
+        @mkdir($cacheDirAbs, 0775, true);
+
+        $compress = function(array $entry) use ($cacheDirRel, $cacheDirAbs): array {
+            $srcAbs = $entry['path'];
+            if (!file_exists($srcAbs)) { return $entry; }
+            $baseName = pathinfo($srcAbs, PATHINFO_FILENAME);
+            $dstAbs   = $cacheDirAbs . '/' . $baseName . '-720p.jpg';
+            if (!file_exists($dstAbs)) {
+                $this->compressForPdf($srcAbs, $dstAbs, 1280, 720, 70);
+            }
+            if (file_exists($dstAbs)) { $entry['path'] = $dstAbs; }
+            return $entry;
+        };
+
+        $pflichtEntries = $pflichtEntries->map($compress)->values();
+        $damageEntries  = $damageEntries->map($compress)->values();
+        $generalEntries = $generalEntries->map($compress)->values();
+
+        // Add global sequential photo numbers across all sections
+        $counter = 1;
+        $pflichtEntries = $pflichtEntries->map(function($e) use (&$counter) { $e['num'] = $counter++; return $e; })->values();
+        $damageEntries  = $damageEntries->map(function($e) use (&$counter) { $e['num'] = $counter++; return $e; })->values();
+        $generalEntries = $generalEntries->map(function($e) use (&$counter) { $e['num'] = $counter++; return $e; })->values();
+        $totalCount = $counter - 1;
+
+        // Build template variables matching the standard PDF layout
+        $logoPath    = public_path('logo-pdf.png');
+        $reportNo    = 'CS-' . ($order->pdf_number ?? $order->orderno ?? $id);
+        $reportDt    = $examination->created_at
+                        ? $examination->created_at->format('d.m.Y')
+                        : now()->format('d.m.Y');
+        // Use examination fields first, fall back to order booking fields
+        $manufacturer = $examination->manufacturer ?? '';
+        $model        = $examination->model ?? '';
+        $vehicleLabel = trim($manufacturer . ' ' . $model)
+                        ?: ($order->vehicle_make_model ?? '')
+                        ?: '-';
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('frontpages.vehicle.photo-pdf', [
+            'order'         => $order,
+            'examination'   => $examination,
+            'logoPath'      => $logoPath,
+            'reportNo'      => $reportNo,
+            'reportDt'      => $reportDt,
+            'vehicleLabel'  => $vehicleLabel,
+            'totalCount'    => $totalCount,
+            'pflichtChunks' => $pflichtEntries->chunk(2)->values(),
+            'damageChunks'  => $damageEntries->chunk(2)->values(),
+            'generalChunks' => $generalEntries->chunk(2)->values(),
+            'pflichtCount'  => $pflichtEntries->count(),
+            'damageCount'   => $damageEntries->count(),
+            'isEn'          => $isEn,
+        ])->setPaper('a4', 'portrait');
+        $pdf->setOption('dpi', 110);
+        $pdf->setOption('isFontSubsettingEnabled', false);
+
+        // $orderRef = $order->orderno ?? ('#' . $order->id);
+        // $filename = ($isEn ? 'Photo-Documentation_' : 'Fotodokumentation_')
+        //     . $orderRef
+        //     . '.pdf';
+
+        $filename = Str::uuid() . '.pdf';
+        
+        $path     = 'examination-documents/' . $filename;
+        \Storage::disk('public')->put($path, $pdf->output());
+
+        // Replace any previous Fotodokumentation for this examination
+        ExaminationImage::where('examination_id', $examination->id)
+            ->where('document_type', 'Fotodokumentation')
+            ->each(function($doc) {
+                \Storage::disk('public')->delete($doc->image);
+                $doc->delete();
+            });
+
+        $doc = new ExaminationImage();
+        $doc->examination_id = $examination->id;
+        $doc->image          = $path;
+        $doc->document_type  = 'Fotodokumentation';
+        $doc->sort_order     = 0;
+        $doc->save();
+
+        $dlName = $isEn ? 'Photo-Documentation.pdf' : 'Fotodokumentation.pdf';
+        return $pdf->download($dlName);
+    }
+
     public function impressum(){
         return view('frontpages.impressum');
     }

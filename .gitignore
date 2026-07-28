@@ -1,1 +1,9 @@
 .env
+public/storage
+
+# one-off/local debug scripts, not part of the app
+/bccc.zip
+/create_admin.php
+/run_migration.php
+/show_cols.php
+/public/getcols.php

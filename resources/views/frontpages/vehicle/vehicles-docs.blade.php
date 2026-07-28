@@ -20,6 +20,27 @@
   .select-tall { height: 52px; padding-top: .5rem; padding-bottom: .5rem; }
   .input-compact { height: 52px; padding-top: .25rem; padding-bottom: .25rem; }
   .form-max-650 { max-width: 650px; margin: 0 auto; width: 100%; }
+
+    @media (max-width: 767px) {
+
+    .container-fluid.page-bg {
+        padding-left: 0px;
+        padding-right: 0px;
+    }
+
+    .card-modern {
+        border: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        background: transparent;
+    }
+
+    .card-modern > .card-header,
+    .card-modern > .card-body {
+        background: #fff;
+        border-radius: 12px;
+    }
+}
 </style>
 
 <div class="container-fluid page-bg py-5 py-md-5">

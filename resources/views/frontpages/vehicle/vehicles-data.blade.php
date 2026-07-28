@@ -15,6 +15,27 @@
   .form-floating>.form-control,
   .form-floating>.form-select { padding-top:1.625rem; padding-bottom:.625rem }
   .form-max-650 { max-width: 650px; margin: 0 auto; width: 100%; }
+
+  @media (max-width: 767px) {
+
+    .container-fluid.page-bg {
+        padding-left: 0px;
+        padding-right: 0px;
+    }
+
+    .card-modern {
+        border: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        background: transparent;
+    }
+
+    .card-modern > .card-header,
+    .card-modern > .card-body {
+        background: #fff;
+        border-radius: 12px;
+    }
+}
 </style>
 
 <div class="container-fluid page-bg py-5 py-md-5">

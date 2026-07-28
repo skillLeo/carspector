@@ -15,6 +15,27 @@
   .select-tall { height:48px; }
   .input-compact { height:48px; }
   .link-save-back { color: var(--primary); text-decoration: none; }
+
+  @media (max-width: 767px) {
+
+    .container-fluid.page-bg {
+        padding-left: 0px;
+        padding-right: 0px;
+    }
+
+    .card-modern {
+        border: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        background: transparent;
+    }
+
+    .card-modern > .card-header,
+    .card-modern > .card-body {
+        background: #fff;
+        border-radius: 12px;
+    }
+}
 </style>
 
 <div class="container-fluid page-bg py-5 py-md-5">

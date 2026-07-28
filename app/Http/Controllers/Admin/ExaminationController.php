@@ -105,7 +105,7 @@ class ExaminationController extends Controller
             }
 
             if ($booking->status == 'inspecting') {
-                return '<a href="' . route('admin.booking.status', ['id' => $booking->id, 'status' => 'completed']) . '"> <span class="badge badge-warning">Finishing</span></a>';
+                return '<a href="' . route('admin.booking.status', ['id' => $booking->id, 'status' => 'completed']) . '"> <span class="badge badge-warning">Processing</span></a>';
             }
             return '<a href="' . route('admin.booking.status', ['id' => $booking->id, 'status' => 'inspecting']) . '"><span class="badge badge-primary">Processing</span></a>';
         })->rawColumns(['actions', 'status','examiner_id'])->make(true);
@@ -125,6 +125,9 @@ class ExaminationController extends Controller
             }
 
             $order->examiner_id = null;
+            $order->examiner_name = null;
+            $order->appointment_date = null;
+            $order->appointment_time = null;
             $order->status = 'pending';
             $order->admin_status = 'New';
             $order->update();
@@ -134,7 +137,7 @@ class ExaminationController extends Controller
           }
         }
 
-        return redirect()->back()->with('success', 'Examination deleted successfully');
+        return redirect()->back()->with('success', 'Auftrag erfolgreich zurückgesetzt.');
 
     }
 }

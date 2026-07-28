@@ -40,6 +40,16 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        'b2b' => [
+            'driver' => 'session',
+            'provider' => 'b2b_partners',
+        ],
+
+        'inspector' => [
+            'driver' => 'session',
+            'provider' => 'inspectors',
+        ],
     ],
 
     /*
@@ -63,6 +73,16 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
+        ],
+
+        'b2b_partners' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\B2bPartner::class,
+        ],
+
+        'inspectors' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Inspector::class,
         ],
 
         // 'users' => [

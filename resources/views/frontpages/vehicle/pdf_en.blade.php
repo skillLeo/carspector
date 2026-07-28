@@ -42,8 +42,11 @@
   $clean_label    = $boolMap[$examination->vehicle_clean ?? ''] ?? '—';
   $access_label   = $boolMap[$examination->vehicle_freely_accessible ?? ''] ?? '—';
 
-  $report_no = $examination->report_no
-      ?? ('CS-' . ($examination->id ?? 0) . '0555');
+$report_no = $order->orderno ?? $examination->report_no ?? null;
+if (!$report_no || str_starts_with($report_no, 'CS-')) {
+    $report_no = 'N/A';
+}
+
   $report_dt = null;
   if (!empty($examination->created_at)) {
       try {
@@ -59,20 +62,33 @@
 
 @php
     $usePartnerLogo = (bool) ($order->pdf_with_partner_logo ?? false);
+    // B2B orders automatically use the partner logo
+    if (!$usePartnerLogo && ($order->order_source === 'b2b') && $order->b2b_logo_path) {
+        $usePartnerLogo = true;
+    }
     $defaultLogoPath = public_path('logo-pdf.png');
     $fallbackPartnerLogo = public_path('logo-pdf-partner.png');
     $selectedPartnerLogo = null;
-    if ($usePartnerLogo && optional($order->partnerLogo)->logo_path) {
-        $candidate = public_path($order->partnerLogo->logo_path);
-        if (file_exists($candidate)) {
-            $selectedPartnerLogo = $candidate;
+    if ($usePartnerLogo) {
+        if (optional($order->partnerLogo)->logo_path) {
+            $candidate = public_path($order->partnerLogo->logo_path);
+            if (file_exists($candidate)) {
+                $selectedPartnerLogo = $candidate;
+            }
+        }
+        if (!$selectedPartnerLogo && $order->b2b_logo_path) {
+            $candidate = storage_path('app/public/' . $order->b2b_logo_path);
+            if (file_exists($candidate)) {
+                $selectedPartnerLogo = $candidate;
+            }
         }
     }
     $logoPath = $defaultLogoPath;
     if ($usePartnerLogo) {
         $logoPath = $selectedPartnerLogo ?? (file_exists($fallbackPartnerLogo) ? $fallbackPartnerLogo : $defaultLogoPath);
     }
-    $partnerName = optional($order->partnerLogo)->name;
+    $partnerName = optional($order->partnerLogo)->name
+        ?? (($order->order_source === 'b2b' && $order->b2bPartner) ? $order->b2bPartner->company_name : null);
     $brandName = $usePartnerLogo && $partnerName ? $partnerName : 'Carspector';
 @endphp
 
@@ -236,7 +252,18 @@
 <footer>
   <table class="hf-table">
     <tr>
-      <td style="width:60%; font-size: 12px">© {{ date('Y') }} – {{ $brandName }}</td>
+      @php
+          $isNewLayout = !empty($report_dt) && \Carbon\Carbon::parse($report_dt)->gte(\Carbon\Carbon::create(2026, 7, 3));
+      @endphp
+      @if($isNewLayout)
+          <td style="width:60%; font-size: 12px">
+              © {{ date('Y') }} – {{ $brandName }}{{ !$usePartnerLogo ? ' GmbH' : '' }}
+          </td>
+      @else
+          <td style="width:60%; font-size: 12px">
+              © {{ date('Y') }} – {{ $brandName }}
+          </td>
+      @endif
       <td style="width:40%; text-align:right; font-size: 12px">Page <span class="page-num"></span></td>
     </tr>
   </table>
@@ -253,25 +280,58 @@
     .simple-table .text-right { text-align:right; }
   </style>
 
-  <div class="card">
-    <h1 style="font-size: 15px; margin-bottom:15px; padding-top: 20px !important" class="section-title">Vehicle Inspection Report</h1>
-    <table class="simple-table three-col">
-      <thead>
-        <tr>
-          <th style="background:#e9f3ff;">Client</th>
-          <th style="background:#e9f3ff;">Inspector</th>
-          <th style="background:#e9f3ff;">Date</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>{{ ($examination->client_name ?? '') !== '' ? $examination->client_name : ($order->user->name ?? '—') }}</td>
-          <td>{{ ($examination->examiner_name ?? '') !== '' ? $examination->examiner_name : ($insp->name ?? '—') }}</td>
-          <td>{{ $report_dt ?: '—' }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+<div class="card">
+    <h1 style="font-size: 15px; margin-bottom:15px; padding-top: 20px !important" class="section-title">
+        Vehicle Inspection Report
+    </h1>
+
+    @php
+        $isNewLayout = !empty($report_dt)
+            && \Carbon\Carbon::parse($report_dt)->gte(\Carbon\Carbon::create(2026, 7, 3));
+    @endphp
+
+    @if($isNewLayout)
+        <table class="simple-table three-col">
+            <thead>
+                <tr>
+                    <th style="background:#e9f3ff;">Inspector</th>
+                    <th style="background:#e9f3ff;">Provided by</th>
+                    <th style="background:#e9f3ff;">Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ ($examination->examiner_name ?? '') !== '' ? $examination->examiner_name : ($insp->name ?? '—') }}</td>
+                    <td>Carspector GmbH</td>
+                    <td>{{ $report_dt ?: '—' }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p style="font-size:13px; margin-top:8px; color:#555;">
+            The vehicle inspection was performed by the above-mentioned inspector.
+            This condition report was generated and provided by Carspector based on the inspection data collected during the inspection.
+        </p>
+    @else
+        <table class="simple-table three-col">
+            <thead>
+                <tr>
+                    <th style="background:#e9f3ff;">Client</th>
+                    <th style="background:#e9f3ff;">Inspector</th>
+                    <th style="background:#e9f3ff;">Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ ($examination->client_name ?? '') !== '' ? $examination->client_name : ($order->user->name ?? '—') }}</td>
+                    <td>{{ ($examination->examiner_name ?? '') !== '' ? $examination->examiner_name : ($insp->name ?? '—') }}</td>
+                    <td>{{ $report_dt ?: '—' }}</td>
+                </tr>
+            </tbody>
+        </table>
+    @endif
+</div>
+  
 
   <!-- Inspection Conditions -->
   <div class="card" style="padding-top: 20px !important;">
@@ -1149,29 +1209,56 @@
         </thead>
         <tbody>
           @foreach($mechanics as $it)
-            @php
-              $k = $it['key']; $status = $examination->{$k} ?? '';
-            $d = $list($examination->{$k.'_details'} ?? ($examination->{$k.'_detail'} ?? []));
-            $o = $list(($trn?->{$k.'_details_other_en'} ?? null) ?? ($examination->{$k.'_details_other'} ?? []));
-              $combined = $combineDamages(is_array($d)?$d:[$d], $o);
-            @endphp
-            <tr>
-              <td style="background:#e9f3ff">{{ $it['label'] }}</td>
-              <td>{{ $statusLabel($status) }}</td>
-              <td>
-                @if($norm($status) === 'beschaedigt')
-              @php $txt = $joinCommaTr($combined); @endphp
-                  @if($txt !== '') {!! $WARN !!}{{ $txt }} @else {!! $WARN !!}Damaged (details not provided) @endif
-                @elseif($norm($status) === 'i.o.')
-                  None
-                @elseif($norm($status) === 'nicht_vorhanden')
-                  —
-                @else
-                  —
-                @endif
-              </td>
-            </tr>
-          @endforeach
+        @php
+          $k = $it['key'];
+          $status = $examination->{$k} ?? '';
+
+          $d = $list($examination->{$k.'_details'} ?? ($examination->{$k.'_detail'} ?? []));
+          $o = $list($examination->{$k.'_details_other'} ?? []);
+
+          $combined = array_values(array_filter(
+              $combineDamages(is_array($d) ? $d : [$d], $o),
+              fn($item) => trim((string)$item) !== ''
+          ));
+
+          $hasDamage = count($combined) > 0;
+
+          // Nur für neue Aufträge ab 01.06.2026
+          $hideEmptyDamages =
+              !empty($examination->created_at)
+              && \Carbon\Carbon::parse($examination->created_at)->gte(
+                  \Carbon\Carbon::create(2026, 6, 8, 0, 0, 0)
+              );
+      @endphp
+          @if(!(
+            $hideEmptyDamages
+            && (
+                trim((string)$status) === ''
+                || ($norm($status) === 'beschaedigt' && !$hasDamage)
+            )
+        ))
+        <tr>
+          <td style="background:#e9f3ff">{{ $it['label'] }}</td>
+          <td>{{ $statusLabel($status) }}</td>
+          <td>
+            @if($norm($status) === 'beschaedigt')
+              @php $txt = $joinComma($combined); @endphp
+              @if($txt !== '')
+                {!! $WARN !!}{{ $txt }}
+              @else
+                {!! $WARN !!}Beschädigt (Details nicht angegeben)
+              @endif
+            @elseif($norm($status) === 'i.o.')
+              None
+            @elseif($norm($status) === 'nicht_vorhanden')
+              —
+            @else
+              —
+            @endif
+          </td>
+        </tr>
+        @endif
+      @endforeach
 
           @php $overall = trim((string)($pick($trn->external_overall_comment_en ?? null, $examination->external_overall_comment ?? ''))); @endphp
           @if($overall !== '')
@@ -1572,12 +1659,17 @@
     'Schadensbilder USA' => 'Accident damage pictures', 
     'Marktanalyse' => 'Market analysis', 
     'E-Batterie Zertifikat' => 'EV battery certificate', 
+    'Lackmessung' => 'Paint measurement report', 
     'Sonstiges' => 'Other', 
   ];
 @endphp
 
 
-  <div class="card" style="padding-top: 20px !important;">
+<!-- <div class="card" style="padding-top: 20px !important">
+<hr style="border: 0; border-top: 1px solid #ccc;"> -->
+
+<div class="card" style="padding-top: 20px !important;">
+
     <h2 class="section-title">Photo documentation</h2>
     @php $fotoDocs = $docs->where('type', 'Fotodokumentation'); @endphp
     @if($fotoDocs->isEmpty())
@@ -1602,7 +1694,7 @@
     @endif
   </div>
 
-  <div class="card" style="padding-top: 20px !important;">
+  <div class="card" style="padding-top: 13px !important;">
     <h2 class="section-title">Additional documents</h2>
     @php $otherDocs = $docs->where('type', '!=', 'Fotodokumentation'); @endphp
     @if($otherDocs->isEmpty())

@@ -752,6 +752,17 @@
     width: 90%;
     margin: 0 auto;
 }
+
+@media (min-width: 900px) {
+  .btndk {
+    width: 375px;
+  }
+}
+@media (max-width: 500px) {
+  .btndk {
+    max-width: 95%;
+  }
+}
   </style>
 
  
@@ -2490,6 +2501,11 @@ const testimonialSwiper = new Swiper('.testimonial-slider', {
              Anschließend erhältst du <b>einen detaillierten Prüfbericht mit Fotos</b> und einer Einschätzung des Fahrzeugzustands bequem per E-Mail.`
   },
   {
+    question: "Wie lange dauert es vom Auftrag bis zum Prüfergebnis?",
+    answer: `Der gesamte Prozess – vom Eingang des Auftrags über die Durchführung des Gebrauchtwagenchecks bis hin zur Zusendung des Prüfergebnisses – dauert in der Regel <b>2–4 Werktage</b>. 
+             In Einzelfällen kann es zu Verzögerungen kommen, da wir bei der Terminvereinbarung auf die Verfügbarkeit des Verkäufers angewiesen sind.`
+  },
+  {
     question: "Welche Fahrzeuge prüft Carspector?",
     answer: `<b>Wir prüfen alle Fahrzeugtypen:</b> PKW, Transporter, Oldtimer, Sportwagen und Wohnmobile. 
              Wenn dein Fahrzeugtyp nicht aufgeführt ist, kontaktiere einfach unseren <a href="{{route('kontakt')}}">Support</a> – wir finden eine Lösung.`
@@ -2518,11 +2534,6 @@ const testimonialSwiper = new Swiper('.testimonial-slider', {
     question: "Wie lange dauert die Prüfung?",
     answer: `Je nach Fahrzeugtyp dauert der Check vor Ort in der Regel <b>zwischen 60 und 120 Minuten</b>. 
              Anschließend werden alle Ergebnisse dokumentiert und ausgewertet, bevor du den Bericht erhältst.`
-  },
-  {
-    question: "Wann erhalte ich das Prüfergebnis?",
-    answer: `In der Regel bekommst du dein Ergebnis innerhalb von <b>2–4 Werktagen</b> nach der Prüfung per E-Mail. 
-             In Einzelfällen kann es geringfügig länger dauern – etwa wenn wir auf Rückmeldung des Verkäufers warten.`
   },
   {
     question: "Wer führt die Gebrauchtwagenchecks durch?",

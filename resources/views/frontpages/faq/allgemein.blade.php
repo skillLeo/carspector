@@ -181,6 +181,22 @@
 <div style="border-radius: 5px" class="accordion-item">
   <h2 class="accordion-header">
     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+      data-bs-target="#faq-555" aria-expanded="false" aria-controls="faq-555">
+      Wie lange dauert es vom Auftrag bis zum Prüfergebnis?
+
+    </button>
+  </h2>
+  <div id="faq-555" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+    <div class="accordion-body">
+      Der gesamte Prozess – vom Eingang des Auftrags über die Durchführung des Gebrauchtwagenchecks bis hin zur Zusendung des Prüfergebnisses – dauert in der Regel <b>2–4 Werktage</b>. 
+      In Einzelfällen kann es zu Verzögerungen kommen, da wir bei der Terminvereinbarung auf die Verfügbarkeit des Verkäufers angewiesen sind.
+    </div>
+  </div>
+</div>
+
+<div style="border-radius: 5px" class="accordion-item">
+  <h2 class="accordion-header">
+    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
       data-bs-target="#faq-1" aria-expanded="false" aria-controls="faq-1">
       Warum sollte ich Carspector statt eines klassischen TÜV-Termins nutzen?
     </button>
@@ -260,7 +276,7 @@
   </h2>
   <div id="faq-5" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
     <div class="accordion-body">
-      Unser Bericht enthält je nach Fahrzeugzustand etwa <b>20 bis 30 hochwertige Fotos</b> – inklusive Detailaufnahmen von relevanten Bauteilen, Schwachstellen, Dokumenten sowie dem Innen- und Außenbereich.
+      Unser Bericht enthält je nach Fahrzeugzustand etwa <b>20 bis 30 hochwertige Fotos</b> – inklusive Detailaufnahmen von relevanten Bauteilen, Beschädigungen, Dokumenten sowie dem Innen- und Außenbereich.
     </div>
   </div>
 </div>

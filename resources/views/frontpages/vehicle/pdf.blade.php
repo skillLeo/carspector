@@ -41,8 +41,11 @@
   $clean_label    = $boolMap[$examination->vehicle_clean ?? ''] ?? '—';
   $access_label   = $boolMap[$examination->vehicle_freely_accessible ?? ''] ?? '—';
 
-$report_no = $examination->report_no
-    ?? ('CS-' . ($examination->id ?? 0) . '0555');
+$report_no = $order->orderno ?? $examination->report_no ?? null;
+if (!$report_no || str_starts_with($report_no, 'CS-')) {
+    $report_no = 'n. v.';
+}
+
   $report_dt = null;
   if (!empty($examination->created_at)) {
       try {
@@ -124,20 +127,35 @@ $WARN = '<span class="warn-badge" aria-label="Auffälligkeit" title="Auffälligk
 @php
     $logoData = base64_encode(file_get_contents(public_path('logo-big.png')));
     $usePartnerLogo = (bool) ($order->pdf_with_partner_logo ?? false);
+    // B2B orders automatically use the partner logo
+    if (!$usePartnerLogo && ($order->order_source === 'b2b') && $order->b2b_logo_path) {
+        $usePartnerLogo = true;
+    }
     $defaultLogoPath = public_path('logo-pdf.png');
     $fallbackPartnerLogo = public_path('logo-pdf-partner.png');
     $selectedPartnerLogo = null;
-    if ($usePartnerLogo && optional($order->partnerLogo)->logo_path) {
-        $candidate = public_path($order->partnerLogo->logo_path);
-        if (file_exists($candidate)) {
-            $selectedPartnerLogo = $candidate;
+    if ($usePartnerLogo) {
+        // Old PartnerLogo model path (manual selection)
+        if (optional($order->partnerLogo)->logo_path) {
+            $candidate = public_path($order->partnerLogo->logo_path);
+            if (file_exists($candidate)) {
+                $selectedPartnerLogo = $candidate;
+            }
+        }
+        // B2B partner logo stored on order (storage disk path)
+        if (!$selectedPartnerLogo && $order->b2b_logo_path) {
+            $candidate = storage_path('app/public/' . $order->b2b_logo_path);
+            if (file_exists($candidate)) {
+                $selectedPartnerLogo = $candidate;
+            }
         }
     }
     $logoPath = $defaultLogoPath;
     if ($usePartnerLogo) {
         $logoPath = $selectedPartnerLogo ?? (file_exists($fallbackPartnerLogo) ? $fallbackPartnerLogo : $defaultLogoPath);
     }
-    $partnerName = optional($order->partnerLogo)->name;
+    $partnerName = optional($order->partnerLogo)->name
+        ?? (($order->order_source === 'b2b' && $order->b2bPartner) ? $order->b2bPartner->company_name : null);
     $brandName = $usePartnerLogo && $partnerName ? $partnerName : 'Carspector';
 @endphp
 
@@ -241,7 +259,7 @@ $WARN = '<span class="warn-badge" aria-label="Auffälligkeit" title="Auffälligk
 
             <!-- Rechte Seite: Bericht-Nr. & Datum -->
             <td style="width:50%; text-align:right; vertical-align:middle;">
-                <small style="font-size: 12px; display:block;">Bericht-Nr. {{ $report_no }}</small>
+                <small style="font-size: 12px; display:block;">Berichts-Nr.: {{ $report_no }}</small>
                 <small style="font-size: 12px; display:block;">Erstellt: {{ $report_dt ?: '—' }}</small>
             </td>
         </tr>
@@ -276,7 +294,14 @@ $WARN = '<span class="warn-badge" aria-label="Auffälligkeit" title="Auffälligk
 <footer>
   <table class="hf-table">
     <tr>
-      <td style="width:60%; font-size: 12px">© {{ date('Y') }} – {{ $brandName }}</td>
+      @php
+          $isNewLayout = !empty($report_dt) && \Carbon\Carbon::parse($report_dt)->gte(\Carbon\Carbon::create(2026, 7, 3));
+      @endphp
+      @if($isNewLayout)
+        <td style="width:60%; font-size: 12px">© {{ date('Y') }} – {{ $brandName }} GmbH</td>
+      @else
+        <td style="width:60%; font-size: 12px">© {{ date('Y') }} – {{ $brandName }}</td>
+      @endif
       <td style="width:40%; text-align:right; font-size: 12px">Seite <span class="page-num"></span> </td>
     </tr>
   </table>
@@ -311,23 +336,50 @@ $WARN = '<span class="warn-badge" aria-label="Auffälligkeit" title="Auffälligk
   <!-- <h1 style="font-size:17px; margin-bottom:15px;">Gebrauchtwagengutachten</h1> -->
     <h1 style="font-size: 15px; margin-bottom:15px; padding-top: 20px !important" class="section-title">Gebrauchtwagen-Zustandsbericht</h1>
 
-  <table class="simple-table three-col">
-    <thead>
-      <tr>
-        <th>Auftraggeber</th>
-        <th>Prüfer</th>
-        <th>Datum</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>{{ ($examination->client_name ?? '') !== '' ? $examination->client_name : ($order->user->name ?? '—') }}</td>
-        <td>{{ ($examination->examiner_name ?? '') !== '' ? $examination->examiner_name : ($insp->name ?? '—') }}</td>
-        <td>{{ $report_dt ?: '—' }}</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+    @php
+      $isNewLayout = !empty($report_dt) && \Carbon\Carbon::parse($report_dt)->gte(\Carbon\Carbon::create(2026, 7, 3));
+  @endphp
+
+@if($isNewLayout)
+    <table class="simple-table three-col">
+        <thead>
+            <tr>
+                <th>KFZ-Sachverständiger</th>
+                <th>Bereitgestellt durch</th>
+                <th>Datum</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ ($examination->examiner_name ?? '') !== '' ? $examination->examiner_name : ($insp->name ?? '—') }}</td>
+                <td>Carspector GmbH</td>
+                <td>{{ $report_dt ?: '—' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p style="font-size:13px; margin-top:8px; color:#555;">
+        Die Fahrzeugprüfung wurde durch den oben genannten KFZ-Sachverständigen durchgeführt. 
+        Der Zustandsbericht wurde auf Grundlage der erhobenen Prüfdaten über die Carspector-Plattform erstellt und bereitgestellt.
+    </p>
+@else
+    <table class="simple-table three-col">
+        <thead>
+            <tr>
+                <th>Auftraggeber</th>
+                <th>Prüfer</th>
+                <th>Datum</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ ($examination->client_name ?? '') !== '' ? $examination->client_name : ($order->user->name ?? '—') }}</td>
+                <td>{{ ($examination->examiner_name ?? '') !== '' ? $examination->examiner_name : ($insp->name ?? '—') }}</td>
+                <td>{{ $report_dt ?: '—' }}</td>
+            </tr>
+        </tbody>
+    </table>
+@endif
 
 <style>
   .simple-table { width:100%; border-collapse:collapse; margin-bottom:15px; }
@@ -349,7 +401,11 @@ $WARN = '<span class="warn-badge" aria-label="Auffälligkeit" title="Auffälligk
 
 
 <!-- ABSCHNITT 1: PRÜFUNGSBEDINGUNGEN (Headerzeile grau) -->
-<div class="card" style="padding-top: 20px !important;">
+@if($isNewLayout)
+  <div class="card" style="padding-top: 30px !important;">
+@else
+  <div class="card" style="padding-top: 20px !important;">
+@endif
   <h2 class="section-title">Prüfungsbedingungen</h2>
   <table class="simple-table">
     <thead>
@@ -460,7 +516,7 @@ $WARN = '<span class="warn-badge" aria-label="Auffälligkeit" title="Auffälligk
   <div class="card" style="padding-top: 25px !important">
     @if($serien)
       <h2 class="section-title">Serienausstattung</h2>
-      <div>{!! nl2br(e($serien)) !!}</div>
+      <div>{{ $serien }}</div>
     @endif
   </div>
 @endif
@@ -469,7 +525,7 @@ $WARN = '<span class="warn-badge" aria-label="Auffälligkeit" title="Auffälligk
   <div class="card" style="page-break-after: always; padding-top: 15px !important;">
     @if($sonder)
       <h2 class="section-title">Sonderausstattung</h2>
-      <div>{!! nl2br(e($sonder)) !!}</div>
+      <div>{{ $sonder }}</div>
     @endif
   </div>
 @endif
@@ -1362,10 +1418,31 @@ $WARN = '<span class="warn-badge" aria-label="Auffälligkeit" title="Auffälligk
         @php
           $k = $it['key'];
           $status = $examination->{$k} ?? '';
+
           $d = $list($examination->{$k.'_details'} ?? ($examination->{$k.'_detail'} ?? []));
           $o = $list($examination->{$k.'_details_other'} ?? []);
-          $combined = $combineDamages(is_array($d)?$d:[$d], $o);
-        @endphp
+
+          $combined = array_values(array_filter(
+              $combineDamages(is_array($d) ? $d : [$d], $o),
+              fn($item) => trim((string)$item) !== ''
+          ));
+
+          $hasDamage = count($combined) > 0;
+
+          // Nur für neue Aufträge ab 01.06.2026
+          $hideEmptyDamages =
+              !empty($examination->created_at)
+              && \Carbon\Carbon::parse($examination->created_at)->gte(
+                  \Carbon\Carbon::create(2026, 6, 8, 0, 0, 0)
+              );
+      @endphp
+      @if(!(
+        $hideEmptyDamages
+        && (
+            trim((string)$status) === ''
+            || ($norm($status) === 'beschaedigt' && !$hasDamage)
+        )
+    ))
         <tr>
           <td style="background:#e9f3ff">{{ $it['label'] }}</td>
           <td>{{ $statusLabel($status) }}</td>
@@ -1386,6 +1463,7 @@ $WARN = '<span class="warn-badge" aria-label="Auffälligkeit" title="Auffälligk
             @endif
           </td>
         </tr>
+        @endif
       @endforeach
 
       {{-- Kommentar Außenzustand (optional) --}}
@@ -1908,7 +1986,7 @@ $WARN = '<span class="warn-badge" aria-label="Auffälligkeit" title="Auffälligk
   .mis-col-det    { width:67%; }
 </style>
 
-<div class="card" style="page-break-before: always;padding-top: 25px !important;">
+<div class="card" style="page-break-before: always; padding-top: 25px !important;">
   <h2 class="section-title">Sonstiges</h2>
 
   <table class="misc-table">
@@ -2039,6 +2117,10 @@ $WARN = '<span class="warn-badge" aria-label="Auffälligkeit" title="Auffälligk
   $docs = $media->filter(function($m){ return !$m->is_image; })->values();
 @endphp
 
+
+<!-- <div class="card" style="padding-top: 20px !important">
+<hr style="border: 0; border-top: 1px solid #ccc;"> -->
+
 <div class="card" style="padding-top: 20px !important;">
   <h2 class="section-title">Fotodokumentation</h2>
   @php
@@ -2080,7 +2162,7 @@ $WARN = '<span class="warn-badge" aria-label="Auffälligkeit" title="Auffälligk
 </div>
 
 
-<div class="card" style="padding-top: 20px !important;">
+<div class="card" style="padding-top: 13px !important;">
   <h2 class="section-title">Zusätzliche Dokumente</h2>
   @php
     $otherDocs = $docs->where('type', '!=', 'Fotodokumentation');

@@ -2265,6 +2265,20 @@ const testimonialSwiper = new Swiper('.testimonial-slider', {
                                                   </div>
                                               </div>
                                           </div>
+                                          <div style="margin-bottom: 15px !important; border-radius: 5px" class="accordion-item">
+                                                <h2 class="accordion-header">
+                                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                                            data-bs-target="#faq-nine" aria-expanded="false" aria-controls="faq-nine">
+                                                        Wie lange dauert es vom Auftrag bis zum Prüfergebnis?
+                                                    </button>
+                                                </h2>
+                                                <div id="faq-nine" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+                                                    <div class="accordion-body">
+                                                        Der gesamte Prozess – vom Eingang des Auftrags über die Durchführung des Gebrauchtwagenchecks bis hin zur Zusendung des Prüfergebnisses – dauert in der Regel <b>2–4 Werktage</b>. 
+                                                        In Einzelfällen kann es zu Verzögerungen kommen, da wir bei der Terminvereinbarung auf die Verfügbarkeit des Verkäufers angewiesen sind.
+                                                    </div>
+                                                </div>
+                                            </div>
                                             <div style="margin-bottom: 15px !important; border-radius: 5px" class="accordion-item">
                                                 <h2 class="accordion-header">
                                                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
@@ -2348,19 +2362,7 @@ const testimonialSwiper = new Swiper('.testimonial-slider', {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div style="margin-bottom: 15px !important; border-radius: 5px" class="accordion-item">
-                                                <h2 class="accordion-header">
-                                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                                            data-bs-target="#faq-nine" aria-expanded="false" aria-controls="faq-nine">
-                                                        Wann erhalte ich das Prüfergebnis?
-                                                    </button>
-                                                </h2>
-                                                <div id="faq-nine" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
-                                                    <div class="accordion-body">
-                                                        Durchschnittlich dauert es <b>2-4 Werktage</b>, bis du das Ergebnis des Gebrauchtwagenchecks erhältst. Jedoch kann es manchmal zu Verzögerungen kommen, da wir auf die Verfügbarkeit des Verkäufers angewiesen sind.
-                                                    </div>
-                                                </div>
-                                            </div>
+     
 
                     </div>
                 </div>

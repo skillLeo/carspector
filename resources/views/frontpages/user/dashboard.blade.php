@@ -1,9 +1,14 @@
 @extends('mainpages.master-layout')
 @section('title', 'Carspector | Mein Konto')
-@section('meta_description', 'Verwalte deine Buchungen, sieh dir Ergebnisse an und aktualisiere deine Daten – alles an einem Ort.')
+@section('meta_description', 'Verwalte deine Aufträge, sieh dir Ergebnisse an und aktualisiere deine Daten – alles an einem Ort.')
 @section('header')
     @include('partials.index-header')
 @endsection
+
+@php
+    \Carbon\Carbon::setLocale('de');
+@endphp
+
 @section('styles')
     <style>
         .modal-info .modal-content {
@@ -96,6 +101,11 @@
     cursor: not-allowed;
 }
 
+.btn-download-pdf:hover {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+}
+
     </style>
 
 
@@ -149,7 +159,7 @@
                                 <h2 style="letter-spacing: -1.5px" class="mb-3 text-primary">Mein Profil</h2>
 
                                 <p class="fs-6 text-grey">Hier findest du deine persönlichen Daten <br> und Infos zu deinen
-                                    Buchungen.</p>
+                                    Aufträgen.</p>
 
                             </div>
                             <form method="POST" action="{{route('change-phone')}}" >
@@ -193,10 +203,9 @@
 
                     <div class="pb-4 myProfile-bookins">
                         <div class="myProfile-booking-form">
-                            <h2 class="pb-2" style="letter-spacing: -1px">Meine Buchungen</h2>
-
+                            <h2 class="pb-2" style="letter-spacing: -1px">Meine Aufträge</h2>
                             @if($orders->isEmpty())
-                                <p style="color:rgb(192, 19, 19)">Du hast noch keine Buchungen.</p>
+                                <p style="color:rgb(192, 19, 19)">Du hast noch keine Aufträge.</p>
                                 <a href="{{route('booking.option-page')}}"
                                 style="border-radius: 5px; max-width: 400px; margin: 0 auto; display: block;"
                                 class="pt-3 btn btn-secondary w-100">
@@ -204,11 +213,28 @@
                                 </a>
                                 <br>
                             @else
-                             <br>
+                            <div class="pb-2"></div>
+                                <div class="mb-3 p-3" style="background:#f8fafc; border:1px solid #c1c1c1; border-radius:10px;">
+
+                                    <p class="text-muted mb-0"
+                                    style="font-size:15px">
+                                        <i class="fas fa-bell me-1 text-primary"></i>
+                                        Sobald sich der Status deines Auftrags ändert, erhältst du hier ein Update sowie eine Benachrichtigung per E-Mail.
+                                    </p>
+
+                                </div>
+                                @if($orders->count() > 1)
+                                    <p class="text-muted" style="font-size:14px;">
+                                        <i class="fas fa-arrow-down me-1"></i>
+                                         Neueste Aufträge zuerst
+                                    </p>
+                                @else
+                                    <br>
+                                @endif
                             @php
                                     $counter = 1;
                                 @endphp
-                                @foreach($orders as $order)
+                                @foreach($orders->sortByDesc('created_at') as $order)
   <div class="card mb-3" style="border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden;">
     
     {{-- Kopfbereich: Auftrag + Status --}}
@@ -220,10 +246,38 @@
                 ? 'Auftrag ' . $counter
                 : $order->vehicle_make_model }}
           </strong>
+
+          @if(\Carbon\Carbon::parse($order->created_at)->gte(\Carbon\Carbon::create(2026, 6, 1)))
+                <div class="text-muted" style="font-size: 13px; margin-top: 2px;">
+                    Auftrags-Nr.: {{ $order->orderno ?? '#' . $order->id }}
+                </div>
+            @endif
+    
+                @if($order->appointment_date)
+                <div class="pt-3">
+                    <div class="text-muted mb-1" style="font-size:14px">
+                    Besichtigungstermin
+                    </div>
+
+                    <div class="fw-semibold">
+                    <i class="fas fa-calendar-alt me-1 text-primary"></i>
+
+                        <span style="font-size:15px">
+                        {{ \Carbon\Carbon::parse($order->appointment_date)->translatedFormat('l, d.m.Y') }}
+
+                        <!-- @if($order->appointment_time)
+                            <br> um {{ substr($order->appointment_time, 0, 5) }} Uhr
+                        @endif -->
+                        </span>
+                    </div>
+                </div>
+                @endif
         </div>
 
         <div>
-          @if($order->status == 'completed')
+          @if(in_array($order->admin_status, ['Prüfung', 'Pruefung']))
+            <span class="badge bg-primary">In Bearbeitung</span>
+          @elseif($order->status == 'completed')
             <span class="badge bg-success">Abgeschlossen</span>
           @elseif($order->status == 'inspecting')
             <span class="badge bg-warning text-dark">Fertigstellung</span>
@@ -237,7 +291,7 @@
     <div class="card-body" style="padding: 16px;">
       
       {{-- Aktionen: Details --}}
-      <div class="mb-3">
+      <div class="mb-2">
         <button class="btn btn-outline-primary btn-order-details w-100"
                 style="padding: 10px 16px; font-size: 15px; line-height: 1.3; box-shadow: none;"
                 data-bs-toggle="modal"
@@ -246,6 +300,28 @@
           Details anzeigen
         </button>
       </div>
+
+       @if( $order->status === 'completed' && $order->pdf_number && \Carbon\Carbon::parse($order->created_at)->gte(\Carbon\Carbon::create(2026, 5, 26)))
+
+       @php
+            $pdfRoute = ($order->document_in_english ?? false)
+                ? route('order.pdf.en', ['number' => $order->pdf_number])
+                : route('order.pdf', ['number' => $order->pdf_number]);
+        @endphp
+
+        <div class="mb-3">
+        <a href="{{ $pdfRoute }}"
+            target="_blank"
+            class="bg-success btn-download-pdf btn w-100"
+            style="color: #fff; padding: 12px 14px; font-size: 15px; line-height: 1.3; border-radius: 5px; 
+            border: none !important; box-shadow: none !important; outline: none !important;">
+            
+            <i style="font-size: 18px" class="fas fa-file-pdf me-1"></i>
+            Prüfergebnis ansehen
+        </a>
+        </div>
+    @endif
+      
 
       {{-- Trennlinie zwischen Auftrag & Services --}}
       <hr style="margin: 14px 0; opacity: .12;">

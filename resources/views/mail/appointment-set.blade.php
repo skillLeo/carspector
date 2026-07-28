@@ -11,27 +11,52 @@
       <td align="center" style="padding:24px;">
         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:600px; background:#ffffff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
           <tr>
-            <td style="padding:32px; font-family:Arial,Helvetica,sans-serif; text-align:center;">
+            <td style="padding:32px; font-family:Arial,Helvetica,sans-serif; text-align:left;">
 
-              <p style="color:#000000; font-size:26px; font-weight:700; line-height:1.4; margin:0 0 12px 0;">
-                Terminbestätigung | {{ $order->vehicle_make_model ?: ($order->vehicle_type ?: 'Ihr Fahrzeug') }}
+              <p style="color:#000; font-size:24px; font-weight:700; line-height:1.4; margin:0 0 12px 0;">
+                Terminbestätigung | {{ $order->vehicle_make_model ?: ($order->vehicle_type ?: 'Dein Fahrzeug') }}
               </p>
 
-              <p style="margin:0 0 12px 0; color:#333333; line-height:1.6; font-size:16px;">
+              <p style="margin:0 0 12px 0; color:#333; line-height:1.6; font-size:15px;">
                 Hallo,
               </p>
 
-              <p style="margin:0 0 12px 0; color:#333333; line-height:1.6; font-size:16px;">
-                Ihr Termin für den CarCheck des Fahrzeugs <b>{{ $order->vehicle_make_model ?: ($order->vehicle_type ?: 'Ihr Fahrzeug') }}</b> wurde gesetzt.
+              <p style="margin:0 0 12px 0; color:#333; line-height:1.6; font-size:15px;">
+                wir freuen uns, dir mitteilen zu können, dass der Termin zur Prüfung des Fahrzeugs
+                <b>{{ $order->vehicle_make_model ?: ($order->vehicle_type ?: 'deines Fahrzeugs') }}</b>
+                erfolgreich eingeplant wurde.
               </p>
 
-              <p style="margin:12px 0; color:#333333; line-height:1.6; font-size:16px;">
-                <b>Termin:</b> {{ optional($order->appointment_date)->format('d.m.Y') }}{{ $order->appointment_time ? ' um ' . substr($order->appointment_time, 0, 5) . ' Uhr' : '' }}
-              </p>
+              <p style="margin:12px 0; color:#333; line-height:1.6; font-size:15px;">
+                <b>Termin:</b>
 
-              <p style="margin:20px 0 0 0; color:#000000; font-size:16px; line-height:1.6;">
-                Viele Grüße<br>
-                Ihr Team von Carspector
+                @php
+                    $weekdays = [
+                        1 => 'Montag',
+                        2 => 'Dienstag',
+                        3 => 'Mittwoch',
+                        4 => 'Donnerstag',
+                        5 => 'Freitag',
+                        6 => 'Samstag',
+                        7 => 'Sonntag',
+                    ];
+
+                    $appointmentDate = $order->appointment_date
+                        ? \Carbon\Carbon::parse($order->appointment_date)
+                        : null;
+                @endphp
+
+                {{ $appointmentDate
+                    ? $weekdays[$appointmentDate->dayOfWeekIso] . ', ' . $appointmentDate->format('d.m.Y')
+                    : ''
+                }}
+
+                <!-- {{ $order->appointment_time ? ' um ' . substr($order->appointment_time, 0, 5) . ' Uhr (CET/CEST)' : '' }} -->
+            </p>
+
+              <p style="margin:20px 0 0 0; color:#000; font-size:15px; line-height:1.6;">
+                Vielen Dank für dein Vertrauen in unseren Service.<br>
+                Dein Carspector Team
               </p>
 
             </td>

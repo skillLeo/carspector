@@ -17,6 +17,7 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         $schedule->command('balance:clear')->everyMinute();
+        $schedule->command('reminders:send-appointment-requests')->everyFifteenMinutes();
     }
 
     /**

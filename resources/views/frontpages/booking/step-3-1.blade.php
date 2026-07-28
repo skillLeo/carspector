@@ -647,6 +647,33 @@
               @error('advertisement_link')<div class="invalid-feedback d-block">Dies ist ein Pflichtfeld.</div>@enderror
             </div>
 
+            {{-- Hidden inputs for scraped listing data --}}
+            <input type="hidden" name="listing_seller_name"    id="listing_seller_name">
+            <input type="hidden" name="listing_seller_address" id="listing_seller_address">
+            <input type="hidden" name="listing_seller_phone"   id="listing_seller_phone">
+            <input type="hidden" name="listing_image"          id="listing_image">
+            <input type="hidden" name="listing_price"          id="listing_price">
+            <input type="hidden" name="listing_scrape_status"  id="listing_scrape_status">
+            <input type="hidden" name="make_year"              id="hidden_make_year">
+            <input type="hidden" name="mileage"                id="hidden_mileage">
+            <input type="hidden" name="vehicle_make_model"     id="hidden_vehicle_make_model">
+
+            {{-- Scan result preview (shown only on success) --}}
+            <div id="scanResult" style="display:none;background:#f0f9f4;border:1px solid #c3e6cb;border-radius:10px;padding:12px 14px;margin-bottom:10px;">
+              <div style="display:flex;gap:12px;align-items:flex-start;">
+                <img id="previewImg" src="" alt="" style="display:none;width:90px;height:65px;object-fit:cover;border-radius:7px;flex-shrink:0;">
+                <div style="flex:1;min-width:0;">
+                  <div style="font-weight:600;margin-bottom:5px;" id="previewTitle"></div>
+                  <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:.85rem;color:#555;">
+                    <span id="previewYear"    style="display:none;"><i class="fas fa-calendar-alt" style="color:var(--cs-secondary);margin-right:3px;"></i><span></span></span>
+                    <span id="previewMileage" style="display:none;"><i class="fas fa-tachometer-alt" style="color:var(--cs-secondary);margin-right:3px;"></i><span></span></span>
+                    <span id="previewPrice"   style="display:none;"><i class="fas fa-tag" style="color:var(--cs-secondary);margin-right:3px;"></i><span></span></span>
+                    <span id="previewSeller"  style="display:none;"><i class="fas fa-user" style="color:var(--cs-secondary);margin-right:3px;"></i><span></span></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {{-- Toggle-Hinweis --}}
             <p id="toggle-entry-wrapper" class="pt-1 small-muted" style="font-size:0.95rem;">
               Keinen Inserat-Link? <a href="#" id="toggle-entry-link">Daten manuell eintragen</a>
@@ -722,6 +749,10 @@
             </div>
 
             <p class="mb-4 small-muted">Pflichtfelder mit * markiert.</p>
+
+            <!-- <div class="alert alert-light border mb-4" style="font-size:0.92rem; line-height:1.5;">
+                Mit deiner Buchung beauftragst du uns, deinen Auftrag umgehend zu bearbeiten und einen KFZ-Sachverständigen aus unserem Partnernetzwerk für die Fahrzeugprüfung zu vermitteln.
+            </div> -->
 
             <div class="pb-2 booking-action text-center">
               <button type="submit" class="btn btn-secondary btn-book w-100 w-md-auto">
@@ -1187,6 +1218,122 @@
     if(removeXXLBtn){ removeXXLBtn.addEventListener('click', (e)=>{ e.preventDefault(); setPackage(false); }); }
 
     if(formOpt && formOpt.value === '2' && wrapUpgrade){ wrapUpgrade.style.display = 'none'; }
+  })();
+</script>
+
+<script>
+  (function(){
+    const preview  = document.getElementById('scanResult');
+    const adInput  = document.getElementById('advertisement_link_input');
+    var   debounce = null;
+
+    function setText(el, val) {
+      if (val) {
+        el.querySelector('span:last-child').textContent = val;
+        el.style.display = '';
+      } else { el.style.display = 'none'; }
+    }
+
+    function showPreview(d) {
+      preview.style.display = '';
+      var title = [d.brand, d.model].filter(Boolean).join(' ') || 'Fahrzeug erkannt';
+      document.getElementById('previewTitle').textContent = title;
+      setText(document.getElementById('previewYear'),    d.make_year);
+      setText(document.getElementById('previewMileage'), d.mileage ? d.mileage + ' km' : '');
+      setText(document.getElementById('previewPrice'),   d.price    ? d.price + ' €'   : '');
+      setText(document.getElementById('previewSeller'),  d.seller_name);
+      var img = document.getElementById('previewImg');
+      if (d.image) {
+        img.src = d.image;
+        img.style.display = '';
+      } else {
+        img.style.display = 'none';
+      }
+    }
+
+    function setHidden(id, val) {
+      var el = document.getElementById(id);
+      if (el) el.value = val || '';
+    }
+
+    function isValidURL(str) {
+      try { var u = new URL(str.startsWith('http') ? str : 'https://' + str); return !!u.hostname && u.hostname.includes('.'); } catch(e) { return false; }
+    }
+
+    function doScan(url) {
+      fetch('{{ route("listing.fetch") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        body: JSON.stringify({ url: url })
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(data) {
+        if (data.success) {
+
+          const canSave =
+            data.brand &&
+            data.model &&
+            data.make_year &&
+            data.mileage &&
+            data.price;
+
+          setHidden('listing_seller_name',    data.seller_name    || '');
+          setHidden('listing_seller_address', data.seller_address || '');
+          setHidden('listing_seller_phone',   data.seller_phone   || '');
+          setHidden('listing_image',          data.image          || '');
+          setHidden('listing_price',          data.price          || '');
+          setHidden('hidden_make_year',       data.make_year      || '');
+          setHidden('hidden_mileage',         data.mileage        || '');
+
+          setHidden(
+            'listing_scrape_status',
+            canSave ? 'success' : 'preview'
+          );
+
+          if (canSave) {
+            var vm = document.getElementById('vehicle_make_model');
+            var vmHidden = document.getElementById('hidden_vehicle_make_model');
+            var vmVal = [data.brand, data.model].filter(Boolean).join(' ');
+
+            if (vm && !vm.value) {
+              vm.value = vmVal;
+            }
+            if (vmHidden && !vmHidden.value) {
+              vmHidden.value = vmVal;
+            }
+          }
+
+          if (canSave) {
+            showPreview(data);
+          } else {
+            preview.style.display = 'none';
+          }
+
+        } else {
+          setHidden('listing_scrape_status', 'failed');
+          preview.style.display = 'none';
+        }
+      })
+      .catch(function() { preview.style.display = 'none'; });
+    }
+
+    if (adInput) {
+      adInput.addEventListener('input', function() {
+        var url = this.value.trim();
+        preview.style.display = 'none';
+        clearTimeout(debounce);
+        if (!isValidURL(url)) return;
+        debounce = setTimeout(function(){ doScan(url); }, 400);
+      });
+      // Paste: fire almost instantly
+      adInput.addEventListener('paste', function() {
+        clearTimeout(debounce);
+        debounce = setTimeout(function(){
+          var url = adInput.value.trim();
+          if (isValidURL(url)) doScan(url);
+        }, 50);
+      });
+    }
   })();
 </script>
 @endsection

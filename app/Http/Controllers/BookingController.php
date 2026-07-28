@@ -90,8 +90,11 @@ class BookingController extends Controller
 
 //            Mail::to('info@carspector.de')->send(new ExaminationMail($order,$request->email));
             Mail::to($request->email)->send(new ExaminationMail($order,$request->email,$pass));
+            if ($request->filled('examiner_name')) {
+                $order->examiner_name = trim($request->examiner_name);
+            }
             $order->admin_status = 'Prüfung';
-            $order->status = 'inspecting';
+            $order->status = 'processing';
             $order->update();
             return response(['success'=>true,'message'=>'Examiner updated successfully....']);
         }
@@ -354,6 +357,14 @@ class BookingController extends Controller
             'invoice_creation' => [ // Automatische Rechnungserstellung aktivieren
                 'enabled' => true,
             ],
+            'consent_collection' => [
+                'terms_of_service' => 'required',
+            ],
+        //      'custom_text' => [
+        //     'submit' => [
+        //         'message' => 'Mit deiner Buchung beauftragst du uns, deinen Auftrag umgehend zu bearbeiten und einen qualifizierten KFZ-Sachverständigen aus unserem Partnernetzwerk für die Fahrzeugprüfung zu vermitteln.',
+        //     ],
+        // ],
             'success_url' => $successUrl,
             'cancel_url' => $YOUR_DOMAIN . '/booking-step-1',
         ]);

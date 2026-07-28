@@ -217,9 +217,14 @@ class UserController extends Controller
         }
         $booking=Order::find($id);
         if ($booking){
+            if ($booking->order_source === 'b2b') {
+                $booking->admin_status = 'Storniert';
+                $booking->save();
+                return redirect()->route('admin.bookings')->with('success','B2B order marked as cancelled.');
+            }
             $booking->delete();
         }
-        return redirect()->back()->with('success','Booking deleted successfully...');
+        return redirect()->route('admin.bookings')->with('success','Booking deleted successfully...');
     }
     public function examiners(Request $request){
         $users = User::where('type','user')->get();

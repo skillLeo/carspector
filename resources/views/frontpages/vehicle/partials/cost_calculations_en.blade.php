@@ -60,9 +60,15 @@
   $finalValue = $basePrice - $sumDep - $sumUpc + $sumAdd + $marketCost;
 @endphp
 
-<div style="page-break-before: always;"></div>
+@if($conclusion !== '')
+  <div class="card" style="page-break-before: always; break-before: page; padding-top: 25px !important;">
+@else
+  <div style="padding-top: 20px"></div> 
+  <hr style="border: 0; border-top: 1px solid #ccc;">
+  
+  <div class="card" style="padding-top: 30px !important;">
+@endif
 
-<div class="card" style="padding-top: 25px !important;">
   <h2 class="section-title">Valuation Overview (Depreciation, Added Value, Upcoming Costs, Market Value)</h2>
 
   {{-- Depreciation (Deductions) --}}
@@ -149,7 +155,7 @@
    <p style="font-size: 13px; color:#6b7280; margin-top:6px;">All amounts include VAT. Repair costs are indicative and may vary.
 </p>
 
-   <hr style="margin-top: 20px">
+   <hr style="margin-top: 20px; border: 0; border-top: 1px solid #ccc;">
 
 <p style="padding-top: 20px" class="set-title">Vehicle Valuation</p>
 
@@ -263,11 +269,13 @@
   @endif
 </div>
 
-<p style="font-size: 13px; color:#6b7280"><b>*DAT-Preis:</b> The DAT price is an average market value for a vehicle determined by the Deutsche Automobil
+<p style="font-size: 13px; color:#6b7280"><b>*DAT Price:</b> The DAT price is an average market value for a vehicle determined by the Deutsche Automobil
 Treuhand (DAT). The DAT collects data on vehicle sales in Germany and calculates the typical price that a
 car with certain characteristics (e.g., make, model, year, mileage, equipment) would achieve on the open
 market. 
 <!-- This value serves as a neutral reference for dealers and private individuals. -->
 </p>
-<hr style="margin-top: 20px">
+
+
 <div class="card" style="padding-top: 20px !important">
+<hr style="border: 0; border-top: 1px solid #ccc; padding-bottom: 10px !important">

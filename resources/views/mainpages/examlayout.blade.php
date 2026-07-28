@@ -74,14 +74,39 @@
         #mini-footer a:hover {
             text-decoration:underline;
         }
+
+        #only-logo-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 12px;
+            background: var(--primary);
+        }
+
+        #only-logo-header img {
+            display: block;
+            max-width: 225px;
+            width: 100%;
+            height: auto;
+        }
+
+        @media (max-width: 576px) {
+            #only-logo-header img {
+                max-width: 210px;
+            }
+        }
     </style>
 </head>
 <body>
 <div class="page-wrap">
     {{-- HEADER --}}
-    <header id="only-logo-header">
+    <!-- <header id="only-logo-header">
         <img src="https://carspector.de/logo-admin.png" alt="">
-    </header>
+    </header> -->
+
+    <header id="only-logo-header">
+    <img src="/logo-slogan-white.png" alt="Carspector">
+</header>
 
     {{-- CONTENT --}}
     <main class="content">
@@ -89,14 +114,20 @@
     </main>
 
     {{-- FOOTER --}}
-    <footer id="mini-footer">
+    <!-- <footer id="mini-footer">
         <p style="margin:0; font-weight:600;">Hilfe benötigt?</p>
         <div style="margin-top:8px;">
             📞 <a href="tel:+4915774993273">015774993273</a> &nbsp;|&nbsp;
             💬 <a href="https://wa.me/4915774993273" target="_blank" rel="noopener">WhatsApp</a> &nbsp;|&nbsp;
             ✉️ <a href="mailto:partner@carspector.de">partner@carspector.de</a>
         </div>
-    </footer>
+    </footer> -->
+    {{-- FOOTER --}}
+<footer id="mini-footer">
+    <p style="margin:0;">
+        &copy; Carspector GmbH 2026
+    </p>
+</footer>
 </div>
 
 {{-- Scripts --}}

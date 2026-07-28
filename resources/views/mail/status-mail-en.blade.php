@@ -26,12 +26,16 @@
                   Our team is now preparing the final report.
                 </p>
 
-              <p style="margin:12px 0; color:#333; line-height:1.6; font-size:15px;">
+              <p style="margin:0 0 12px 0; color:#333; line-height:1.6; font-size:15px;">
                 Within <b>24 hours</b> of receiving this email you’ll get the full report,
                 including all relevant documents, sent directly by email.
               </p>
 
-              <p style="margin:20px 0 0 0; color:#000; font-size:15px; line-height:1.6;">
+              <p style="margin:0 0 12px 0; color:#333; line-height:1.6; font-size:15px;">
+                Please note that there may occasionally be slight delays in processing the order over the weekend.
+              </p>
+
+              <p style="margin:0 0 12px 0; color:#333; line-height:1.6; font-size:15px;">
                 Thank you for choosing our service.<br>
                 Your Carspector team
               </p>

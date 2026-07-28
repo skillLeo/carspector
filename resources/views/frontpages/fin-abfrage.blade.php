@@ -622,7 +622,8 @@
       error.style.display = "block";
     } else {
       error.style.display = "none";
-      const url = `https://www.carvertical.com/de/precheck?utm_source=aff&a=6888823a46a7b&b=155b2a51&voucher=carspector&vin=${fin}`;
+      const url = `https://www.carvertical.deal/4MZ2NG/TZW7X/?uid=2&source_id=AFF&sub1=carspector&sub5=&vin=${fin}`;
+      //const url = `https://www.carvertical.com/de/precheck?utm_source=aff&a=6888823a46a7b&b=155b2a51&voucher=carspector&vin=${fin}`;
       window.location.href = url;
     }
   }

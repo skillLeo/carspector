@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Carspector - Admin Panel</title>
+    <title>Carspector | Admin Panel</title>
 
     <!-- Google Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700">
@@ -41,7 +41,7 @@
         .main-header { border-bottom: 1px solid #dee2e6; }
         .navbar-user-link {
             display: inline-flex;
-            align-items: center;
+    align-items: center;
             gap: .45rem;
             color: #374151 !important;
             font-weight: 600;
@@ -375,6 +375,100 @@
                 max-width: 100%;
             }
         }
+        /* Desktop only */
+@media (min-width: 992px) {
+
+    /* Kein Shadow */
+    .main-sidebar {
+        box-shadow: none !important;
+    }
+
+    /* Kein Burger Button */
+    [data-widget="pushmenu"] {
+        display: none !important;
+    }
+
+    .brand-link .brand-image-logo {
+        width: 180px !important;
+        max-height: 70px !important;
+        object-fit: contain;
+    }
+    /* Linie unter Logo entfernen */
+.brand-link {
+    border-bottom: none !important;
+}
+}
+/* Mobile Logo größer */
+@media (max-width: 991.98px) {
+
+    .brand-link .brand-image-logo {
+        max-height: 65px !important;
+    }
+
+}
+
+.nav-sidebar .nav-item {
+    margin-bottom: 5px;
+}
+
+.nav-sidebar .nav-item > .nav-link {
+    font-size: 0.9rem;
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    padding: 0 13px;
+    border-radius: 5px;
+    background: #fff;
+    border: 1px solid #d9d9d9;
+    transition: all 0.2s ease;
+    color: #2d3748;
+}
+
+.nav-sidebar .nav-item > .nav-link:hover {
+    background: #f8fafc;
+    border-color: #b8c4d3;
+    color: #111827;
+}
+
+.nav-sidebar .nav-link.active {
+    background: #eef4ff !important;
+    border-color: #0d6efd !important;
+    color: #0d6efd !important;
+    font-weight: 600;
+    box-shadow: none !important;
+}
+
+.nav-sidebar .nav-link.active p,
+.nav-sidebar .nav-link.active i {
+    color: #0d6efd !important;
+}
+
+.nav-sidebar .nav-icon {
+    font-size: 0.95rem;
+    width: 20px;
+    margin-right: 15px !important;
+    color: #5b6777;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+
+    #notif-dropdown {
+        position: fixed !important;
+        top: 70px !important;
+        left: 10px !important;
+        right: 10px !important;
+        width: auto !important;
+        max-width: none !important;
+        max-height: 500px !important;
+        overflow-y: auto !important;
+        transform: none !important;
+    }
+
+    .dropdown-menu.show {
+        display: block !important;
+    }
+}
     </style>
 
     @yield('styles')
@@ -393,9 +487,23 @@
         </ul>
 
         <ul class="navbar-nav ms-auto">
+            {{-- Notification Bell --}}
+            <li class="nav-item dropdown" id="notif-bell-item">
+                <a class="nav-link position-relative px-3" href="#" id="notifBellBtn" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-bell fa-lg"></i>
+                    <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none;font-size:10px;"></span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-end shadow" id="notif-dropdown" style="width:340px;max-height:400px;overflow-y:auto;">
+                    <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
+                        <strong style="font-size:13px;">Benachrichtigungen</strong>
+                        <button id="notif-mark-read" class="btn btn-link btn-sm p-0 text-muted" style="font-size:12px;">Alle gelesen</button>
+                    </div>
+                    <div id="notif-list" class="p-2 text-muted text-center" style="font-size:13px;">Wird geladen…</div>
+                </div>
+            </li>
             <li class="nav-item">
                 <a class="nav-link navbar-user-link" href="{{ route('admin.profile.settings') }}">
-                    <i class="fas fa-user-circle fa-lg"></i>
+                    <img src="/Logo-1.png" style="width:24px;height:24px;border-radius:50%;">
                     <span>{{ auth()->user()->name ?? auth()->user()->first_name }}</span>
                 </a>
             </li>
@@ -403,7 +511,7 @@
                 <a class="nav-link navbar-user-link text-danger" href="{{ route('logout') }}"
                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                     <i class="fas fa-sign-out-alt"></i>
-                    <span>Logout</span>
+                    <span>Abmelden</span>
                 </a>
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                     @csrf
@@ -414,9 +522,9 @@
     {{-- ===== END TOP NAVBAR ===== --}}
 
     {{-- ===== SIDEBAR ===== --}}
-    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <aside class="main-sidebar sidebar-light-primary elevation-4">
         <a href="{{ route('admin') }}" class="brand-link d-flex align-items-center px-3 py-3">
-            <img src="{{ asset('logo-admin.png') }}" alt="Carspector" class="brand-image-logo">
+            <img src="{{ asset('logo-pdf.png') }}" alt="Carspector" class="brand-image-logo">
         </a>
 
         <div class="sidebar">
@@ -434,64 +542,63 @@
                     <li class="nav-item">
                         <a href="{{ route('admin.bookings') }}" class="nav-link {{ request()->routeIs('admin.bookings') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-shopping-cart"></i>
-                            <p>All Bookings</p>
+                            <p>Aufträge</p>
+                        </a>
+                    </li>
+
+                        <li class="nav-item">
+                        <a href="{{ route('admin.billing') }}" class="nav-link {{ request()->routeIs('admin.billing*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-file-invoice-dollar"></i>
+                            <p>Abrechnung</p>
+                        </a>
+                    </li>
+
+                    {{-- B2B Partners --}}
+                    <li class="nav-item">
+                        <a href="{{ route('admin.partners.index') }}" class="nav-link {{ request()->routeIs('admin.partners.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-building"></i>
+                            <p>B2B Partner</p>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="{{ route('admin.new-bookings.index') }}" class="nav-link {{ request()->routeIs('admin.new-bookings.*') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-calendar-plus"></i>
-                            <p>New Bookings</p>
+                            <p>Zulassungen</p>
                         </a>
                     </li>
 
-                    {{-- Examinations --}}
+                    <li class="nav-item">
+                        <a href="{{ route('admin.inspectors.index') }}"
+                           class="nav-link {{ request()->routeIs('admin.inspectors.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-user-check"></i>
+                            <p>Gutachter</p>
+                        </a>
+                    </li>
+
+                    <!-- {{-- Examinations --}}
                     <li class="nav-item">
                         <a href="{{ route('admin.examinations') }}" class="nav-link {{ request()->routeIs('admin.examinations') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-clipboard-check"></i>
                             <p>Examinations</p>
                         </a>
-                    </li>
+                    </li> -->
 
                     <li class="nav-item">
                         <a href="{{ route('user.view') }}" class="nav-link {{ request()->routeIs('user.view') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-users"></i>
-                            <p>All Users</p>
+                            <p>Nutzer</p>
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <!-- <li class="nav-item">
                         <a href="{{ route('examiners.view') }}" class="nav-link {{ request()->routeIs('examiners.view') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-user-check"></i>
-                            <p>Examiners</p>
+                            <p>Prüfer</p>
                         </a>
-                    </li>
+                    </li> -->
                     <li class="nav-item">
                         <a href="{{ route('partners.view') }}" class="nav-link {{ request()->routeIs('partners.view') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-handshake"></i>
-                            <p>Partners</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ route('admins.view') }}" class="nav-link {{ request()->routeIs('admins.view') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-user-shield"></i>
-                            <p>Admins</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ route('staff.view') }}" class="nav-link {{ request()->routeIs('staff.view') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-id-badge"></i>
-                            <p>Staff</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ route('unverified.view') }}" class="nav-link {{ request()->routeIs('unverified.view') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-user-clock"></i>
-                            <p>Unverified</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ route('users.heard_about') }}" class="nav-link {{ request()->routeIs('users.heard_about') ? 'active' : '' }}">
-                            <i class="nav-icon fas fa-bullhorn"></i>
-                            <p>Heard About</p>
+                            <p>Autohaus Partner</p>
                         </a>
                     </li>
 
@@ -503,7 +610,69 @@
                         </a>
                     </li>
 
-                    {{-- Reviews --}}
+                    <li class="nav-item {{ request()->routeIs('admin.inspection.*') ? 'menu-open' : '' }}">
+                        <a href="#" class="nav-link {{ request()->routeIs('admin.inspection.*') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-plug"></i>
+                            <p>API <i style="margin-top: 3px" class="right fas fa-angle-left"></i></p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="{{ route('admin.inspection.review-queue') }}"
+                                   class="nav-link {{ request()->routeIs('admin.inspection.review-queue') ? 'active' : '' }}">
+                                    <i class="nav-icon far fa-circle"></i>
+                                    <p>
+                                        Fertigstellung
+                                        @php $reviewCount = \App\Models\Order::where('admin_status','Fertigstellung')->count(); @endphp
+                                        @if($reviewCount > 0)
+                                            <span class="badge badge-warning right">{{ $reviewCount }}</span>
+                                        @endif
+                                    </p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.inspection.submissions') }}"
+                                   class="nav-link {{ request()->routeIs('admin.inspection.submissions*') ? 'active' : '' }}">
+                                    <i class="nav-icon far fa-circle"></i>
+                                    <p>Protokoll</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ route('admin.inspection.api-keys') }}"
+                                   class="nav-link {{ request()->routeIs('admin.inspection.api-keys*') ? 'active' : '' }}">
+                                    <i class="nav-icon far fa-circle"></i>
+                                    <p>API-Key</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item">
+                        <a href="{{ route('admins.view') }}" class="nav-link {{ request()->routeIs('admins.view') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-user-shield"></i>
+                            <p>Admins</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('staff.view') }}" class="nav-link {{ request()->routeIs('staff.view') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-id-badge"></i>
+                            <p>Mitarbeiter</p>
+                        </a>
+                    </li>
+                    <!-- <li class="nav-item">
+                        <a href="{{ route('unverified.view') }}" class="nav-link {{ request()->routeIs('unverified.view') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-user-clock"></i>
+                            <p>Unverified</p>
+                        </a>
+                    </li>
+                     -->
+                    <li class="nav-item">
+                        <a href="{{ route('users.heard_about') }}" class="nav-link {{ request()->routeIs('users.heard_about') ? 'active' : '' }}">
+                            <i class="nav-icon fas fa-bullhorn"></i>
+                            <p>Feedback</p>
+                        </a>
+                    </li>
+
+                    <!-- {{-- Reviews --}}
                     <li class="nav-item">
                         <a href="{{ route('admin.reviews') }}" class="nav-link {{ request()->routeIs('admin.reviews') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-star"></i>
@@ -517,13 +686,13 @@
                             <i class="nav-icon fas fa-money-bill-wave"></i>
                             <p>Withdraw Requests</p>
                         </a>
-                    </li>
+                    </li> -->
 
                     {{-- Profile Settings --}}
                     <li class="nav-item">
                         <a href="{{ route('admin.profile.settings') }}" class="nav-link {{ request()->routeIs('admin.profile.settings') ? 'active' : '' }}">
                             <i class="nav-icon fas fa-cog"></i>
-                            <p>Profile Settings</p>
+                            <p>Einstellungen</p>
                         </a>
                     </li>
 
@@ -627,5 +796,112 @@ document.addEventListener('click', function(event) {
 </script>
 
 @yield('js')
+
+<script>
+(function () {
+    var notifUrl     = '{{ route('admin.notifications') }}';
+    var markReadUrl  = '{{ route('admin.notifications.read-all') }}';
+    var csrf         = document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').content : '';
+    var loaded       = false;
+
+    function iconClass(type) {
+        if (type === 'inspector_accepted') return 'fas fa-user-check text-success me-2';
+        if (type === 'order_completed')    return 'fas fa-check-circle text-primary me-2';
+        return 'fas fa-bell text-secondary me-2';
+    }
+
+    function makeNotifRow(n) {
+        var item = document.createElement('div');
+        item.className = 'py-2 px-1 border-bottom' + (n.read ? '' : ' bg-light');
+        item.style.fontSize = '13px';
+        if (n.link) { item.style.cursor = 'pointer'; }
+
+        var ic = document.createElement('i');
+        ic.className = iconClass(n.type);
+
+        var title = document.createElement('strong');
+        title.textContent = n.title;
+
+        var msg = document.createElement('div');
+        msg.className = 'ms-4 text-muted';
+        msg.textContent = n.message;
+
+        var time = document.createElement('div');
+        time.className = 'ms-4 text-muted';
+        time.style.fontSize = '11px';
+        time.textContent = n.created_at;
+
+        item.appendChild(ic);
+        item.appendChild(title);
+        item.appendChild(msg);
+        item.appendChild(time);
+
+        if (n.link) {
+            (function(href){ item.addEventListener('click', function() { window.location.href = href; }); })(n.link);
+        }
+        return item;
+    }
+
+    function loadNotifications() {
+        fetch(notifUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function(r){ return r.json(); })
+            .then(function(data) {
+                var badge = document.getElementById('notif-badge');
+                if (data.unread_count > 0) {
+                    badge.textContent = data.unread_count > 99 ? '99+' : String(data.unread_count);
+                    badge.style.display = '';
+                } else {
+                    badge.style.display = 'none';
+                }
+
+                var list = document.getElementById('notif-list');
+                while (list.firstChild) { list.removeChild(list.firstChild); }
+
+                if (!data.notifications.length) {
+                    var empty = document.createElement('span');
+                    empty.className = 'text-muted';
+                    empty.style.fontSize = '13px';
+                    empty.textContent = 'Keine Benachrichtigungen';
+                    list.appendChild(empty);
+                    return;
+                }
+                data.notifications.forEach(function(n) { list.appendChild(makeNotifRow(n)); });
+            })
+            .catch(function() {
+                var list = document.getElementById('notif-list');
+                while (list.firstChild) { list.removeChild(list.firstChild); }
+                var err = document.createElement('span');
+                err.className = 'text-danger';
+                err.style.fontSize = '13px';
+                err.textContent = 'Fehler beim Laden.';
+                list.appendChild(err);
+            });
+    }
+
+    function markAllRead() {
+        fetch(markReadUrl, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrf } })
+            .then(function() {
+                var badge = document.getElementById('notif-badge');
+                badge.style.display = 'none';
+            });
+    }
+
+    document.getElementById('notifBellBtn').addEventListener('click', function () {
+        if (!loaded) { loadNotifications(); loaded = true; }
+        markAllRead();
+    });
+
+    document.getElementById('notif-mark-read').addEventListener('click', function (e) {
+        e.stopPropagation();
+        markAllRead();
+        loadNotifications();
+    });
+
+    // Poll for new notifications every 90 seconds
+    setInterval(function () { loadNotifications(); loaded = true; }, 90000);
+    // Initial unread count on load
+    setTimeout(loadNotifications, 1500);
+})();
+</script>
 </body>
 </html>

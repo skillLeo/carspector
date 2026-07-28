@@ -143,14 +143,19 @@ var AdminBookingsList = function () {
                 info: !1,
                 order: [], // use server-side default (latest first)
                 // Set default page length and menu options
-                pageLength: 15,
+                pageLength: 25,
                 lengthMenu: [[15, 25, 50, 100, -1], [15, 25, 50, 100, 'All']],
                 responsive: false,
-                scrollX: true,
+                scrollX: false,
                 autoWidth: false,
+
+                initComplete: function () {
+                    $('#kt_table_users').css('table-layout', 'fixed');
+                },
+
                 columnDefs: [
-                    { targets: [0, 1, 2, 3, 7, 8], className: 'align-middle text-nowrap' },
-                    { targets: [4, 5, 6], className: 'align-middle text-column' }
+                    { targets: [0, 1, 2, 3,  8], className: 'align-middle' },
+                    { targets: [4, 5, 6, 7,], className: 'align-middle text-column' }
                 ],
                 ajax: {
                     "url": hostUrl+'admin/fetch-bookings',
@@ -178,8 +183,8 @@ var AdminBookingsList = function () {
                     //         //     '                                    </div>';
                     //         return "";
                     //     }},
-                    {data:'admin_order_date_display', name:'admin_order_date', width:'120px'},
-                    {data:'order_number', name:'orderno', width:'60px'},
+                    {data:'admin_order_date_display', name:'admin_order_date', width:'80px'},
+                    {data:'order_number', name:'orderno', width:'70px'},
                     // {data:'examiner.name','name':'examiner.first_name',render:function(data,row,full){
                     //         console.log(full);
                     //       if (full.examiner){
@@ -199,13 +204,14 @@ var AdminBookingsList = function () {
                     //           return '<a href="#" class="btn-assign-examiner" data-id="'+full.id+'" data-bs-toggle="modal" data-bs-target="#assign_examiner">No Examiner</a>';
                     //       }
                     //     }},
-                    {data:'vehicle_type', name:'vehicle_type', width:'155px'},
-                    {data:'status', name:'admin_status', width:'70px'},
-                    {data:'vehicle_display', name:'vehicle_make_model', width:'220px'},
-                    {data:'customer_display', name:'customer_name', width:'240px'},
-                    {data:'examiner_display', name:'examiner_name', width:'190px'},
-                    {data:'completed_at_display', name:'completed_at', width:'150px'},
-                    {data:'paid_at_display', name:'paid_at', width:'150px'},
+                    {data:'actions', name:'actions', width:'60px', searchable:false},
+                    {data:'vehicle_type', name:'vehicle_type', width:'120px'},
+                    {data:'status', name:'admin_status', width:'80px'},
+                    {data:'vehicle_display', name:'vehicle_make_model', width:'170px'},
+                    {data:'customer_display', name:'customer_name', width:'210px'},
+                    {data:'examiner_display', name:'examiner_name', width:'230px'},
+                    {data:'appointment_display', name:'appointment_date', width:'120px', orderable:true},
+                    
                     // {data:'document_in_english'},
                 ]
             }).on("draw", (function () {
@@ -240,21 +246,8 @@ var AdminBookingsList = function () {
                         buttonsStyling: false
                     };
 
-                    if (isSendCustomerPdf) {
-                        // Inject options for send-customer-pdf flow
-                        swalCfg.html = '<div class="d-flex flex-column gap-3 mt-3">\
-                            <div class="form-check text-start d-flex justify-content-center align-items-center">\
-                                <input class="form-check-input" type="checkbox" value="1" id="swal-no-upsell">\
-                                <label class="form-check-label ms-2" for="swal-no-upsell">Partner</label>\
-                            </div>\
-                            <div class="form-check text-start d-flex justify-content-center align-items-center">\
-                                <input class="form-check-input" type="checkbox" value="1" id="swal-sent-review">\
-                                <label class="form-check-label ms-2" for="swal-sent-review">Bewertung</label>\
-                            </div>\
-                        </div>';
-                        // Prefer html over text if present
-                        delete swalCfg.text;
-                    }
+                    if (isSendCustomerPdf) { 
+                        swalCfg.html = '<div class="d-flex flex-column gap-3 mt-3">\ <div class="form-check text-start d-flex justify-content-center align-items-center">\ <input class="form-check-input" type="checkbox" value="1" id="swal-no-upsell">\ <label class="form-check-label ms-2" for="swal-no-upsell">Partner</label>\ </div>\ <div class="form-check text-start d-flex justify-content-center align-items-center">\ <input class="form-check-input" type="checkbox" value="1" id="swal-sent-review">\ <label class="form-check-label ms-2" for="swal-sent-review">Bewertung</label>\ </div>\ </div>'; delete swalCfg.text; }
 
                     Swal.fire(swalCfg).then(function(res){
                         if(res.isConfirmed){
@@ -510,6 +503,23 @@ var AdminBookingsList = function () {
             $(document).on('input','#examiner_email_message',function(){ manualEmailMessageDirty=true; });
             $(document).on('input change','.js-manual-mail-field',function(){ buildManualEmailTemplate(false); });
 
+            $(document).off('click.confirmdelete','.js-confirm-delete').on('click.confirmdelete','.js-confirm-delete',function(e){
+                e.preventDefault();
+                var href=$(this).attr('href');
+                var msg=$(this).data('message')||'Are you sure? This will remove the examiner and reset the examination.';
+                Swal.fire({
+                    text:msg,
+                    icon:'warning',
+                    showCancelButton:true,
+                    buttonsStyling:false,
+                    confirmButtonText:'Yes, remove it',
+                    cancelButtonText:'Cancel',
+                    customClass:{confirmButton:'btn btn-danger fw-bold',cancelButton:'btn btn-light fw-bold'}
+                }).then(function(result){
+                    if(result.isConfirmed){ window.location.href=href; }
+                });
+            });
+
             $(document).off('click','.btn-assign-examiner').on('click','.btn-assign-examiner',function(e){
                e.preventDefault();
                orderid=$(this).attr('data-id');
@@ -545,11 +555,12 @@ var AdminBookingsList = function () {
                $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2" role="status"></span>Assigning...');
                var examinerid=$('#select-examiner').val();
                var email=$('#examiner_email').val();
+               var examinerName=$('#examiner_name_assign').val();
                 $.ajax({
                     url:examinerAssign,
                     headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
                     type:"POST",
-                    data:{id:orderid,examiner_id:examinerid,email:email},
+                    data:{id:orderid,examiner_id:examinerid,email:email,examiner_name:examinerName},
                     success:function(data){
                         toastr.success('','Examiner assigned successfully...');
                         $('#assign_examiner').modal('hide');

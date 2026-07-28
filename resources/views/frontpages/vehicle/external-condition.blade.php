@@ -27,11 +27,41 @@
 
   .add-more-holder { margin-top:10px; }
 
+  /* Per-damage photo section */
+  .damage-photo-section { margin-top:.6rem; padding:.6rem .7rem; background:#fff8f0; border:1px solid #fed7aa; border-radius:8px; }
+  .damage-photo-thumbs { display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:.5rem; }
+  .damage-photo-thumb { position:relative; width:80px; height:80px; border-radius:8px; overflow:hidden; border:1px solid #e5e7eb; }
+  .damage-photo-thumb img { width:100%; height:100%; object-fit:cover; }
+  .damage-photo-thumb .rm-photo { position:absolute; top:2px; right:2px; background:rgba(220,38,38,.85); color:#fff; border:none; border-radius:50%; width:20px; height:20px; font-size:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0; line-height:1; }
+  .damage-photo-upload-btn { font-size:.85rem; }
+  .damage-photo-uploading { font-size:.8rem; color:#6b7280; }
+
   /* Felgen-Unterabschnitt */
   .rim-sub { border:1px solid #e5e7eb; border-radius:10px; background:#fff; padding:12px; margin-bottom:12px; }
 
   /* Erzwingt einspaltig (auch Desktop) */
   .force-single .row > [class*="col-"] { flex:0 0 100% !important; max-width:100% !important; }
+
+  @media (max-width: 767px) {
+
+    .container-fluid.page-bg {
+        padding-left: 0px;
+        padding-right: 0px;
+    }
+
+    .card-modern {
+        border: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        background: transparent;
+    }
+
+    .card-modern > .card-header,
+    .card-modern > .card-body {
+        background: #fff;
+        border-radius: 12px;
+    }
+}
 </style>
 
 <div class="container-fluid page-bg py-3 py-md-5">
@@ -127,7 +157,7 @@
                 $rowsCount = max(1, count($prefDetails));
               @endphp
 
-              <div class="doc-row mb-3 box" data-scope="exterior" data-name="{{ $k }}">
+              <div class="doc-row mb-3 box" data-scope="exterior" data-name="{{ $k }}" data-part-label="{{ $label }}" data-order-id="{{ $id }}" data-upload-url="{{ route('examination.store.images') }}" data-csrf="{{ csrf_token() }}">
                 <p class="doc-title">{{ $label }}</p>
 
                 {{-- Zustand (eigene Zeile) --}}
@@ -152,10 +182,15 @@
                       @php
                         $dVal = $prefDetails[$ri] ?? '';
                         $oVal = $prefOthers[$ri]  ?? '';
+                        $extEntryId = $k . ':' . $ri;
+                        $extDomId   = $k . '-' . $ri;
+                        $extPhotos = ($examination->id ?? null)
+                          ? \App\Models\ExaminationImage::where('examination_id', $examination->id)
+                              ->where('damage_component', $extEntryId)->get()
+                          : collect();
                       @endphp
 
-                      <div class="damage-row">
-                        {{-- Zeile 1: Schaden-Auswahl + Löschen rechts --}}
+                      <div class="damage-row" data-entry-id="{{ $extEntryId }}">
                         <div class="damage-line">
                           <select name="{{ $k }}_details[]" class="form-select select-tall js-detail">
                             <option value="">-- bitte wählen --</option>
@@ -165,10 +200,26 @@
                           </select>
                           <button type="button" class="btn btn-danger btn-sm btn-del js-remove-detail"><i class="fa-solid fa-trash-can"></i></button>
                         </div>
-
-                        {{-- Zeile 2 (optional): Sonstiges-Beschreibung --}}
                         <div class="mt-2 js-other-wrap {{ $dVal==='Sonstiges' ? '' : 'hidden' }}">
                           <input type="text" name="{{ $k }}_details_other[]" class="form-control input-compact" placeholder="kurz beschreiben…" value="{{ $oVal }}">
+                        </div>
+                        <div class="damage-photo-section {{ $dVal !== '' ? '' : 'hidden' }}">
+                          <div class="small fw-semibold mb-1"><i class="fa-solid fa-camera me-1 text-warning"></i> Schadensfotos</div>
+                          <div class="damage-photo-thumbs" id="photo-thumbs-{{ $extDomId }}">
+                            @foreach($extPhotos as $photo)
+                              <div class="damage-photo-thumb" id="dmg-thumb-{{ $photo->id }}">
+                                <img src="{{ asset('storage/' . $photo->image) }}" alt="">
+                                <button type="button" class="rm-photo" data-id="{{ $photo->id }}" title="Entfernen">×</button>
+                              </div>
+                            @endforeach
+                          </div>
+                          <label class="btn btn-outline-secondary btn-sm damage-photo-upload-btn mb-0 mt-1" style="cursor:pointer;">
+                            <i class="fa-solid fa-plus me-1"></i> Foto
+                            <input type="file" accept="image/*" multiple class="d-none js-damage-photo-input"
+                                   data-entry-id="{{ $extEntryId }}" data-part-label="{{ $label }}"
+                                   data-order-id="{{ $id }}" data-upload-url="{{ route('examination.store.images') }}" data-csrf="{{ csrf_token() }}">
+                          </label>
+                          <span class="damage-photo-uploading d-none ms-2" id="uploading-{{ $extDomId }}"><i class="fa-solid fa-spinner fa-spin me-1"></i></span>
                         </div>
                       </div>
                     @endfor
@@ -188,10 +239,19 @@
                             <option value="{{ $opt }}">{{ $opt }}</option>
                           @endforeach
                         </select>
-                        <button type="button" class="btn btn-danger btn-sm btn-del js-remove-detail">🗑️</button>
+                        <button type="button" class="btn btn-danger btn-sm btn-del js-remove-detail"><i class="fa-solid fa-trash-can"></i></button>
                       </div>
                       <div class="mt-2 js-other-wrap hidden">
                         <input type="text" name="{{ $k }}_details_other[]" class="form-control input-compact" placeholder="kurz beschreiben…">
+                      </div>
+                      <div class="damage-photo-section hidden">
+                        <div class="small fw-semibold mb-1"><i class="fa-solid fa-camera me-1 text-warning"></i> Schadensfotos</div>
+                        <div class="damage-photo-thumbs"></div>
+                        <label class="btn btn-outline-secondary btn-sm damage-photo-upload-btn mb-0 mt-1" style="cursor:pointer;">
+                          <i class="fa-solid fa-plus me-1"></i> Foto
+                          <input type="file" accept="image/*" multiple class="d-none js-damage-photo-input">
+                        </label>
+                        <span class="damage-photo-uploading d-none ms-2"><i class="fa-solid fa-spinner fa-spin me-1"></i></span>
                       </div>
                     </div>
                   </template>
@@ -219,7 +279,7 @@
                   $rowsCount = max(1, count($prefDetails));
                 @endphp
 
-                <div class="rim-sub box" data-scope="rim" data-name="rims[{{ $i }}]">
+                <div class="rim-sub box" data-scope="rim" data-name="rims[{{ $i }}]" data-entry-prefix="rim_{{ $i }}" data-part-label="{{ $label }}" data-order-id="{{ $id }}" data-upload-url="{{ route('examination.store.images') }}" data-csrf="{{ csrf_token() }}">
                   <strong>{{ $label }}</strong>
                   <input type="hidden" name="rims[{{ $i }}][position]" value="{{ $pos }}">
 
@@ -243,9 +303,15 @@
                         @php
                           $dVal = $prefDetails[$ri] ?? '';
                           $oVal = $prefOthers[$ri]  ?? '';
+                          $rimEntryId = 'rim_' . $i . ':' . $ri;
+                          $rimDomId   = 'rim-' . $i . '-' . $ri;
+                          $rimPhotos = ($examination->id ?? null)
+                            ? \App\Models\ExaminationImage::where('examination_id', $examination->id)
+                                ->where('damage_component', $rimEntryId)->get()
+                            : collect();
                         @endphp
 
-                        <div class="damage-row">
+                        <div class="damage-row" data-entry-id="{{ $rimEntryId }}">
                           <div class="damage-line">
                             <select name="rims[{{ $i }}][details][]" class="form-select select-tall js-detail">
                               <option value="">-- bitte wählen --</option>
@@ -257,6 +323,24 @@
                           </div>
                           <div class="mt-2 js-other-wrap {{ $dVal==='Sonstiges' ? '' : 'hidden' }}">
                             <input type="text" name="rims[{{ $i }}][details_other][]" class="form-control input-compact" placeholder="kurz beschreiben…" value="{{ $oVal }}">
+                          </div>
+                          <div class="damage-photo-section {{ $dVal !== '' ? '' : 'hidden' }}">
+                            <div class="small fw-semibold mb-1"><i class="fa-solid fa-camera me-1 text-warning"></i> Schadensfotos</div>
+                            <div class="damage-photo-thumbs" id="photo-thumbs-{{ $rimDomId }}">
+                              @foreach($rimPhotos as $photo)
+                                <div class="damage-photo-thumb" id="dmg-thumb-{{ $photo->id }}">
+                                  <img src="{{ asset('storage/' . $photo->image) }}" alt="">
+                                  <button type="button" class="rm-photo" data-id="{{ $photo->id }}" title="Entfernen">×</button>
+                                </div>
+                              @endforeach
+                            </div>
+                            <label class="btn btn-outline-secondary btn-sm damage-photo-upload-btn mb-0 mt-1" style="cursor:pointer;">
+                              <i class="fa-solid fa-plus me-1"></i> Foto
+                              <input type="file" accept="image/*" multiple class="d-none js-damage-photo-input"
+                                     data-entry-id="{{ $rimEntryId }}" data-part-label="{{ $label }}"
+                                     data-order-id="{{ $id }}" data-upload-url="{{ route('examination.store.images') }}" data-csrf="{{ csrf_token() }}">
+                            </label>
+                            <span class="damage-photo-uploading d-none ms-2" id="uploading-{{ $rimDomId }}"><i class="fa-solid fa-spinner fa-spin me-1"></i></span>
                           </div>
                         </div>
                       @endfor
@@ -277,9 +361,18 @@
                           </select>
                           <button type="button" class="btn btn-danger btn-sm btn-del js-remove-detail">Löschen</button>
                         </div>
-                      <div class="mt-2 js-other-wrap hidden">
-                        <input type="text" name="rims[{{ $i }}][details_other][]" class="form-control input-compact" placeholder="kurz beschreiben…">
-                      </div>
+                        <div class="mt-2 js-other-wrap hidden">
+                          <input type="text" name="rims[{{ $i }}][details_other][]" class="form-control input-compact" placeholder="kurz beschreiben…">
+                        </div>
+                        <div class="damage-photo-section hidden">
+                          <div class="small fw-semibold mb-1"><i class="fa-solid fa-camera me-1 text-warning"></i> Schadensfotos</div>
+                          <div class="damage-photo-thumbs"></div>
+                          <label class="btn btn-outline-secondary btn-sm damage-photo-upload-btn mb-0 mt-1" style="cursor:pointer;">
+                            <i class="fa-solid fa-plus me-1"></i> Foto
+                            <input type="file" accept="image/*" multiple class="d-none js-damage-photo-input">
+                          </label>
+                          <span class="damage-photo-uploading d-none ms-2"><i class="fa-solid fa-spinner fa-spin me-1"></i></span>
+                        </div>
                       </div>
                     </template>
                   </div>
@@ -304,7 +397,7 @@
                 $rowsCount = max(1, count($prefDetails));
               @endphp
 
-              <div class="doc-row mb-3 box" data-scope="mechanic" data-name="{{ $k }}">
+              <div class="doc-row mb-3 box" data-scope="mechanic" data-name="{{ $k }}" data-part-label="{{ $label }}" data-order-id="{{ $id }}" data-upload-url="{{ route('examination.store.images') }}" data-csrf="{{ csrf_token() }}">
                 <p class="doc-title">{{ $label }}</p>
 
                 {{-- Zustand --}}
@@ -329,9 +422,15 @@
                       @php
                         $dVal = $prefDetails[$ri] ?? '';
                         $oVal = $prefOthers[$ri]  ?? '';
+                        $mechEntryId = $k . ':' . $ri;
+                        $mechDomId   = $k . '-' . $ri;
+                        $mechPhotos = ($examination->id ?? null)
+                          ? \App\Models\ExaminationImage::where('examination_id', $examination->id)
+                              ->where('damage_component', $mechEntryId)->get()
+                          : collect();
                       @endphp
 
-                      <div class="damage-row">
+                      <div class="damage-row" data-entry-id="{{ $mechEntryId }}">
                         <div class="damage-line">
                           <select name="{{ $k }}_details[]" class="form-select select-tall js-detail">
                             <option value="">-- bitte wählen --</option>
@@ -343,6 +442,24 @@
                         </div>
                         <div class="mt-2 js-other-wrap {{ $dVal==='Sonstiges' ? '' : 'hidden' }}">
                           <input type="text" name="{{ $k }}_details_other[]" class="form-control input-compact" placeholder="kurz beschreiben…" value="{{ $oVal }}">
+                        </div>
+                        <div class="damage-photo-section {{ $dVal !== '' ? '' : 'hidden' }}">
+                          <div class="small fw-semibold mb-1"><i class="fa-solid fa-camera me-1 text-warning"></i> Schadensfotos</div>
+                          <div class="damage-photo-thumbs" id="photo-thumbs-{{ $mechDomId }}">
+                            @foreach($mechPhotos as $photo)
+                              <div class="damage-photo-thumb" id="dmg-thumb-{{ $photo->id }}">
+                                <img src="{{ asset('storage/' . $photo->image) }}" alt="">
+                                <button type="button" class="rm-photo" data-id="{{ $photo->id }}" title="Entfernen">×</button>
+                              </div>
+                            @endforeach
+                          </div>
+                          <label class="btn btn-outline-secondary btn-sm damage-photo-upload-btn mb-0 mt-1" style="cursor:pointer;">
+                            <i class="fa-solid fa-plus me-1"></i> Foto
+                            <input type="file" accept="image/*" multiple class="d-none js-damage-photo-input"
+                                   data-entry-id="{{ $mechEntryId }}" data-part-label="{{ $label }}"
+                                   data-order-id="{{ $id }}" data-upload-url="{{ route('examination.store.images') }}" data-csrf="{{ csrf_token() }}">
+                          </label>
+                          <span class="damage-photo-uploading d-none ms-2" id="uploading-{{ $mechDomId }}"><i class="fa-solid fa-spinner fa-spin me-1"></i></span>
                         </div>
                       </div>
                     @endfor
@@ -365,6 +482,15 @@
                       </div>
                       <div class="mt-2 js-other-wrap hidden">
                         <input type="text" name="{{ $k }}_details_other[]" class="form-control input-compact" placeholder="kurz beschreiben…">
+                      </div>
+                      <div class="damage-photo-section hidden">
+                        <div class="small fw-semibold mb-1"><i class="fa-solid fa-camera me-1 text-warning"></i> Schadensfotos</div>
+                        <div class="damage-photo-thumbs"></div>
+                        <label class="btn btn-outline-secondary btn-sm damage-photo-upload-btn mb-0 mt-1" style="cursor:pointer;">
+                          <i class="fa-solid fa-plus me-1"></i> Foto
+                          <input type="file" accept="image/*" multiple class="d-none js-damage-photo-input">
+                        </label>
+                        <span class="damage-photo-uploading d-none ms-2"><i class="fa-solid fa-spinner fa-spin me-1"></i></span>
                       </div>
                     </div>
                   </template>
@@ -444,52 +570,217 @@
 @section('scripts')
 <script>
 (function(){
+  var boxCounters = {};
+
+  function makeDamageThumb(id, src) {
+    var wrap = document.createElement('div'); wrap.className='damage-photo-thumb'; wrap.id='dmg-thumb-'+id;
+    var img = document.createElement('img'); img.src=src; img.alt='';
+    var btn = document.createElement('button'); btn.type='button'; btn.className='rm-photo';
+    btn.setAttribute('data-id', id); btn.title='Entfernen'; btn.textContent='×';
+    bindRemovePhoto(btn); wrap.appendChild(img); wrap.appendChild(btn); return wrap;
+  }
+  function bindRemovePhoto(btn) {
+    btn.addEventListener('click', function(){
+      var id=this.getAttribute('data-id'); var thumb=document.getElementById('dmg-thumb-'+id);
+      if(!confirm('Foto entfernen?')) return;
+      fetch('{{ url("examination-delete-image") }}/'+id,{method:'GET',headers:{'X-Requested-With':'XMLHttpRequest'}})
+        .finally(function(){ if(thumb) thumb.remove(); });
+    });
+  }
+
+  function uploadDamagePhoto(input, file){
+  return new Promise(function(resolve){
+
+    var entryId=input.getAttribute('data-entry-id'),
+        partLabel=input.getAttribute('data-part-label');
+
+    var orderId=input.getAttribute('data-order-id'),
+        url=input.getAttribute('data-upload-url'),
+        csrf=input.getAttribute('data-csrf');
+
+    if(!entryId||!orderId||!url||!csrf){
+      resolve();
+      return;
+    }
+
+    var domId=entryId.replace(':','-').replace('[','').replace(']','');
+    var thumbWrap=document.getElementById('photo-thumbs-'+domId),
+        spinner=document.getElementById('uploading-'+domId);
+
+    var row=input.closest('.damage-row');
+    var sel=row?row.querySelector('.js-detail'):null;
+    var dmgType=(sel&&sel.value)?sel.value:'';
+
+    if(dmgType==='Sonstiges'){
+      var oi=row?row.querySelector('.js-other-wrap input'):null;
+      dmgType=(oi&&oi.value.trim())?oi.value.trim():'Sonstiges';
+    }
+
+    var caption=(partLabel||'')+(dmgType?' - '+dmgType:'');
+
+    if(spinner) spinner.classList.remove('d-none');
+
+    var fd=new FormData();
+    fd.append('photos[]',file);
+    fd.append('id',orderId);
+    fd.append('form','external-condition');
+    fd.append('document_type','Schadensfoto');
+    fd.append('damage_component',entryId);
+    fd.append('caption',caption);
+    fd.append('_token',csrf);
+
+    fetch(url,{
+      method:'POST',
+      body:fd,
+      headers:{'X-Requested-With':'XMLHttpRequest'}
+    })
+    .then(function(r){
+      return r.json();
+    })
+    .then(function(data){
+      if(data.success&&data.items){
+
+        if(!thumbWrap){
+          thumbWrap = row ? row.querySelector('.damage-photo-thumbs') : null;
+        }
+
+        if(thumbWrap){
+          data.items.forEach(function(item){
+            if(item.image1){
+              thumbWrap.appendChild(
+                makeDamageThumb(item.id,item.image1)
+              );
+            }
+          });
+        }
+      }
+    })
+    .catch(function(err){
+      console.error(err);
+    })
+    .finally(function(){
+      if(spinner) spinner.classList.add('d-none');
+      resolve();
+    });
+
+  });
+}
+function bindPhotoInput(input){
+  input.addEventListener('change', async function(){
+
+    const files = Array.from(this.files);
+
+    for(const file of files){
+      await uploadDamagePhoto(input, file);
+    }
+
+    this.value = '';
+  });
+}
+
+  function bindPhotoToggle(row) {
+    var sel=row.querySelector('.js-detail'); if(!sel) return;
+    var ps=row.querySelector('.damage-photo-section'); if(!ps) return;
+    var apply=function(){ ps.classList.toggle('hidden',!sel.value||sel.value===''); };
+    sel.addEventListener('change', apply); apply();
+  }
+  function bindRemovePhotosInRow(row){
+    row.querySelectorAll('.rm-photo').forEach(bindRemovePhoto);
+  }
+  function bindFileInputsInRow(row){
+    row.querySelectorAll('.js-damage-photo-input').forEach(bindPhotoInput);
+  }
+
+  // Init existing rows
+  document.querySelectorAll('.damage-row').forEach(function(row){
+    bindPhotoToggle(row);
+    bindRemovePhotosInRow(row);
+    bindFileInputsInRow(row);
+  });
+
   // Status -> Multi-Schäden Wrap per Box
   document.querySelectorAll('.box').forEach(function(box){
-    const statusSel = box.querySelector('.js-status');
-    const wrap = box.querySelector('.js-multi-wrap');
+    var statusSel = box.querySelector('.js-status');
+    var wrap = box.querySelector('.js-multi-wrap');
     if (!statusSel || !wrap) return;
     function toggle(){ wrap.classList.toggle('hidden', (statusSel.value||'').toLowerCase() !== 'beschädigt'); }
     statusSel.addEventListener('change', toggle);
     toggle();
   });
 
-  // Delegation: Add/Remove + Sonstiges an/aus
+  // Delegation: Add/Remove + Sonstiges + Photo toggle
   document.querySelectorAll('.box').forEach(function(box){
+    var boxName = box.getAttribute('data-name') || '';
+    var partLabel = box.getAttribute('data-part-label') || '';
+    var orderId = box.getAttribute('data-order-id') || '';
+    var uploadUrl = box.getAttribute('data-upload-url') || '';
+    var csrf = box.getAttribute('data-csrf') || '';
+
     box.addEventListener('click', function(e){
       // Hinzufügen
       if (e.target.closest('.js-add-detail')){
-        const multi = e.target.closest('.box').querySelector('.js-multi-wrap');
+        var multi = e.target.closest('.box').querySelector('.js-multi-wrap');
         if (!multi) return;
-        const list = multi.querySelector('.js-details-list');
-        const tpl  = multi.querySelector('.js-detail-template');
+        var list = multi.querySelector('.js-details-list');
+        var tpl  = multi.querySelector('.js-detail-template');
         if (list && tpl){
-          list.appendChild(tpl.content.cloneNode(true));
+          var node = tpl.content.cloneNode(true);
+          var newRow = node.querySelector ? node : node.firstElementChild;
+          // Find the actual .damage-row element
+          var rowEl = node.querySelector ? null : null;
+          // Insert and find it
+          var countBefore = list.querySelectorAll('.damage-row').length;
+          list.appendChild(node);
+          var rows = list.querySelectorAll('.damage-row');
+          var addedRow = rows[rows.length-1];
+          if(addedRow) {
+            var entryPrefix = box.getAttribute('data-entry-prefix') || boxName;
+            var newEntryId = entryPrefix + ':' + countBefore;
+            addedRow.setAttribute('data-entry-id', newEntryId);
+            // Set data on file input
+            var fi = addedRow.querySelector('.js-damage-photo-input');
+            if(fi && orderId) {
+              fi.setAttribute('data-entry-id', newEntryId);
+              fi.setAttribute('data-part-label', partLabel);
+              fi.setAttribute('data-order-id', orderId);
+              fi.setAttribute('data-upload-url', uploadUrl);
+              fi.setAttribute('data-csrf', csrf);
+              bindPhotoInput(fi);
+            }
+            // Set thumb container id
+            var tc = addedRow.querySelector('.damage-photo-thumbs');
+            if(tc) tc.id = 'photo-thumbs-' + newEntryId.replace(':','-').replace('[','').replace(']','');
+            // Set spinner id
+            var sp = addedRow.querySelector('.damage-photo-uploading');
+            if(sp) sp.id = 'uploading-' + newEntryId.replace(':','-').replace('[','').replace(']','');
+            bindPhotoToggle(addedRow);
+          }
         }
       }
       // Entfernen
       if (e.target.closest('.js-remove-detail')){
-        const row  = e.target.closest('.damage-row');
-        const list = e.target.closest('.js-details-list');
+        var row  = e.target.closest('.damage-row');
+        var list = e.target.closest('.js-details-list');
         if (row && list){
-          const count = list.querySelectorAll('.damage-row').length;
-          if (count > 1) row.remove(); // mindestens 1 Zeile behalten
+          var count = list.querySelectorAll('.damage-row').length;
+          if (count > 1) row.remove();
         }
       }
     });
 
-    // „Sonstiges“ Feld je Zeile toggeln
+    // Sonstiges + photo toggle per row
     box.addEventListener('change', function(e){
       if (e.target.classList.contains('js-detail')){
-        const row = e.target.closest('.damage-row');
+        var row = e.target.closest('.damage-row');
         if (!row) return;
-        const otherWrap  = row.querySelector('.js-other-wrap');
-        const otherInput = otherWrap ? otherWrap.querySelector('input,textarea') : null;
-        const isOther = e.target.value === 'Sonstiges';
-        if (otherWrap){
-          otherWrap.classList.toggle('hidden', !isOther);
-          if (otherInput) otherInput.required = isOther;
-        }
+        // Sonstiges toggle
+        var otherWrap  = row.querySelector('.js-other-wrap');
+        var otherInput = otherWrap ? otherWrap.querySelector('input,textarea') : null;
+        var isOther = e.target.value === 'Sonstiges';
+        if (otherWrap){ otherWrap.classList.toggle('hidden', !isOther); if (otherInput) otherInput.required = isOther; }
+        // Photo section toggle
+        var ps = row.querySelector('.damage-photo-section');
+        if (ps) ps.classList.toggle('hidden', !e.target.value || e.target.value === '');
       }
     });
   });

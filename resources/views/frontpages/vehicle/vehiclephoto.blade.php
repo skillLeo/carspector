@@ -19,6 +19,7 @@
 
   /* Thumbs – größer */
   .thumb { border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; background:#fff; }
+  .thumb-caption { font-size: 11px; color: #374151; padding: 4px 8px 6px; background: #f9fafb; border-top: 1px solid #e5e7eb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .thumb-head { display:flex; justify-content:space-between; align-items:center; padding:.5rem .7rem; background:#f9fafb; border-bottom:1px solid #eef2f7; }
   .thumb-img-wrap { width:100%; height:280px; background:#fff; } /* größer */
   .thumb img { display:block; width:100%; height:100%; object-fit:cover; transform-origin:center center; transition:transform .2s ease; }
@@ -82,6 +83,93 @@
     .thumb-head { padding: .4rem .6rem; }
     .thumb-actions .btn-icon { padding: .2rem .35rem; }
   }
+
+  /* Pflichtfotos */
+  .pflicht-group { margin-bottom: 1.25rem; }
+  .pflicht-group-title { font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #6b7280; margin: 0 0 .45rem; }
+  .pflicht-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .45rem; }
+  @media (max-width: 767px) {
+    .pflicht-grid {
+        gap: 1.3rem .45rem;
+    }
+}
+  @media (min-width: 480px) { .pflicht-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 768px) { .pflicht-grid { grid-template-columns: repeat(4, 1fr); } }
+  .pflicht-slot { border: 1.5px solid #e5e7eb; border-radius: 10px; background: #fff; overflow: hidden; display: flex; flex-direction: column; }
+  .pflicht-slot.has-photos { border-color: #22c55e; }
+  .pflicht-slot-head { display: flex; align-items: center; justify-content: space-between; gap: .3rem; padding: .35rem .5rem; background: #f9fafb; border-bottom: 1px solid #eef2f7; }
+  .slot-name { font-size: .75rem; font-weight: 600; color: #374151; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .slot-badge { font-size: .7rem; font-weight: 700; border-radius: 999px; padding: .1rem .4rem; flex-shrink: 0; }
+  .slot-badge.badge-empty { background: #f3f4f6; color: #9ca3af; border: 1px solid #e5e7eb; }
+  .slot-badge.badge-done  { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+  .pflicht-thumbs { display: flex; flex-wrap: wrap; gap: .25rem; padding: .35rem; }
+  .pflicht-thumb { position: relative; width: 52px; height: 52px; border-radius: 6px; overflow: hidden; flex-shrink: 0; }
+  .pflicht-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .pt-rm { position: absolute; top: 1px; right: 1px; width: 17px; height: 17px; background: rgba(0,0,0,.7); color: #fff; border: none; border-radius: 999px; font-size: .75rem; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .pflicht-add-btn { display: flex; align-items: center; justify-content: center; gap: .35rem; padding: .4rem .5rem; margin: .35rem; border: 1.5px dashed #d1d5db; border-radius: 8px; cursor: pointer; font-size: .78rem; color: #6b7280; background: #f9fafb; transition: border-color .15s, background .15s; }
+  .pflicht-add-btn:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+  .pt-spinner { text-align: center; padding: .3rem; }
+  #photo-dropzone {
+    border: 2px dashed #d6dbe1 !important;
+    background: #fafbfc;
+    transition: all .2s ease;
+}
+
+#photo-dropzone:hover {
+    border-color: var(--bs-primary) !important;
+    background: #f8fbff;
+}
+
+#photo-dropzone.dz-drag-hover {
+    border-color: var(--bs-primary) !important;
+    background: #eef6ff;
+}
+
+.pflicht-thumb {
+    position: relative;
+    width: 85px;
+    height: 85px;
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+@media (max-width: 767px) {
+
+    .container-fluid.page-bg {
+        padding-left: 0px;
+        padding-right: 0px;
+    }
+
+    .card-modern {
+        border: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        background: transparent;
+    }
+
+    .card-modern > .card-header,
+    .card-modern > .card-body {
+        background: #fff;
+        border-radius: 12px;
+    }
+}
+
+/* @media (max-width: 767px) {
+    .pflicht-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .pflicht-slot {
+        width: 100% !important;
+    }
+
+    .pflicht-placeholder,
+    .pflicht-thumb {
+        width: 100% !important;
+        height: auto !important;
+        aspect-ratio: 4 / 3;
+    }
+} */
 </style>
 
 <div class="container-fluid page-bg py-3 py-md-5">
@@ -95,7 +183,7 @@
         <input type="hidden" name="form" value="save-back">
         <input type="hidden" name="next_url" value="{{ route('examiner.order', ['id' => $id]) }}">
       </form>
-      <div class="my-2">
+      <div class="my-2 d-flex align-items-center justify-content-between flex-wrap gap-2">
         <button type="button" class="js-save-back fw-semibold d-inline-block py-1 pb-3" style="color: var(--primary); text-decoration: none; background: transparent; border: 0;">
           <i class="fa-solid fa-arrow-left me-2"></i> Speichern &amp; zurück zum Hauptmenü
         </button>
@@ -107,14 +195,23 @@
         </div>
 
         <div class="card-body p-4 pt-3">
-           @if(auth()->check() && in_array(auth()->user()->type ?? null, ['admin', 'staff']))
-            <div class="d-grid mb-4">
-                <a href="{{route('examination.images.zip',$examination->order_id)}}" style="max-width: 100%; margin: 0 auto" class="btn btn-primary d-inline-flex align-items-center justify-content-center">
-                    Download Images
-                </a>
-            </div>
-            @endif
-          {{-- Vorgabe (kompakt) --}}
+    @if(auth()->check() && in_array(auth()->user()->type ?? null, ['admin', 'staff']))
+    <div class="d-flex flex-column flex-md-row gap-2 mb-4 justify-content-center">
+        
+        <a href="{{ route('examination.images.zip', $examination->order_id) }}"
+           class="btn btn-primary d-inline-flex align-items-center justify-content-center">
+            ZIP herunterladen
+        </a>
+
+        <a href="{{ route('examiner.generate.photo.pdf', $id) }}"
+           class="btn btn-primary d-inline-flex align-items-center justify-content-center">
+            <i class="fa-solid fa-file-image me-2"></i>
+            PDF erstellen
+        </a>
+
+    </div>
+    @endif
+          <!-- {{-- Vorgabe (kompakt) --}}
           <div class="req-compact mb-3" aria-label="Fotovorgaben">
                           <p class="title">Vorgabe</p>
             <div class="head">
@@ -128,67 +225,280 @@
                 <span class="pill"><span class="name">Schäden</span><span class="count">nach Bedarf</span></span>
               </div>
             </div>
+          </div> -->
+
+          <div class="alert alert-warning border-0 shadow-sm mb-4">
+              <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                  <div>
+                      <i class="fa-solid fa-camera me-2"></i>
+                      Bitte Fotos nur im <b>Querformat</b> aufnehmen
+                  </div>
+
+                  <div class="d-flex gap-2">
+                      <div class="border rounded px-3 py-2 bg-white text-success small fw-bold">
+                          ✓ ▭
+                      </div>
+
+                      <div class="border rounded px-3 py-2 bg-white text-danger small fw-bold">
+                          ✕ ▯
+                      </div>
+                  </div>
+              </div>
           </div>
+        
+
+          {{-- Pflichtfotos --}}
+          @php
+            $pflichtDefs = [
+              'Außen' => [
+              ['key'=>'pflicht:front',       'label'=>'Frontansicht'],
+              ['key'=>'pflicht:front_left',  'label'=>'Vorne Links (Diag.)'],
+
+              ['key'=>'pflicht:left',        'label'=>'Linke Seite'],
+              ['key'=>'pflicht:rear_left',   'label'=>'Hinten Links (Diag.)'],
+
+              ['key'=>'pflicht:rear',        'label'=>'Heckansicht'],
+              ['key'=>'pflicht:rear_right',  'label'=>'Hinten Rechts (Diag.)'],
+
+              ['key'=>'pflicht:right',       'label'=>'Rechte Seite'],
+              ['key'=>'pflicht:front_right', 'label'=>'Vorne Rechts (Diag.)'],
+
+              ['key'=>'pflicht:roof',        'label'=>'Dach'],
+              ['key'=>'pflicht:underbody',   'label'=>'Unterboden'],
+
+              ['key'=>'pflicht:engine',      'label'=>'Motorraum'],
+              ['key'=>'pflicht:vin',         'label'=>'FIN'],
+          ],
+
+          'Räder' => [
+              ['key'=>'pflicht:tire_fl', 'label'=>'Rad Vorne Links'],
+              ['key'=>'pflicht:tire_rl', 'label'=>'Rad Hinten Links'],
+              ['key'=>'pflicht:tire_rr', 'label'=>'Rad Hinten Rechts'],
+              ['key'=>'pflicht:tire_fr', 'label'=>'Rad Vorne Rechts'],
+          ],
+
+          'Innen' => [
+              ['key'=>'pflicht:driver_seat',    'label'=>'Sitz Vorne Links'],
+              ['key'=>'pflicht:footwell',       'label'=>'Fußraum'],
+              ['key'=>'pflicht:cockpit',        'label'=>'Cockpit'],
+              ['key'=>'pflicht:steering',       'label'=>'Lenkrad'],
+              ['key'=>'pflicht:odometer',       'label'=>'Kilometerstand'],
+              ['key'=>'pflicht:gear',           'label'=>'Schaltung'],
+
+              ['key'=>'pflicht:rear_seat_l',    'label'=>'Sitz Hinten Links'],
+              ['key'=>'pflicht:trunk',          'label'=>'Kofferraum'],
+
+              ['key'=>'pflicht:rear_seat_r',    'label'=>'Sitz Hinten Rechts'],
+              ['key'=>'pflicht:passenger_seat', 'label'=>'Sitz Vorne Rechts'],
+              ['key'=>'pflicht:headliner',      'label'=>'Dachhimmel'],
+              
+          ],
+              // 'FIN / VIN' => [
+              //
+              // ],
+              //
+              // 'KM-Stand' => [
+              //
+              // ],
+              //
+              // 'Motorraum' => [
+              //
+              // ],
+            ];
+            $pflichtPhotos = \App\Models\ExaminationImage::where('examination_id', $examination->id)
+              ->where('document_type', 'Pflichtfoto')
+              ->get()
+              ->groupBy('damage_component');
+          @endphp
+          <div class="mb-4" id="pflicht-section">
+            @foreach($pflichtDefs as $groupName => $slots)
+            <div class="pflicht-group">
+              <p class="pflicht-group-title">{{ $groupName }}</p>
+              <div class="pflicht-grid">
+                @foreach($slots as $slot)
+                @php
+                  $slotKey    = $slot['key'];
+                  $domKey     = str_replace(':', '-', $slotKey);
+                  $slotPhotos = $pflichtPhotos->get($slotKey, collect());
+                  $photoCount = count($slotPhotos);
+                @endphp
+                <div class="pflicht-slot{{ $photoCount > 0 ? ' has-photos' : '' }}"
+                     data-slot-key="{{ $slotKey }}"
+                     id="slot-{{ $domKey }}">
+                  <div class="pflicht-slot-head">
+                    <span class="slot-name" title="{{ $slot['label'] }}">{{ $slot['label'] }}</span>
+                    <span class="slot-badge {{ $photoCount > 0 ? 'badge-done' : 'badge-empty' }}"
+                          id="slot-count-{{ $domKey }}">{{ $photoCount > 0 ? $photoCount : '—' }}</span>
+                  </div>
+                  <div class="pflicht-thumbs" id="slot-thumbs-{{ $domKey }}">
+                    @foreach($slotPhotos as $sPhoto)
+                    <div class="pflicht-thumb" id="pt-{{ $sPhoto->id }}">
+                      <img src="{{ $sPhoto->image1 }}" alt="">
+                      <button type="button" class="pt-rm"
+                              data-id="{{ $sPhoto->id }}"
+                              data-slot-key="{{ $slotKey }}"
+                              title="Entfernen">×</button>
+                    </div>
+                    @endforeach
+                  </div>
+                  <label class="pflicht-add-btn {{ $photoCount > 0 ? 'd-none' : '' }}">
+                    <i class="fa-solid fa-camera"></i>
+                    <input type="file" accept="image/*" multiple
+                           class="js-pflicht-input visually-hidden"
+                           data-slot-key="{{ $slotKey }}"
+                           data-slot-label="{{ $slot['label'] }}"
+                           data-order-id="{{ $id }}"
+                           data-upload-url="{{ route('examination.store.images') }}"
+                           data-csrf="{{ csrf_token() }}">
+                  </label>
+                  <div class="d-none pt-spinner" id="slot-spin-{{ $domKey }}">
+                    <span class="spinner-border spinner-border-sm text-primary"></span>
+                  </div>
+                </div>
+                @endforeach
+              </div>
+            </div>
+            @endforeach
+          </div>
+          <hr class="mb-4">
 
           {{-- Tipp --}}
+<div class="card border-0 bg-light mb-3">
+    <div class="card-body py-3">
+        <h6 class="mb-1">
+            <i class="fa-solid fa-images me-2"></i>
+            Sonstige Bilder
+        </h6>
+        <small class="text-muted">
+            Bilder, die keiner der oben genannten Kategorien zugeordnet werden können. Maximal 20 Bilder.
+        </small>
+    </div>
+</div>
 
+        {{-- Sonstige Bilder --}}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
 
-          {{-- Foto-Upload (Dropzone) --}}
-          <form class="mb-3 dropzone" id="photo-dropzone" action="{{ route('examination.store.images') }}" method="POST" enctype="multipart/form-data" novalidate>
+        <form class="dropzone border-2 rounded-3" id="photo-dropzone"
+              action="{{ route('examination.store.images') }}"
+              method="POST" enctype="multipart/form-data" novalidate>
             @csrf
             <input type="hidden" name="id" value="{{ $id }}">
             <input type="hidden" name="form" value="photo">
-            <div class="dz-message d-flex flex-column w-100">
-              <button type="button" class="btn btn-primary w-100 upload-btn d-inline-flex align-items-center justify-content-center">
-                <i class="fa-solid fa-image me-2"></i> Bilder hier ablegen oder klicken
-              </button>
-              <div class="hint mt-2 text-center">Mehrfachauswahl möglich.</div>
-            </div>
-          </form>
 
-           <div class="tip mb-4">
-            <i class="fa-solid fa-circle-info"></i>
-            <div><strong>Hinweis:</strong> Fotos vorab mit der Kamera-App aufnehmen, erst im Anschluss gesammelt importieren.</div>
-          </div>
+            <div class="dz-message py-2">
+                <div class="mb-3">
+                    <i class="fa-solid fa-cloud-arrow-up fa-3x text-primary"></i>
+                </div>
+
+                <h6 class="fw-semibold mb-2">
+                    Sonstige Bilder hochladen
+                </h6>
+
+                <p class="text-muted mb-3">
+                    Dateien hierher ziehen oder zum Auswählen klicken
+                </p>
+
+                <button type="button"
+                        class="btn btn-primary px-4 upload-btn">
+                    <i class="fa-solid fa-image me-2"></i>
+                    Bilder auswählen
+                </button>
+
+                <div class="small text-muted mt-3">
+                    Unterstützte Formate: JPG, JPEG, PNG | Max. 20 Bilder
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
 
           <hr><br>
+<div class="card border-0 bg-light mb-3">
+    <div class="card-body py-3">
+        <h6 class="mb-1">
+            <i class="fa-solid fa-file-image me-2"></i>
+             Dokumente hochladen
+        </h6>
+        <small class="text-muted">
+            Diagnoseberichte, Fahrzeugdokumente, Lackmessberichte und weitere Unterlagen.
+        </small>
+    </div>
+</div>
+        <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
 
-        {{-- PDF/Datei Upload (Dropzone, oberhalb der Fotos) --}}
-          <div class="mb-4">
 
-          <form method="POST" id="doc-dropzone" class="dropzone" action="{{ route('examination.store.documents') }}" enctype="multipart/form-data" novalidate>
-  @csrf
-  <input type="hidden" name="id" value="{{ $id }}">
-  <input type="hidden" name="form" value="documents">
 
-  <div class="mb-2">
-    <label class="form-label small">Dokumenttyp</label>
-    <select style="height: 45px" name="document_type" id="document_type" class="form-select form-select-sm">
-      <option value="" selected disabled>Bitte auswählen …</option>
-      <option value="Diagnose">Diagnosebericht</option>
-      <option value="Lackmessung">Lackmessbericht</option>
-      <option value="Dokumente">Fahrzeugdokumente</option>
-      @if(auth()->check() && in_array(auth()->user()->type ?? null, ['admin', 'staff']))
-      <option value="FIN-Abfrage">FIN-Abfrage</option>
-      <option value="Kalkulation">Kalkulation</option>
-      <option value="Fotodokumentation">Fotodokumentation</option>
-      <option value="E-Batterie Zertifikat">E-Batterie Zertifikat</option>
-      <option value="Schadensbilder USA">Schadensbilder USA</option>
-      <option value="Wohnmobil-Zusatz">Wohnmobil-Zusatz</option>
-      <option value="Marktanalyse">Marktanalyse</option>
-      @endif
-      <option value="Sonstiges">Sonstiges</option>
-    </select>
-    <div id="type-hint" class="small mt-1 pb-2">Bitte zuerst einen Dokumenttyp auswählen.</div>
-  </div>
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Dokumenttyp</label>
 
-  <div class="dz-message d-flex flex-column w-100">
-    <button type="button" id="doc-clickable" class="btn btn-outline-primary w-100 upload-btn d-inline-flex align-items-center justify-content-center disabled" aria-disabled="true">
-      <i class="fa-solid fa-file-arrow-up me-2"></i> Dateien hier ablegen oder klicken
-    </button>
-    <div class="hint mt-2 text-center">Mehrere Dokumente möglich.</div>
-  </div>
-</form>
+            <select name="document_type"
+                  id="document_type"
+                  class="form-select">
+              <option value="" selected disabled>Bitte auswählen …</option>
+              <option value="Diagnose">Diagnosebericht</option>
+              <option value="Lackmessung">Lackmessbericht</option>
+              <option value="Dokumente">Fahrzeugdokumente</option>
+
+              @if(auth()->check() && in_array(auth()->user()->type ?? null, ['admin', 'staff']))
+                  <option value="FIN-Abfrage">FIN-Abfrage</option>
+                  <option value="Kalkulation">Kalkulation</option>
+                  <option value="Fotodokumentation">Fotodokumentation</option>
+                  <option value="E-Batterie Zertifikat">E-Batterie Zertifikat</option>
+                  <option value="Schadensbilder USA">Schadensbilder USA</option>
+                  <option value="Wohnmobil-Zusatz">Wohnmobil-Zusatz</option>
+                  <option value="Marktanalyse">Marktanalyse</option>
+              @endif
+
+              <option value="Sonstiges">Sonstiges</option>
+          </select>
+
+            <div id="type-hint" class="small text-warning mt-2">
+                <i class="fa-solid fa-circle-info me-1"></i>
+                Bitte zuerst einen Dokumenttyp auswählen.
+            </div>
+        </div>
+
+        <form method="POST"
+              id="doc-dropzone"
+              class="dropzone border-2 rounded-3"
+              action="{{ route('examination.store.documents') }}"
+              enctype="multipart/form-data"
+              novalidate>
+
+            @csrf
+            <input type="hidden" name="id" value="{{ $id }}">
+            <input type="hidden" name="form" value="documents">
+
+            <div class="dz-message py-3">
+
+                <div class="mb-2">
+                    <i class="fa-solid fa-file-arrow-up fa-2x text-primary"></i>
+                </div>
+
+                <h6 class="fw-semibold mb-1">
+                    Dokumente hochladen
+                </h6>
+
+                <p class="text-muted mb-2">
+                    Dateien hierher ziehen oder klicken
+                </p>
+
+                <button type="button"
+                        id="doc-clickable"
+                        class="btn btn-primary upload-btn disabled"
+                        aria-disabled="true">
+                    <i class="fa-solid fa-file-arrow-up me-2"></i>
+                    Dateien auswählen
+                </button>
+
+            </div>
+        </form>
+
+    </div>
+
+    </div>
 
 <script>
   document.addEventListener("DOMContentLoaded", function() {
@@ -209,10 +519,12 @@
     });
   });
 </script>
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
 
          {{-- Liste PDFs --}}
-            <div class="mt-3" id="docs-section">
-              <h2 class="h6 mb-2">Dokumente</h2>
+            <div class="mt-1 mb-2" id="docs-section">
+              <h2 class="h6 mb-2">Hochgeladene Dokumente</h2>
               @if(!empty($documents) && count($documents))
                 <div class="d-flex flex-column gap-2" id="docs-list">
                 @foreach($documents as $doc)
@@ -244,6 +556,8 @@
               @endif
             </div>
           </div>
+          </div>
+          
 
 
 
@@ -286,6 +600,7 @@
                       <div class="thumb-img-wrap">
                         <img src="{{ $image->image1 }}" alt="Bild {{ $loop->iteration }}">
                       </div>
+                      <div class="thumb-caption">{{ $image->caption ?: ($image->document_type ?? "") }}</div>
                     </div>
                   </div>
                 @endforeach
@@ -759,6 +1074,7 @@
           <div class="thumb-img-wrap">
             <img src="${item.image1}" alt="Bild">
           </div>
+          ${(item.caption || item.document_type) ? `<div class="thumb-caption">${item.caption || item.document_type}</div>` : ''}
         </div>`;
       grid.appendChild(col);
     });
@@ -772,6 +1088,103 @@
       .done(function(resp){ rebuildImagesGrid((resp && resp.items) ? resp.items : []); })
       .fail(function(){ /* ignore */ });
   }
+
+  // -------- Pflichtfotos --------
+  (function(){
+    var deleteBase = '{{ url("examination-delete-image") }}/';
+
+    function ptDomKey(k){ return k.replace(/:/g, '-'); }
+
+    function makePtThumb(id, src, slotKey) {
+      var wrap = document.createElement('div'); wrap.className = 'pflicht-thumb'; wrap.id = 'pt-' + id;
+      var img = document.createElement('img'); img.src = src; img.alt = '';
+      var btn = document.createElement('button'); btn.type = 'button'; btn.className = 'pt-rm';
+      btn.setAttribute('data-id', String(id)); btn.setAttribute('data-slot-key', slotKey);
+      btn.title = 'Entfernen'; btn.textContent = '×';
+      bindPtRemove(btn);
+      wrap.appendChild(img); wrap.appendChild(btn);
+      return wrap;
+    }
+
+    function updateSlotCount(slotKey) {
+  var dk     = ptDomKey(slotKey);
+  var thumbs = document.getElementById('slot-thumbs-' + dk);
+  var badge  = document.getElementById('slot-count-' + dk);
+  var slot   = document.getElementById('slot-' + dk);
+
+  if (!thumbs || !badge) return;
+
+  var count = thumbs.querySelectorAll('.pflicht-thumb').length;
+
+  badge.textContent = count > 0 ? String(count) : '—';
+  badge.className   = 'slot-badge ' + (count > 0 ? 'badge-done' : 'badge-empty');
+
+  if (slot) {
+    slot.classList.toggle('has-photos', count > 0);
+
+    var addBtn = slot.querySelector('.pflicht-add-btn');
+    if (addBtn) {
+      addBtn.classList.toggle('d-none', count > 0);
+    }
+  }
+}
+
+    function bindPtRemove(btn) {
+      btn.addEventListener('click', function() {
+        var id      = this.getAttribute('data-id');
+        var slotKey = this.getAttribute('data-slot-key');
+        var thumb   = document.getElementById('pt-' + id);
+        if (!confirm('Foto entfernen?')) return;
+        fetch(deleteBase + id, { method: 'GET', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+          .finally(function() { if (thumb) thumb.remove(); updateSlotCount(slotKey); });
+      });
+    }
+
+    document.querySelectorAll('.pt-rm').forEach(function(btn) { bindPtRemove(btn); });
+
+    document.querySelectorAll('.js-pflicht-input').forEach(function(input) {
+      input.addEventListener('change', function() {
+        var slotKey   = this.getAttribute('data-slot-key');
+        var slotLabel = this.getAttribute('data-slot-label');
+        var orderId   = this.getAttribute('data-order-id');
+        var uploadUrl = this.getAttribute('data-upload-url');
+        var csrf      = this.getAttribute('data-csrf');
+        var dk        = ptDomKey(slotKey);
+        var thumbsEl  = document.getElementById('slot-thumbs-' + dk);
+        var spinner   = document.getElementById('slot-spin-' + dk);
+        var files = Array.from(this.files);
+        this.value = '';
+        if (!files.length) return;
+        if (spinner) spinner.classList.remove('d-none');
+        var remaining = files.length;
+        files.forEach(function(file) {
+          var fd = new FormData();
+          fd.append('photos[]', file);
+          fd.append('id', orderId);
+          fd.append('form', 'photo');
+          fd.append('document_type', 'Pflichtfoto');
+          fd.append('damage_component', slotKey);
+          fd.append('caption', slotLabel);
+          fd.append('_token', csrf);
+          fetch(uploadUrl, { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+              if (data.success && data.items && thumbsEl) {
+                data.items.forEach(function(item) {
+                  if (item.image1) thumbsEl.appendChild(makePtThumb(item.id, item.image1, slotKey));
+                });
+                updateSlotCount(slotKey);
+              }
+            })
+            .catch(function(){})
+            .finally(function() {
+              remaining--;
+              if (remaining <= 0 && spinner) spinner.classList.add('d-none');
+            });
+        });
+      });
+    });
+  })();
 
   // Rotation/Annotate UI removed; editing disabled
 

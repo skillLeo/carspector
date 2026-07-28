@@ -642,13 +642,61 @@
                                         @enderror
                                         </div>
 
-                                        <div class="mb-3 input-box">
-                                            <input type="text" class="form-control" name="advertisement_link" value="{{old('advertisement_link')}}" placeholder=" "  style="box-shadow: none">
-                                            <label for="vehicle_make_model">Link zum Inserat</label>
-                                            @error('advertisement_link')
-                                            <div class="invalid-feedback d-block">Dies ist ein Pflichtfeld.</div>
-                                            @enderror
+                                        <div style="display:flex; gap:12px;">
+                                            <div class="mb-3 input-box" style="flex:1;">
+                                                <input type="text" name="make_year" value="{{old('make_year')}}" class="form-control" placeholder=" " style="box-shadow:none;" id="make_year">
+                                                <label for="make_year">Erstzulassung (MM.JJJJ)</label>
+                                            </div>
+                                            <div class="mb-3 input-box" style="flex:1;">
+                                                <input type="text" name="mileage" value="{{old('mileage')}}" class="form-control" placeholder=" " style="box-shadow:none;" id="mileage">
+                                                <label for="mileage">Kilometerstand (km)</label>
+                                            </div>
                                         </div>
+
+                                        {{-- Listing link with auto-fetch --}}
+                                        <div class="mb-2 input-box">
+                                            <div style="display:flex; gap:8px; align-items:flex-end;">
+                                                <div style="flex:1; position:relative;">
+                                                    <input type="url" class="form-control" name="advertisement_link" id="listing_url_input"
+                                                           value="{{old('advertisement_link')}}" placeholder=" " style="box-shadow:none;">
+                                                    <label>Link zum Inserat <span style="font-size:11px;color:#888;">(mobile.de / AutoScout24)</span></label>
+                                                </div>
+                                                <button type="button" id="fetchListingBtn"
+                                                        style="height:50px;padding:0 16px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer;white-space:nowrap;flex-shrink:0;">
+                                                    <span id="fetchBtnText">Daten laden</span>
+                                                    <span id="fetchBtnSpinner" style="display:none;">&#9696;</span>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {{-- Live preview card (hidden until fetch succeeds) --}}
+                                        <div id="listingPreview" style="display:none;background:#f8f9fa;border:1px solid #dee2e6;border-radius:10px;padding:14px;margin-bottom:14px;">
+                                            <div style="display:flex;gap:14px;align-items:flex-start;">
+                                                <img id="previewImage" src="" alt="Fahrzeugbild"
+                                                     style="width:100px;height:72px;object-fit:cover;border-radius:6px;flex-shrink:0;display:none;">
+                                                <div style="flex:1;min-width:0;">
+                                                    <div style="font-weight:700;font-size:15px;margin-bottom:4px;" id="previewTitle">—</div>
+                                                    <div style="font-size:13px;color:#555;display:flex;flex-wrap:wrap;gap:10px;">
+                                                        <span id="previewYear" style="display:none;"><i class="fas fa-calendar-alt" style="color:var(--primary);margin-right:3px;"></i><span></span></span>
+                                                        <span id="previewMileage" style="display:none;"><i class="fas fa-tachometer-alt" style="color:var(--primary);margin-right:3px;"></i><span></span></span>
+                                                        <span id="previewPrice" style="display:none;"><i class="fas fa-tag" style="color:var(--secondary);margin-right:3px;"></i><span></span></span>
+                                                        <span id="previewSeller" style="display:none;"><i class="fas fa-user" style="color:#888;margin-right:3px;"></i><span></span></span>
+                                                    </div>
+                                                    <div id="previewStatus" style="margin-top:6px;font-size:12px;"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {{-- Fetch error --}}
+                                        <div id="listingError" style="display:none;font-size:13px;color:#dc3545;margin-bottom:10px;padding:8px 12px;background:#fff5f5;border-radius:6px;border:1px solid #f5c2c7;"></div>
+
+                                        {{-- Hidden scraped data submitted with the form --}}
+                                        <input type="hidden" name="listing_seller_name"    id="h_seller_name">
+                                        <input type="hidden" name="listing_seller_address" id="h_seller_address">
+                                        <input type="hidden" name="listing_seller_phone"   id="h_seller_phone">
+                                        <input type="hidden" name="listing_image"          id="h_listing_image">
+                                        <input type="hidden" name="listing_price"          id="h_listing_price">
+                                        <input type="hidden" name="listing_scrape_status"  id="h_scrape_status">
 
                                         <div class="mb-3 input-box">
                                             <input type="text" name="address" class="form-control" value="{{old('address')}}" placeholder=" "   style="box-shadow: none">
@@ -1028,6 +1076,112 @@
             const interval = setInterval(updateCountdown, 1000);
             updateCountdown();
 
+        </script>
+
+        <script>
+        (function () {
+            var urlInput   = document.getElementById('listing_url_input');
+            var fetchBtn   = document.getElementById('fetchListingBtn');
+            var btnText    = document.getElementById('fetchBtnText');
+            var btnSpinner = document.getElementById('fetchBtnSpinner');
+            var preview    = document.getElementById('listingPreview');
+            var errorBox   = document.getElementById('listingError');
+            if (!fetchBtn) return;
+
+            function setLoading(on) {
+                fetchBtn.disabled = on;
+                btnText.style.display    = on ? 'none' : '';
+                btnSpinner.style.display = on ? '' : 'none';
+            }
+
+            function setText(el, val) {
+                if (val) {
+                    el.querySelector('span:last-child').textContent = val;
+                    el.style.display = '';
+                } else { el.style.display = 'none'; }
+            }
+
+            function showPreview(d) {
+                errorBox.style.display = 'none';
+                preview.style.display  = '';
+
+                var title = [d.brand, d.model].filter(Boolean).join(' ') || 'Fahrzeug erkannt';
+                document.getElementById('previewTitle').textContent = title;
+
+                var img = document.getElementById('previewImage');
+                if (d.image) { img.src = d.image; img.style.display = ''; }
+                else { img.style.display = 'none'; }
+
+                setText(document.getElementById('previewYear'),    d.make_year);
+                setText(document.getElementById('previewMileage'), d.mileage ? d.mileage + ' km' : '');
+                setText(document.getElementById('previewPrice'),   d.price    ? d.price + ' €' : '');
+                setText(document.getElementById('previewSeller'),  d.seller_name);
+
+                var statusEl = document.getElementById('previewStatus');
+                statusEl.textContent = '';
+                if (d.status === 'success' || d.status === 'partial') {
+                    var sp = document.createElement('span');
+                    sp.style.fontWeight = '600';
+                    if (d.status === 'success') {
+                        sp.style.color  = '#198754';
+                        sp.textContent  = '✓ Inserat erfolgreich erkannt';
+                    } else {
+                        sp.style.color  = '#e6a800';
+                        sp.textContent  = '⚠ Teilweise erkannt — bitte fehlende Felder manuell ergänzen';
+                    }
+                    statusEl.appendChild(sp);
+                }
+
+                // Pre-fill form fields if still empty
+                var makeModel = document.getElementById('vehicle_make_model');
+                if (makeModel && !makeModel.value && (d.brand || d.model))
+                    makeModel.value = [d.brand, d.model].filter(Boolean).join(' ');
+                var yr = document.getElementById('make_year');
+                if (yr && !yr.value && d.make_year) yr.value = d.make_year;
+                var km = document.getElementById('mileage');
+                if (km && !km.value && d.mileage) km.value = d.mileage;
+
+                // Store scraped fields in hidden inputs
+                document.getElementById('h_seller_name').value    = d.seller_name    || '';
+                document.getElementById('h_seller_address').value = d.seller_address || '';
+                document.getElementById('h_seller_phone').value   = d.seller_phone   || '';
+                document.getElementById('h_listing_image').value  = d.image          || '';
+                document.getElementById('h_listing_price').value  = d.price          || '';
+                document.getElementById('h_scrape_status').value  = d.status         || '';
+            }
+
+            function showError(msg) {
+                preview.style.display  = 'none';
+                errorBox.style.display = '';
+                errorBox.textContent   = msg || 'Das Inserat konnte nicht gelesen werden. Bitte fülle die Felder manuell aus.';
+            }
+
+            fetchBtn.addEventListener('click', function () {
+                var url = urlInput.value.trim();
+                if (!url) { showError('Bitte füge zuerst einen Inserat-Link ein.'); return; }
+                setLoading(true);
+                fetch('{{ route("listing.fetch") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': (document.querySelector('meta[name="csrf-token"]') || {}).content || '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ url: url })
+                })
+                .then(function(r){ return r.json(); })
+                .then(function(d){
+                    setLoading(false);
+                    if (d.status === 'failed' || d.status === 'unsupported') showError(d.message || d.error || null);
+                    else showPreview(d);
+                })
+                .catch(function(){ setLoading(false); showError(null); });
+            });
+
+            // Auto-fetch on paste
+            urlInput && urlInput.addEventListener('paste', function(){
+                setTimeout(function(){ fetchBtn.click(); }, 400);
+            });
+        })();
         </script>
 
     </main>

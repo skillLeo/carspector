@@ -17,7 +17,7 @@ use Illuminate\Support\Str;
 //Route::get('/', function () {
 //    return view('frontpages.index');
 //});
-date_default_timezone_set('Asia/Karachi');
+date_default_timezone_set('Europe/Berlin');
 
 $brands = [
     'volkswagen',
@@ -349,6 +349,7 @@ Route::group(['prefix'=>'examiner'],function(){
     Route::get('/interior/{id}',[\App\Http\Controllers\FrontPageController::class,'interior'])->name('examiner.interior')->middleware('auth');
     Route::get('/other-conclusion/{id}',[\App\Http\Controllers\FrontPageController::class,'otherConclusion'])->name('examiner.other.conclusion')->middleware('auth');
     Route::get('/photo/{id}',[\App\Http\Controllers\FrontPageController::class,'vehiclePhoto'])->name('examiner.vehicle.photo')->middleware('auth');
+    Route::get('/generate-photo-pdf/{id}',[\App\Http\Controllers\FrontPageController::class,'generatePhotoPdf'])->name('examiner.generate.photo.pdf')->middleware('auth');
     Route::get('/paint-thickness-condition/{id}',[\App\Http\Controllers\FrontPageController::class,'paintThicknessCondition'])->name('examiner.paint.thickness.condition')->middleware('auth');
     Route::get('/pdf/{id}',[\App\Http\Controllers\FrontPageController::class,'pdf'])->name('examiner.pdf')->middleware('auth');
     // Cost calculations page (damages repeater)
@@ -410,6 +411,8 @@ Route::get('option-transporter',[\App\Http\Controllers\BookingController::class,
 Route::get('booking-step-2',[\App\Http\Controllers\BookingController::class,'bookingStep2'])->name('booking.step-2');
 Route::get('booking-step-3',[\App\Http\Controllers\BookingController::class,'bookingStep3'])->name('booking.step-3');
 Route::get('booking-step-3-new',[\App\Http\Controllers\BookingController::class,'bookingStep3New'])->name('booking.step-3');
+Route::post('api/fetch-listing',[\App\Http\Controllers\ListingScraperController::class,'fetch'])->name('listing.fetch');
+Route::post('api/extract-equipment-pdf',[\App\Http\Controllers\ExaminationPdfController::class,'extract'])->name('examination.extract.pdf')->middleware('auth');
 
 Route::get('zulassung-1',[\App\Http\Controllers\NewbookingController::class,'stepOne'])->name('zulassung.step1.show');
 Route::post('zulassung-1',[\App\Http\Controllers\NewbookingController::class,'stepOneStore'])->name('zulassung.step1.store');
@@ -445,6 +448,7 @@ Route::post('pay-now',[\App\Http\Controllers\CheckoutController::class,'payNow']
 Route::get('success',[\App\Http\Controllers\CheckoutController::class,'success'])->name('success');
 Route::get('vortile-success',[\App\Http\Controllers\CheckoutController::class,'vortileSuccess'])->name('vortile.success.payment');
 Route::get('payment-success/{id}',[\App\Http\Controllers\CheckoutController::class,'paymentSuccess'])->name('payment.success');
+Route::post('payment-success/{id}/vehicle',[\App\Http\Controllers\CheckoutController::class,'saveVehicleDetails'])->name('payment.vehicle.save');
 
 Route::get('/change-password',[\App\Http\Controllers\UserController::class,'changePassword'])->name('password.change');
 Route::post('/change-password',[\App\Http\Controllers\UserController::class,'storePassword'])->name('password.store');
@@ -503,6 +507,14 @@ Route::group(['prefix'=>'admin','middleware'=>['auth','admin_or_staff']],functio
         Route::post('/profile-settings/2fa/enable', [\App\Http\Controllers\Admin\ProfileSettingsController::class, 'enableTwoFactor'])->name('admin.profile.settings.2fa.enable');
         Route::post('/profile-settings/2fa/verify', [\App\Http\Controllers\Admin\ProfileSettingsController::class, 'verifyTwoFactor'])->name('admin.profile.settings.2fa.verify');
         Route::post('/profile-settings/2fa/disable', [\App\Http\Controllers\Admin\ProfileSettingsController::class, 'disableTwoFactor'])->name('admin.profile.settings.2fa.disable');
+
+        // ── Phase 3: Inspection API Management ──────────────────────────────
+        Route::get('/inspection/api-keys', [\App\Http\Controllers\Admin\InspectionApiController::class, 'apiKeys'])->name('admin.inspection.api-keys');
+        Route::post('/inspection/api-keys/generate', [\App\Http\Controllers\Admin\InspectionApiController::class, 'generateKey'])->name('admin.inspection.api-keys.generate');
+        Route::post('/inspection/api-keys/{id}/deactivate', [\App\Http\Controllers\Admin\InspectionApiController::class, 'deactivateKey'])->name('admin.inspection.api-keys.deactivate');
+        Route::get('/inspection/submissions', [\App\Http\Controllers\Admin\InspectionApiController::class, 'submissions'])->name('admin.inspection.submissions');
+        Route::get('/inspection/submissions/{id}', [\App\Http\Controllers\Admin\InspectionApiController::class, 'submissionShow'])->name('admin.inspection.submissions.show');
+        Route::get('/inspection/review-queue', [\App\Http\Controllers\Admin\InspectionApiController::class, 'reviewQueue'])->name('admin.inspection.review-queue');
     });
 
     Route::get('/search-users',[App\Http\Controllers\Admin\UserController::class,'searchUsers'])->name('admin.users.search');
@@ -528,12 +540,54 @@ Route::group(['prefix'=>'admin','middleware'=>['auth','admin_or_staff']],functio
     Route::post('bookings/{order}/status',[\App\Http\Controllers\Admin\BookingController::class,'confirmStatus'])->name('admin.booking.status-confirm');
     Route::post('send-examiner-email',[\App\Http\Controllers\Admin\BookingController::class,'sendExaminerEmail'])->name('admin.examiner.email');
     Route::get('fetch-bookings',[\App\Http\Controllers\Admin\BookingController::class,'fetchBookings'])->name('bookings.fetch');
+    Route::get('billing',[\App\Http\Controllers\Admin\BookingController::class,'billing'])->name('admin.billing');
+    Route::get('fetch-billing',[\App\Http\Controllers\Admin\BookingController::class,'fetchBillingBookings'])->name('admin.billing.fetch');
     Route::get('new-bookings',[\App\Http\Controllers\Admin\BookingController::class,'newBookings'])->name('admin.new-bookings.index');
     Route::get('fetch-new-bookings',[\App\Http\Controllers\Admin\BookingController::class,'fetchNewBookings'])->name('admin.new-bookings.fetch');
     Route::get('new-bookings/{newBooking}',[\App\Http\Controllers\Admin\BookingController::class,'showNewBooking'])->name('admin.new-bookings.show');
     Route::get('new-bookings/{newBooking}/data',[\App\Http\Controllers\Admin\BookingController::class,'newBookingData'])->name('admin.new-bookings.data');
     Route::put('new-bookings/{newBooking}',[\App\Http\Controllers\Admin\BookingController::class,'updateNewBooking'])->name('admin.new-bookings.update');
     Route::delete('new-bookings/{newBooking}',[\App\Http\Controllers\Admin\BookingController::class,'deleteNewBooking'])->name('admin.new-bookings.delete');
+
+    // ── Phase 2: B2B Partner Management (admin panel) ──
+    Route::get('/b2b-partners',          [\App\Http\Controllers\Admin\B2bPartnerController::class, 'index'])->name('admin.partners.index');
+    Route::get('/b2b-partners/create',   [\App\Http\Controllers\Admin\B2bPartnerController::class, 'create'])->name('admin.partners.create');
+    Route::post('/b2b-partners',         [\App\Http\Controllers\Admin\B2bPartnerController::class, 'store'])->name('admin.partners.store');
+    Route::get('/b2b-partners/{id}',     [\App\Http\Controllers\Admin\B2bPartnerController::class, 'show'])->name('admin.partners.show');
+    Route::get('/b2b-partners/{id}/edit',[\App\Http\Controllers\Admin\B2bPartnerController::class, 'edit'])->name('admin.partners.edit');
+    Route::put('/b2b-partners/{id}',     [\App\Http\Controllers\Admin\B2bPartnerController::class, 'update'])->name('admin.partners.update');
+    Route::post('/b2b-partners/{id}/resend', [\App\Http\Controllers\Admin\B2bPartnerController::class, 'resendInvite'])->name('admin.partners.resend');
+    Route::post('/b2b-partners/{id}/toggle', [\App\Http\Controllers\Admin\B2bPartnerController::class, 'toggleStatus'])->name('admin.partners.toggle');
+    Route::get('/b2b-partners/{id}/export', [\App\Http\Controllers\Admin\B2bPartnerController::class, 'exportOrders'])->name('admin.partners.export');
+    Route::post('/b2b-partners/{id}/orders', [\App\Http\Controllers\Admin\B2bPartnerController::class, 'storeOrderForPartner'])->name('admin.partners.store-order');
+
+    // Admin notifications
+    Route::get('/notifications',          [\App\Http\Controllers\Admin\BookingController::class, 'notifications'])->name('admin.notifications');
+    Route::post('/notifications/read-all',[\App\Http\Controllers\Admin\BookingController::class, 'markNotificationsRead'])->name('admin.notifications.read-all');
+    Route::post('/bookings/{id}/appointment-reminder', [\App\Http\Controllers\Admin\BookingController::class, 'sendAppointmentReminder'])->name('admin.booking.appointment-reminder');
+
+    // Inspector management
+    Route::get('/inspectors',                    [\App\Http\Controllers\Admin\InspectorController::class, 'index'])->name('admin.inspectors.index');
+    Route::post('/inspectors/import',            [\App\Http\Controllers\Admin\InspectorController::class, 'importCsv'])->name('admin.inspectors.import');
+    Route::post('/inspectors/create',            [\App\Http\Controllers\Admin\InspectorController::class, 'createManual'])->name('admin.inspectors.create');
+    Route::get('/inspectors/{id}',               [\App\Http\Controllers\Admin\InspectorController::class, 'show'])->name('admin.inspectors.show');
+    Route::post('/inspectors/{id}/resend',       [\App\Http\Controllers\Admin\InspectorController::class, 'resendInvite'])->name('admin.inspectors.resend');
+    Route::post('/inspectors/{id}/toggle',       [\App\Http\Controllers\Admin\InspectorController::class, 'toggleStatus'])->name('admin.inspectors.toggle');
+    Route::delete('/inspectors/{id}',            [\App\Http\Controllers\Admin\InspectorController::class, 'destroy'])->name('admin.inspectors.destroy');
+    Route::post('/inspectors/{id}/areas',        [\App\Http\Controllers\Admin\InspectorController::class, 'addServiceArea'])->name('admin.inspectors.areas.add');
+    Route::delete('/inspectors/areas/{areaId}',  [\App\Http\Controllers\Admin\InspectorController::class, 'deleteServiceArea'])->name('admin.inspectors.areas.delete');
+    // Inspector request preview + send (AJAX)
+    Route::get('/orders/{orderId}/inspector-request-preview', [\App\Http\Controllers\Admin\InspectorController::class, 'requestPreview'])->name('admin.inspector.request.preview');
+    Route::post('/orders/{orderId}/inspector-request-send',   [\App\Http\Controllers\Admin\InspectorController::class, 'sendRequest'])->name('admin.inspector.request.send');
+    Route::post('/orders/{orderId}/inspector-assign',         [\App\Http\Controllers\Admin\InspectorController::class, 'assignInspector'])->name('admin.inspector.assign');
+    Route::get('/orders/{orderId}/inspector-assign-preview',  [\App\Http\Controllers\Admin\InspectorController::class, 'assignmentPreview'])->name('admin.inspector.assign.preview');
+    Route::post('/orders/{orderId}/inspector-auto-assign-update', [\App\Http\Controllers\Admin\InspectorController::class, 'updateAutoAssign'])->name('admin.inspector.auto-assign-update');
+    // Vehicle/seller details edit (admin)
+    Route::post('/orders/{orderId}/vehicle-details', [\App\Http\Controllers\Admin\BookingController::class, 'saveVehicleDetails'])->name('admin.booking.vehicle-details');
+
+    // Listing PDF upload (admin)
+    Route::post('/bookings/{orderId}/upload-listing-pdf', [\App\Http\Controllers\Admin\BookingController::class, 'uploadListingPdf'])->name('admin.booking.upload-listing-pdf');
+    Route::post('/bookings/{orderId}/delete-listing-pdf', [\App\Http\Controllers\Admin\BookingController::class, 'deleteListingPdf'])->name('admin.booking.delete-listing-pdf');
 });
 Route::get('/fetch-examiners',[\App\Http\Controllers\BookingController::class,'fetchExaminers'])->name('examiners.fetch');
 Route::post('/assign-examiner',[\App\Http\Controllers\BookingController::class,'assignExaminer'])->name('examiners.assign');
@@ -561,3 +615,63 @@ Route::group(['prefix' => 'order-damages'], function () {
     Route::post('/save', [\App\Http\Controllers\OrderDamageController::class, 'save'])->name('order-damages.save');
     Route::post('/toggle-show', [\App\Http\Controllers\OrderDamageController::class, 'toggleShow'])->name('order-damages.toggle');
 });
+
+// ═══════════════════════════════════════════
+// PHASE 2 — B2B PARTNER PORTAL ROUTES
+// ═══════════════════════════════════════════
+
+// B2B Auth Routes (no middleware — guest access)
+Route::prefix('partner')->name('b2b.')->group(function () {
+    Route::get('/login',               [\App\Http\Controllers\B2bAuthController::class, 'showLogin'])->name('login');
+    Route::post('/login',              [\App\Http\Controllers\B2bAuthController::class, 'login'])->name('login.post');
+    Route::get('/logout',              [\App\Http\Controllers\B2bAuthController::class, 'logout'])->name('logout');
+    Route::get('/register/{token}',    [\App\Http\Controllers\B2bAuthController::class, 'showRegister'])->name('register');
+    Route::post('/register/{token}',   [\App\Http\Controllers\B2bAuthController::class, 'register'])->name('register.post');
+});
+
+// B2B Portal Routes (protected by b2b.auth middleware)
+Route::prefix('partner')->name('b2b.')->middleware('b2b.auth')->group(function () {
+    Route::get('/dashboard',           [\App\Http\Controllers\B2bPortalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/orders',              [\App\Http\Controllers\B2bPortalController::class, 'orders'])->name('orders');
+    Route::get('/orders/create',       [\App\Http\Controllers\B2bPortalController::class, 'createOrder'])->name('orders.create');
+    Route::post('/orders',             [\App\Http\Controllers\B2bPortalController::class, 'storeOrder'])->name('orders.store');
+    Route::get('/orders/{id}',         [\App\Http\Controllers\B2bPortalController::class, 'showOrder'])->name('orders.show');
+    Route::post('/orders/{id}/cancel', [\App\Http\Controllers\B2bPortalController::class, 'cancelOrder'])->name('orders.cancel');
+});
+
+// ─── Inspector token-based email response (no auth required) ──────────────
+Route::get('/inspector-respond/{token}/accept',  [\App\Http\Controllers\InspectorResponseController::class, 'accept'])->name('inspector.respond.accept');
+Route::get('/inspector-respond/{token}/decline', [\App\Http\Controllers\InspectorResponseController::class, 'decline'])->name('inspector.respond.decline');
+
+Route::get('/appointment-confirm/{order}',  [\App\Http\Controllers\Admin\BookingController::class, 'appointmentConfirmShow'])->name('appointment.confirm.show');
+Route::post('/appointment-confirm/{order}', [\App\Http\Controllers\Admin\BookingController::class, 'appointmentConfirmSave'])->name('appointment.confirm.save')->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
+
+// ─── Inspector Auth Routes ─────────────────────────────────────────────────
+Route::prefix('inspector')->name('inspector.')->group(function () {
+    Route::get('/login',             [\App\Http\Controllers\InspectorAuthController::class, 'showLogin'])->name('login');
+    Route::post('/login',            [\App\Http\Controllers\InspectorAuthController::class, 'login'])->name('login.post');
+    Route::get('/logout',            [\App\Http\Controllers\InspectorAuthController::class, 'logout'])->name('logout');
+    Route::get('/registrieren/{token}',  [\App\Http\Controllers\InspectorAuthController::class, 'showRegister'])->name('register');
+    Route::post('/registrieren/{token}', [\App\Http\Controllers\InspectorAuthController::class, 'register'])->name('register.post');
+});
+
+// ─── Inspector Portal Routes (protected) ──────────────────────────────────
+Route::prefix('inspector')->name('inspector.')->middleware('inspector.auth')->group(function () {
+    Route::get('/anfragen',          [\App\Http\Controllers\InspectorPortalController::class, 'requests'])->name('requests');
+    Route::post('/anfragen/{id}/antworten', [\App\Http\Controllers\InspectorPortalController::class, 'respondRequest'])->name('requests.respond');
+    Route::get('/auftraege',         [\App\Http\Controllers\InspectorPortalController::class, 'activeOrders'])->name('active-orders');
+    Route::post('/auftraege/{orderId}/termin', [\App\Http\Controllers\InspectorPortalController::class, 'setAppointment'])->name('active-orders.appointment');
+    Route::get('/abgeschlossen',     [\App\Http\Controllers\InspectorPortalController::class, 'completedOrders'])->name('completed-orders');
+    Route::get('/servicegebiet',     [\App\Http\Controllers\InspectorPortalController::class, 'serviceAreas'])->name('service-areas');
+    Route::post('/servicegebiet',    [\App\Http\Controllers\InspectorPortalController::class, 'addServiceArea'])->name('service-areas.add');
+    Route::delete('/servicegebiet/{id}', [\App\Http\Controllers\InspectorPortalController::class, 'deleteServiceArea'])->name('service-areas.delete');
+});
+
+// ─── Inspector direct signed URL (no login needed, signature validates) ───
+Route::get('/inspector/order-direct/{orderId}/{inspectorId}', [\App\Http\Controllers\InspectorPortalController::class, 'orderDirect'])
+    ->name('inspector.order.direct')
+    ->middleware('signed');
+
+Route::get('/inspector/start-exam/{orderId}/{inspectorId}', [\App\Http\Controllers\InspectorPortalController::class, 'startExam'])
+    ->name('inspector.start.exam')
+    ->middleware('signed');

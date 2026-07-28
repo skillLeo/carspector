@@ -512,9 +512,33 @@
                     <i class="fas fa-phone"></i>
                 </a>
 
+<style>
+/* Wartungsbalken */
+.maintenance-bar {
+    width: 100%;
+    background: #ffcc00;
+    color: #000;
+    text-align: center;
+    padding: 10px 15px;
+    font-size: 15px;
+    font-weight: 600;
+    position: relative;
+    z-index: 9999;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
 
+@media (max-width: 700px) {
+    .maintenance-bar {
+        font-size: 13px;
+        padding: 8px 10px;
+    }
+}
+</style>
 
-
+<!-- Wartungshinweis 
+<div class="maintenance-bar">
+    Wartungsarbeiten: Bitte entschuldige mögliche technische Störungen.
+</div> -->
 
 <header class="header bg-primary  position-relative z-3">
     <div

@@ -227,13 +227,13 @@ $rezensionen = [
     [
         "name" => "Stefan G.",
         "stars_text" => "★★★★★",
-        "text" => " Super zuverlässig und transparent. Der Gutachter war pünktlich vor Ort, hat alles geprüft und das Protokoll kam am nächsten Morgen.",
+        "text" => "Super zuverlässig und transparent. Der Gutachter war pünktlich vor Ort, hat alles geprüft und das Protokoll kam am nächsten Morgen.",
         "image" => "/assets/imgs/reviews/35.jpg"
     ],
     [
         "name" => "Johannes T.",
         "stars_text" => "★★★★★",
-        "text" => " Super zuverlässig und transparent. Der Gutachter war pünktlich vor Ort, hat alles geprüft und das Protokoll kam am nächsten Morgen.",
+        "text" => "Die Begutachtung wurde sehr sorgfältig durchgeführt. Außerdem wurden sehr viele und detaillierte Bilder gemacht. Danke nochmal!",
         "image" => "/assets/imgs/reviews/36.png"
     ],
     [

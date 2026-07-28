@@ -77,6 +77,14 @@
     },
     {
       "@type": "Question",
+      "name": "Wie lange dauert es vom Auftrag bis zum Prüfergebnis?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Der gesamte Prozess – vom Eingang des Auftrags über die Durchführung des Gebrauchtwagenchecks bis hin zur Zusendung des Prüfergebnisses – dauert in der Regel <b>2–4 Werktage</b>."
+      }
+    },
+    {
+      "@type": "Question",
       "name": "Kann ein Gebrauchtwagencheck Tachomanipulation erkennen?",
       "acceptedAnswer": {
         "@type": "Answer",
@@ -322,6 +330,22 @@
   <div id="faq-25" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
     <div class="accordion-body">
       Ja, Carspector bietet Gebrauchtwagenchecks flächendeckend in ganz Deutschland an. Egal ob in Berlin, Hamburg, München oder kleineren Städten – unsere Prüfer sind bundesweit verfügbar.
+    </div>
+  </div>
+</div>
+
+<div style="border-radius: 5px" class="accordion-item">
+  <h2 class="accordion-header">
+    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+      data-bs-target="#faq-555" aria-expanded="false" aria-controls="faq-555">
+      Wie lange dauert es vom Auftrag bis zum Prüfergebnis?
+
+    </button>
+  </h2>
+  <div id="faq-555" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+    <div class="accordion-body">
+      Der gesamte Prozess – vom Eingang des Auftrags über die Durchführung des Gebrauchtwagenchecks bis hin zur Zusendung des Prüfergebnisses – dauert in der Regel <b>2–4 Werktage</b>. 
+      In Einzelfällen kann es zu Verzögerungen kommen, da wir bei der Terminvereinbarung auf die Verfügbarkeit des Verkäufers angewiesen sind.
     </div>
   </div>
 </div>

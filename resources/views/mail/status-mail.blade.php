@@ -16,27 +16,31 @@
             <td style="padding:32px; font-family:Arial,Helvetica,sans-serif; text-align:center;">
 
               <!-- Begrüßung -->
-              <p style="color:#000000; font-size:26px; font-weight:700; line-height:1.4; margin:0 0 12px 0;">
+              <p style="color:#000; font-size:24px; font-weight:700; line-height:1.4; margin:0 0 12px 0;">
                 Unterlagen folgen in Kürze | {{ $order->vehicle_make_model }}
               </p>
 
-              <p style="margin:0 0 12px 0; color:#333333; line-height:1.6; font-size:16px;">
+              <p style="margin:0 0 12px 0; color:#333; line-height:1.6; font-size:15px;">
                 Hallo,
               </p>
 
               <!-- Text -->
-              <p style="margin:0 0 12px 0; color:#333333; line-height:1.6; font-size:16px;">
+              <p style="margin:0 0 12px 0; color:#333; line-height:1.6; font-size:15px;">
                 wir freuen uns, dir mitteilen zu können, dass die Prüfung des Fahrzeugs <b>{{ $order->vehicle_make_model }}</b> erfolgreich abgeschlossen wurde.
                 Unser Team erstellt nun das Prüfergebnis.
               </p>
 
-              <p style="margin:12px 0; color:#333333; line-height:1.6; font-size:16px;">
+              <p style="margin:0 0 12px 0; color:#333; line-height:1.6; font-size:15px;">
                 Innerhalb von <b>24&nbsp;Stunden</b> nach Erhalt dieser E-Mail erhältst du das vollständige Prüfergebnis 
                 inklusive aller relevanten Dokumente direkt per E-Mail.
               </p>
 
+              <p style="margin:0 0 12px 0; color:#333; line-height:1.6; font-size:15px;">
+                Bitte beachte, dass es am Wochenende vereinzelt zu Verzögerungen bei der Bearbeitung des Auftrags kommen kann.
+              </p>
+
               <!-- Signatur -->
-              <p style="margin:20px 0 0 0; color:#000000; font-size:16px; line-height:1.6;">
+              <p style="margin:0 0 12px 0; color:#333; line-height:1.6; font-size:15px;">
                 Vielen Dank für dein Vertrauen in unseren Service.<br>
                 Dein Team von Carspector
               </p>

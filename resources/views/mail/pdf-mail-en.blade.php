@@ -1,15 +1,15 @@
 @component('mail::message')
 <!-- Header -->
 <div style="text-align:center; font-family:Arial,Helvetica,sans-serif;">
-  <p style="margin:0 0 8px; color:#181C32; font-size:28px; font-weight:700; line-height:1.25;">
+  <p style="color:#000; font-size:24px; font-weight:700; line-height:1.4; margin:0 0 12px 0;">
     Your inspection result is ready ✅
   </p>
   </div>
 
 <!-- Intro -->
 <div style="margin-bottom:23px; margin-top:18px; font-family:Arial,Helvetica,sans-serif; color:black; font-size:14px; line-height:1.75;">
-  <p style="margin:0 0 12px;">Hello,</p>
-  <p style="margin:0 0 14px;">
+  <p style="margin:0 0 15px;">Hello,</p>
+  <p style="margin:0 0 15px;">
   we’re happy to let you know that the inspection of the vehicle <b>{{ $order->vehicle_make_model }}</b> has been completed and your report is now available.
 </p>
 

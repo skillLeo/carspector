@@ -9,14 +9,14 @@
 
     <div class="section-head text-center pt-5 pb-4 mb-3">
         <h3 class="section-title fs-3 text-primary pb-2">Allgemeine Geschäftsbedingungen (AGB)</h3>
-        <p class="text-muted" style="font-size: 0.9rem;">
+        <!-- <p class="text-muted" style="font-size: 0.9rem;">
             Letzte Aktualisierung: 12.03.2025
-        </p>
+        </p> -->
     </div>
 
     <h4>Präambel</h4>
     <p>
-        Die nachfolgenden Allgemeinen Geschäftsbedingungen (im Folgenden „AGB“ genannt) bilden die Grundlage für sämtliche Rechtsbeziehungen zwischen der Carspector, Reisholzer Werftstraße 76, 40589 Düsseldorf, und den Nutzern der von Carspector betriebenen Plattform 
+        Die nachfolgenden Allgemeinen Geschäftsbedingungen (im Folgenden „AGB“ genannt) bilden die Grundlage für sämtliche Rechtsbeziehungen zwischen der Carspector GmbH, Reisholzer Werftstraße 76, 40589 Düsseldorf (nachfolgend „Carspector“), und den Nutzern der von Carspector betriebenen Plattform
         <a href="https://www.carspector.de">www.carspector.de</a> sowie der zugehörigen mobilen Applikation (im Folgenden „Plattform“ genannt). 
         Carspector ist ein Vermittlungsunternehmen, das es Kunden ermöglicht, technische Dienstleistungen im Bereich der Bewertung, Begutachtung und Einschätzung von Gebrauchtfahrzeugen in Anspruch zu nehmen. Dabei fungiert Carspector ausschließlich als Vermittler zwischen Kunden und externen Dienstleistern oder Partnern und wird selbst nicht Vertragspartner des Dienstleistungsvertrages. 
         Diese AGB regeln daher ausschließlich das Verhältnis zwischen Carspector und den Nutzern hinsichtlich der Nutzung der Plattform sowie der Vermittlung von Dienstleistungen.

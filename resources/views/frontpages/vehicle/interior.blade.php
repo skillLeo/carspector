@@ -28,6 +28,36 @@
   .other-wrap { margin-top:.5rem; }
 
   .btn-add-damage { border:1px solid #e5e7eb; background:#fff; border-radius:10px; height:44px; }
+
+  /* Per-damage photo section */
+  .damage-photo-section { margin-top:.6rem; padding:.6rem .7rem; background:#fff8f0; border:1px solid #fed7aa; border-radius:8px; }
+  .damage-photo-thumbs { display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:.5rem; }
+  .damage-photo-thumb { position:relative; width:80px; height:80px; border-radius:8px; overflow:hidden; border:1px solid #e5e7eb; }
+  .damage-photo-thumb img { width:100%; height:100%; object-fit:cover; }
+  .damage-photo-thumb .rm-photo { position:absolute; top:2px; right:2px; background:rgba(220,38,38,.85); color:#fff; border:none; border-radius:50%; width:20px; height:20px; font-size:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; padding:0; line-height:1; }
+  .damage-photo-upload-btn { font-size:.85rem; }
+  .damage-photo-uploading { font-size:.8rem; color:#6b7280; }
+
+  @media (max-width: 767px) {
+
+    .container-fluid.page-bg {
+        padding-left: 0px;
+        padding-right: 0px;
+    }
+
+    .card-modern {
+        border: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        background: transparent;
+    }
+
+    .card-modern > .card-header,
+    .card-modern > .card-body {
+        background: #fff;
+        border-radius: 12px;
+    }
+}
 </style>
 
 <div class="container-fluid page-bg py-5 py-md-5">
@@ -124,7 +154,7 @@
                   while (count($otherVals) < count($detailVals)) { $otherVals[] = ''; }
                 @endphp
 
-                <div class="doc-row mb-3 box" data-key="{{ $key }}">
+                <div class="doc-row mb-3 box" data-key="{{ $key }}" data-part-label="{{ $title }}" data-order-id="{{ $id }}" data-upload-url="{{ route('examination.store.images') }}" data-csrf="{{ csrf_token() }}">
                   <p class="pb-2 doc-title">{{ $title }}</p>
 
                   @if($key === 'smell')
@@ -169,8 +199,14 @@
                           @php
                             $oVal = $otherVals[$idx] ?? '';
                             $isOther = ($dVal === 'Sonstiges');
+                            $intEntryId = $key . ':' . $idx;
+                            $intDomId   = $key . '-' . $idx;
+                            $intPhotos = ($examination->id ?? null)
+                              ? \App\Models\ExaminationImage::where('examination_id', $examination->id)
+                                  ->where('damage_component', $intEntryId)->get()
+                              : collect();
                           @endphp
-                          <div class="damage-row">
+                          <div class="damage-row" data-entry-id="{{ $intEntryId }}">
                             <div class="damage-line">
                               <select name="{{ $detailName }}[]" class="form-select select-tall js-detail-row" data-other=".other-wrap">
                                 <option value="">-- bitte wählen --</option>
@@ -182,7 +218,24 @@
                             </div>
                             <div class="other-wrap {{ $isOther ? '' : 'hidden' }}">
                               <input type="text" name="{{ $otherName }}[]" class="form-control input-compact" value="{{ $oVal }}" placeholder="kurz beschreiben…">
-
+                            </div>
+                            <div class="damage-photo-section {{ $dVal !== '' ? '' : 'hidden' }}">
+                              <div class="small fw-semibold mb-1"><i class="fa-solid fa-camera me-1 text-warning"></i> Schadensfotos</div>
+                              <div class="damage-photo-thumbs" id="photo-thumbs-{{ $intDomId }}">
+                                @foreach($intPhotos as $photo)
+                                  <div class="damage-photo-thumb" id="dmg-thumb-{{ $photo->id }}">
+                                    <img src="{{ asset('storage/' . $photo->image) }}" alt="">
+                                    <button type="button" class="rm-photo" data-id="{{ $photo->id }}" title="Entfernen">×</button>
+                                  </div>
+                                @endforeach
+                              </div>
+                              <label class="btn btn-outline-secondary btn-sm damage-photo-upload-btn mb-0 mt-1" style="cursor:pointer;">
+                                <i class="fa-solid fa-plus me-1"></i> Foto
+                                <input type="file" accept="image/*" multiple class="d-none js-damage-photo-input"
+                                       data-entry-id="{{ $intEntryId }}" data-part-label="{{ $title }}"
+                                       data-order-id="{{ $id }}" data-upload-url="{{ route('examination.store.images') }}" data-csrf="{{ csrf_token() }}">
+                              </label>
+                              <span class="damage-photo-uploading d-none ms-2" id="uploading-{{ $intDomId }}"><i class="fa-solid fa-spinner fa-spin me-1"></i></span>
                             </div>
                           </div>
                         @endforeach
@@ -197,10 +250,19 @@
                                 <option value="{{ $opt }}">{{ $opt }}</option>
                               @endforeach
                             </select>
-                            <button type="button" class="btn btn-sm btn-remove-row" aria-label="Zeile entfernen">🗑️</button>
+                            <button type="button" class="btn btn-sm btn-remove-row" aria-label="Zeile entfernen">✕</button>
                           </div>
                           <div class="other-wrap hidden">
                             <input type="text" name="{{ $otherName }}[]" class="form-control input-compact" placeholder="kurz beschreiben…">
+                          </div>
+                          <div class="damage-photo-section hidden">
+                            <div class="small fw-semibold mb-1"><i class="fa-solid fa-camera me-1 text-warning"></i> Schadensfotos</div>
+                            <div class="damage-photo-thumbs"></div>
+                            <label class="btn btn-outline-secondary btn-sm damage-photo-upload-btn mb-0 mt-1" style="cursor:pointer;">
+                              <i class="fa-solid fa-plus me-1"></i> Foto
+                              <input type="file" accept="image/*" multiple class="d-none js-damage-photo-input">
+                            </label>
+                            <span class="damage-photo-uploading d-none ms-2"><i class="fa-solid fa-spinner fa-spin me-1"></i></span>
                           </div>
                         </div>
                       </template>
@@ -236,7 +298,159 @@
 @section('scripts')
 <script>
 (function(){
-  // Status -> Details sichtbar/unsichtbar
+  var boxCounters = {};
+
+  function makeDamageThumb(id, src) {
+    var wrap = document.createElement('div'); wrap.className='damage-photo-thumb'; wrap.id='dmg-thumb-'+id;
+    var img = document.createElement('img'); img.src=src; img.alt='';
+    var btn = document.createElement('button'); btn.type='button'; btn.className='rm-photo';
+    btn.setAttribute('data-id', id); btn.title='Entfernen'; btn.textContent='×';
+    bindRemovePhoto(btn); wrap.appendChild(img); wrap.appendChild(btn); return wrap;
+  }
+  function bindRemovePhoto(btn) {
+    btn.addEventListener('click', function(){
+      var id=this.getAttribute('data-id'); var thumb=document.getElementById('dmg-thumb-'+id);
+      if(!confirm('Foto entfernen?')) return;
+      fetch('{{ url("examination-delete-image") }}/'+id,{method:'GET',headers:{'X-Requested-With':'XMLHttpRequest'}})
+        .finally(function(){ if(thumb) thumb.remove(); });
+    });
+  }
+
+function uploadDamagePhoto(input, file) {
+  return new Promise(function(resolve){
+
+    var entryId=input.getAttribute('data-entry-id'),
+        partLabel=input.getAttribute('data-part-label');
+
+    var orderId=input.getAttribute('data-order-id'),
+        url=input.getAttribute('data-upload-url'),
+        csrf=input.getAttribute('data-csrf');
+
+    if(!entryId||!orderId||!url||!csrf){
+      resolve();
+      return;
+    }
+
+    var domId=entryId.replace(':','-');
+    var thumbWrap=document.getElementById('photo-thumbs-'+domId),
+        spinner=document.getElementById('uploading-'+domId);
+
+    var row=input.closest('.damage-row');
+    var sel=row?row.querySelector('.js-detail-row'):null;
+    var dmgType=(sel&&sel.value)?sel.value:'';
+
+    if(dmgType==='Sonstiges'){
+      var oi=row?row.querySelector('.other-wrap input'):null;
+      dmgType=(oi&&oi.value.trim())?oi.value.trim():'Sonstiges';
+    }
+
+    var caption=(partLabel||'')+(dmgType?' - '+dmgType:'');
+
+    if(spinner) spinner.classList.remove('d-none');
+
+    var fd=new FormData();
+    fd.append('photos[]',file);
+    fd.append('id',orderId);
+    fd.append('form','interior');
+    fd.append('document_type','Schadensfoto');
+    fd.append('damage_component',entryId);
+    fd.append('caption',caption);
+    fd.append('_token',csrf);
+
+    fetch(url,{
+      method:'POST',
+      body:fd,
+      headers:{'X-Requested-With':'XMLHttpRequest'}
+    })
+    .then(function(r){
+      return r.json();
+    })
+    .then(function(data){
+      if(data.success&&data.items){
+
+        if(!thumbWrap){
+          thumbWrap = row ? row.querySelector('.damage-photo-thumbs') : null;
+        }
+
+        if(thumbWrap){
+          data.items.forEach(function(item){
+            if(item.image1){
+              thumbWrap.appendChild(
+                makeDamageThumb(item.id,item.image1)
+              );
+            }
+          });
+        }
+      }
+    })
+    .catch(function(err){
+      console.error(err);
+    })
+    .finally(function(){
+      if(spinner) spinner.classList.add('d-none');
+      resolve();
+    });
+
+  });
+}
+
+function bindPhotoInput(input){
+  input.addEventListener('change', async function(){
+
+    const files = Array.from(this.files);
+
+    for(const file of files){
+      await uploadDamagePhoto(input, file);
+    }
+
+    this.value = '';
+  });
+}
+
+  function bindPhotoToggle(row) {
+    var sel=row.querySelector('.js-detail-row'); if(!sel) return;
+    var ps=row.querySelector('.damage-photo-section'); if(!ps) return;
+    var apply=function(){ ps.classList.toggle('hidden',!sel.value||sel.value===''); };
+    sel.addEventListener('change', apply); apply();
+  }
+  function bindRow(row, box) {
+    var sel = row.querySelector('.js-detail-row');
+    var otherWrap = row.querySelector(sel ? sel.getAttribute('data-other') : null);
+    var removeBtn = row.querySelector('.btn-remove-row');
+
+    function applyDetail(){
+      if (!sel || !otherWrap) return;
+      otherWrap.classList.toggle('hidden', sel.value !== 'Sonstiges');
+    }
+    sel && sel.addEventListener('change', applyDetail);
+    applyDetail();
+
+    // Photo toggle
+    bindPhotoToggle(row);
+    row.querySelectorAll('.js-damage-photo-input').forEach(bindPhotoInput);
+    row.querySelectorAll('.rm-photo').forEach(bindRemovePhoto);
+
+    if (removeBtn){
+      removeBtn.addEventListener('click', function(){
+        var list = row.closest('.damage-list');
+        if (!list) return;
+        if (list.querySelectorAll('.damage-row').length > 1){
+          row.remove();
+          refreshRemoveVisibility(list);
+        }
+      });
+    }
+  }
+
+  function refreshRemoveVisibility(list){
+    var rows = Array.from(list.querySelectorAll('.damage-row'));
+    rows.forEach(function(r, idx){
+      var btn = r.querySelector('.btn-remove-row');
+      if (btn) btn.classList.toggle('hidden', idx === 0);
+    });
+  }
+
+  // Status -> Details
   document.querySelectorAll('.js-status').forEach(function(sel){
     var detailsSel = sel.getAttribute('data-details');
     var detailsEl  = detailsSel ? document.querySelector(detailsSel) : null;
@@ -244,26 +458,27 @@
       if (!detailsEl) return;
       detailsEl.classList.toggle('hidden', (sel.value || '').toLowerCase() !== 'beschädigt');
     }
-    sel.addEventListener('change', apply);
-    apply();
-  });
-
-  // Geruch: Sonstiges -> Textfeld
-  document.querySelectorAll('.js-smell').forEach(function(sel){
-    var target = document.querySelector(sel.dataset.target);
-    function apply(){
-      if (!target) return;
-      target.classList.toggle('hidden', sel.value !== 'Sonstiges');
-    }
     sel.addEventListener('change', apply); apply();
   });
 
-  // Multi-Beschädigungen je Bauteil-Box
-  document.querySelectorAll('.box').forEach(function(box){
-    // vorhandene Reihen binden
-    box.querySelectorAll('.damage-row').forEach(bindRow);
+  // Geruch: Sonstiges
+  document.querySelectorAll('.js-smell').forEach(function(sel){
+    var target = document.querySelector(sel.dataset.target);
+    function apply(){ if (!target) return; target.classList.toggle('hidden', sel.value !== 'Sonstiges'); }
+    sel.addEventListener('change', apply); apply();
+  });
 
-    // Add
+  // Multi-Beschädigungen je Box
+  document.querySelectorAll('.box').forEach(function(box){
+    var partLabel = box.getAttribute('data-part-label') || '';
+    var orderId   = box.getAttribute('data-order-id') || '';
+    var uploadUrl = box.getAttribute('data-upload-url') || '';
+    var csrf      = box.getAttribute('data-csrf') || '';
+    var dataKey   = box.getAttribute('data-key') || '';
+
+    // Init existing rows
+    box.querySelectorAll('.damage-row').forEach(function(r){ bindRow(r, box); });
+
     var addBtn = box.querySelector('.btn-add-damage');
     if (addBtn){
       addBtn.addEventListener('click', function(){
@@ -272,41 +487,26 @@
         if (!list || !tpl) return;
         var node = tpl.content.firstElementChild.cloneNode(true);
         list.appendChild(node);
-        bindRow(node);
+
+        // Assign entry ID and bind file input
+        var countBefore = list.querySelectorAll('.damage-row').length;
+        var newEntryId = dataKey + ':' + countBefore;
+        node.setAttribute('data-entry-id', newEntryId);
+        var fi = node.querySelector('.js-damage-photo-input');
+        if(fi && orderId){
+          fi.setAttribute('data-entry-id', newEntryId);
+          fi.setAttribute('data-part-label', partLabel);
+          fi.setAttribute('data-order-id', orderId);
+          fi.setAttribute('data-upload-url', uploadUrl);
+          fi.setAttribute('data-csrf', csrf);
+        }
+        var tc = node.querySelector('.damage-photo-thumbs');
+        if(tc) tc.id = 'photo-thumbs-' + newEntryId.replace(':','-');
+        var sp = node.querySelector('.damage-photo-uploading');
+        if(sp) sp.id = 'uploading-' + newEntryId.replace(':','-');
+
+        bindRow(node, box);
         refreshRemoveVisibility(list);
-      });
-    }
-
-    function bindRow(row){
-      var sel = row.querySelector('.js-detail-row');
-      var otherWrap = row.querySelector(sel ? sel.getAttribute('data-other') : null);
-      var removeBtn = row.querySelector('.btn-remove-row');
-
-      function applyDetail(){
-        if (!sel || !otherWrap) return;
-        otherWrap.classList.toggle('hidden', sel.value !== 'Sonstiges');
-      }
-      sel && sel.addEventListener('change', applyDetail);
-      applyDetail();
-
-      if (removeBtn){
-        removeBtn.addEventListener('click', function(){
-          var list = row.closest('.damage-list');
-          if (!list) return;
-          // Mindestens eine Zeile behalten
-          if (list.querySelectorAll('.damage-row').length > 1){
-            row.remove();
-            refreshRemoveVisibility(list);
-          }
-        });
-      }
-    }
-
-    function refreshRemoveVisibility(list){
-      var rows = Array.from(list.querySelectorAll('.damage-row'));
-      rows.forEach(function(r, idx){
-        var btn = r.querySelector('.btn-remove-row');
-        if (btn) btn.classList.toggle('hidden', idx === 0);
       });
     }
   });

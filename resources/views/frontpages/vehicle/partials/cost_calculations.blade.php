@@ -60,9 +60,16 @@
   $finalValue = $basePrice - $sumDep - $sumUpc + $sumAdd + $marketCost;
 @endphp
 
-<div style="page-break-before: always;"></div> 
+@if($conclusion !== '')
+  <div class="card" style="page-break-before: always; break-before: page; padding-top: 25px !important;">
+@else
+  <div style="padding-top: 20px"></div> 
+  <hr style="border: 0; border-top: 1px solid #ccc;">
+  
+  <div class="card" style="padding-top: 30px !important;">
+@endif
 
-<div class="card" style="padding-top: 25px !important;">
+
   <h2 class="section-title">KALKULATION (Minderwerte, Mehrwerte, Kosten, Marktwert)</h2>
 
   {{-- Depreciation (Deductions) --}}
@@ -151,7 +158,7 @@
   </p>
 
 {{-- Vehicle Valuation Summary --}}
-<hr style="margin-top: 20px">
+<hr style="margin-top: 20px; border: 0; border-top: 1px solid #ccc;">
 
 <p style="padding-top: 20px" class="set-title">Wertermittlung</p>
 
@@ -277,5 +284,6 @@
   <!--  Dieser Wert dient als neutrale Orientierung für Händler und Privatpersonen. -->
 </p>
 
-<hr style="margin-top: 20px">
+
 <div class="card" style="padding-top: 20px !important">
+<hr style="border: 0; border-top: 1px solid #ccc; padding-bottom: 10px !important">

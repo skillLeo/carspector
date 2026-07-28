@@ -11,10 +11,12 @@ class Order extends Model
     protected $guarded=[];
 
     protected $casts = [
-        'admin_order_date' => 'date',
-        'appointment_date' => 'date',
-        'completed_at' => 'datetime',
-        'paid_at' => 'datetime',
+        'admin_order_date'          => 'date',
+        'appointment_date'          => 'date',
+        'completed_at'              => 'datetime',
+        'paid_at'                   => 'datetime',
+        'b2b_order_email_sent_at'   => 'datetime',
+        'vehicle_form_expires_at'   => 'datetime',
     ];
 
     protected static function boot()
@@ -22,6 +24,10 @@ class Order extends Model
         parent::boot();
 
         static::creating(function (self $order) {
+            if (empty($order->uuid)) {
+                $order->uuid = \Illuminate\Support\Str::uuid()->toString();
+            }
+
             if (empty($order->admin_status)) {
                 $order->admin_status = 'New';
             }
@@ -51,20 +57,40 @@ class Order extends Model
     public static function generateMonthlyOrderNumber(?self $order = null): string
     {
         $date = $order && $order->created_at ? $order->created_at : now();
+
         $prefix = $date->format('ym');
-        $id = $order?->id ?: 1;
-        $next = 101 + (($id - 1) * 3);
+
+        $switchDate = \Carbon\Carbon::create(2026, 5, 19);
+
+        if ($date->lt($switchDate)) {
+            $id = $order?->id ?: 1;
+
+            $next = 101 + (($id - 1) * 3);
+
+            return $prefix . $next;
+        }
+
+        $lastOrder = self::where('orderno', 'like', $prefix . '%')
+            ->whereDate('created_at', '>=', $switchDate)
+            ->orderByDesc('id')
+            ->first();
+
+        $lastNumber = 1000;
+
+        if ($lastOrder && $lastOrder->orderno) {
+            $lastNumber = (int) substr($lastOrder->orderno, 4);
+        }
+
+        $increment = random_int(5, 15);
+
+        $next = $lastNumber + $increment;
 
         return $prefix . $next;
     }
 
     public function getDisplayOrderNumberAttribute(): string
     {
-        if ($this->orderno && preg_match('/^\d{7}$/', $this->orderno)) {
-            return $this->orderno;
-        }
-
-        return self::formatOrderNumber($this);
+        return $this->orderno ?: self::formatOrderNumber($this);
     }
 
     public function getFormattedOrderNumberAttribute(): string
@@ -78,17 +104,33 @@ class Order extends Model
     public function user(){
         return $this->belongsTo(User::class,'user_id');
     }
-    public function b2bPartner(){
-        return $this->belongsTo(User::class,'b2b_partner_id');
+    public function b2bPartner()
+    {
+        return $this->belongsTo(B2bPartner::class, 'b2b_partner_id');
     }
+
     public function examination()
     {
         return $this->hasOne(OrderExamination::class,'order_id');
-
     }
 
     public function partnerLogo()
     {
         return $this->belongsTo(PartnerLogo::class);
+    }
+
+    public function scopeB2b($query)
+    {
+        return $query->where('order_source', 'b2b');
+    }
+
+    public function scopeB2c($query)
+    {
+        return $query->where('order_source', 'b2c');
+    }
+
+    public function isB2b(): bool
+    {
+        return $this->order_source === 'b2b';
     }
 }
